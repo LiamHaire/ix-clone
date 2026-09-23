@@ -24,7 +24,7 @@ function NavItem({ icon, label, active, badge, onClick }: NavItemProps) {
     <Tooltip>
       <TooltipTrigger
         className={cn(
-          "relative flex items-center justify-center rounded-lg transition-colors",
+          "relative flex items-center justify-center rounded-full transition-colors",
           active
             ? "bg-[#E9E4DB] text-[#1C160F]"
             : "text-[#776B5A] hover:bg-[#E9E4DB] hover:text-[#1C160F]"
@@ -62,7 +62,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
 
       {/* Primary nav */}
       <nav className="flex flex-col items-center gap-2 px-3 pt-1">
-        <NavItem icon={<NotePencil size={20} />} label="New chat" active onClick={onNewChat} />
+        <NavItem icon={<NotePencil size={20} />} label="New chat" onClick={onNewChat} />
         <NavItem icon={<ChatsTeardrop size={20} />} label="Chats" />
         <NavItem icon={<CalendarCheck size={20} />} label="Tasks" />
         <NavItem icon={<Books size={20} />} label="Knowledge" />
