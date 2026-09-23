@@ -188,20 +188,20 @@ export default function Home() {
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
           }}
-          className="font-sans text-[16px]! font-normal text-[#1C160F] px-5 pt-5 pb-0 min-h-[76px]"
+          className="font-sans text-[16px]! font-normal text-foreground px-5 pt-5 pb-0 min-h-[76px]"
           style={{ fontVariationSettings: "'wght' 400" }}
         />
       </PromptInputBody>
       <PromptInputFooter className="px-3 pb-3 pt-2">
         <PromptInputTools>
           <button type="button" aria-label="Add attachment"
-            className="flex items-center justify-center size-9 rounded-full border border-[#E9E4DB] bg-[#FDFBF8] text-[#776B5A] hover:bg-[#F0EBE3] hover:text-[#1C160F] transition-colors">
+            className="flex items-center justify-center size-9 rounded-full border border-border bg-background text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
             <Plus size={20} />
           </button>
         </PromptInputTools>
         <PromptInputTools className="gap-2">
           <PromptInputSelect value={model} onValueChange={setModel}>
-            <SelectTrigger className="h-9 rounded-full border border-[#D8D1C7] bg-[#F0EBE3]/50 text-[#776B5A] text-[14.67px] font-medium px-3 gap-1.5 shadow-none focus:ring-0 hover:bg-[#E9E4DB] hover:text-[#1C160F] transition-colors [&_svg]:size-3.5">
+            <SelectTrigger className="h-9 rounded-full border border-border bg-secondary/50 text-muted-foreground text-[14.67px] font-medium px-3 gap-1.5 shadow-none focus:ring-0 hover:bg-accent hover:text-foreground transition-colors [&_svg]:size-3.5">
               <SelectValue>{MODEL_LABELS[model]}</SelectValue>
             </SelectTrigger>
             <PromptInputSelectContent>
@@ -211,7 +211,7 @@ export default function Home() {
             </PromptInputSelectContent>
           </PromptInputSelect>
           <button type="button" aria-label="Submit" onClick={handleSubmit}
-            className="flex items-center justify-center size-9 rounded-full bg-[#463A2C] text-[#FDFBF8] hover:bg-[#5a4a38] transition-colors">
+            className="flex items-center justify-center size-9 rounded-full bg-action text-action-foreground hover:bg-action-hover transition-colors">
             <ArrowRight size={20} weight="bold" />
           </button>
         </PromptInputTools>
@@ -220,7 +220,7 @@ export default function Home() {
   );
 
   const inputCard = (
-    <div className="w-full max-w-[720px] rounded-[26px] border border-[#E9E4DB] bg-[#FDFBF8] shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)]">
+    <div className="w-full max-w-[720px] rounded-[26px] border border-border bg-surface-raised shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)]">
       {inputInner}
     </div>
   );
@@ -230,14 +230,14 @@ export default function Home() {
       {messages.map((msg, i) =>
         msg.role === "user" ? (
           <div key={i} className="flex justify-end">
-            <span className="inline-block font-sans text-[16px] leading-6 text-[#0A0A0A] bg-[#F5F0EB] rounded-xl px-[17px] py-3 max-w-[560px]"
+            <span className="inline-block font-sans text-[16px] leading-6 text-bubble-foreground bg-bubble rounded-xl px-[17px] py-3 max-w-[560px]"
               style={{ fontVariationSettings: "'wght' 400" }}>
               {msg.content}
             </span>
           </div>
         ) : (
           <div key={i} className="flex flex-col gap-4">
-            <p className="font-sans text-[16px] leading-7 text-[#1C160F]"
+            <p className="font-sans text-[16px] leading-7 text-foreground"
               style={{ fontVariationSettings: "'wght' 400" }}>
               {msg.content}
             </p>
@@ -246,7 +246,7 @@ export default function Home() {
         )
       )}
       {isThinking && (
-        <p className="font-sans text-[14px] text-[#776B5A]" style={{ fontVariationSettings: "'wght' 400" }}>
+        <p className="font-sans text-[14px] text-muted-foreground" style={{ fontVariationSettings: "'wght' 400" }}>
           Thinking…
         </p>
       )}
@@ -269,7 +269,7 @@ export default function Home() {
         >
           <div className="flex flex-col items-center w-full max-w-[720px] px-0">
             <h1
-              className="font-sans text-[30px] font-semibold text-[#1C160F] mb-6 tracking-tight"
+              className="font-sans text-[30px] font-semibold text-foreground mb-6 tracking-tight"
               style={{ fontVariationSettings: "'wght' 600" }}
             >
               {getGreeting()}, Jonathan
@@ -277,7 +277,7 @@ export default function Home() {
             <div className="relative isolate w-full">
               <img src="/glow.svg" aria-hidden="true" className="absolute pointer-events-none select-none"
                 style={{ width: "1097px", maxWidth: "none", height: "400px", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: -1 }} />
-              <div className="w-full rounded-[26px] border border-[#E9E4DB] bg-[#FDFBF8] shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)]">
+              <div className="w-full rounded-[26px] border border-border bg-surface-raised shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)]">
                 {inputInner}
               </div>
             </div>
@@ -293,7 +293,7 @@ export default function Home() {
             style={{ left: "var(--nav-rail-width)", right: 0, top: 0, bottom: 0 }}
           >
             <h1
-              className="font-sans text-[30px] font-semibold text-[#1C160F] mb-6 tracking-tight"
+              className="font-sans text-[30px] font-semibold text-foreground mb-6 tracking-tight"
               style={{
                 fontVariationSettings: "'wght' 600",
                 opacity: greetingOpacity,
@@ -320,12 +320,12 @@ export default function Home() {
               transition: `opacity ${CHAT_FADE_MS}ms ease`,
             }}
           >
-            <span className="font-sans text-[16px] font-medium text-[#1C160F] truncate capitalize"
+            <span className="font-sans text-[16px] font-medium text-foreground truncate capitalize"
               style={{ fontVariationSettings: "'wght' 500" }}>
               {chatTitle}
             </span>
             <button aria-label="More options"
-              className="ml-auto flex items-center justify-center size-9 rounded-full text-[#1C160F] hover:bg-[#F0EBE3] transition-colors"
+              className="ml-auto flex items-center justify-center size-9 rounded-full text-foreground hover:bg-secondary transition-colors"
               style={{ marginTop: "-6px" }}>
               <DotsThreeVertical size={20} />
             </button>
@@ -382,7 +382,7 @@ export default function Home() {
           }}
         >
           <div
-            className="w-full max-w-[720px] rounded-[26px] border border-[#E9E4DB] bg-[#FDFBF8]"
+            className="w-full max-w-[720px] rounded-[26px] border border-border bg-surface-raised"
             style={{
               boxShadow: overlayShadow
                 ? "0 2px 4px -2px rgba(0,0,0,0.10), 0 4px 6px -2px rgba(0,0,0,0.10)"

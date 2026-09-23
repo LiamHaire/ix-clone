@@ -26,8 +26,8 @@ function NavItem({ icon, label, active, badge, onClick }: NavItemProps) {
         className={cn(
           "relative flex items-center justify-center rounded-full transition-colors",
           active
-            ? "bg-[#E9E4DB] text-[#1C160F]"
-            : "text-[#776B5A] hover:bg-[#E9E4DB] hover:text-[#1C160F]"
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         )}
         aria-label={label}
         style={{ width: 36, height: 36 }}
@@ -75,7 +75,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
         {/* Avatar */}
         <Tooltip>
           <TooltipTrigger
-            className="flex items-center justify-center rounded-full bg-[#F5F0EB] border border-[#E9E4DB] text-[#1C160F] text-xs font-semibold hover:bg-[#E9E4DB] transition-colors mt-1"
+            className="flex items-center justify-center rounded-full bg-sidebar text-sidebar-accent-foreground text-xs font-semibold border border-sidebar-border hover:bg-sidebar-accent transition-colors mt-1"
             aria-label="Profile"
             style={{ width: 36, height: 36 }}
           >

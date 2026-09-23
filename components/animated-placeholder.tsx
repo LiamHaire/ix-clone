@@ -50,7 +50,7 @@ export function AnimatedPlaceholder({ show }: { show: boolean }) {
         fontSize: "16px",
         fontFamily: "var(--font-geist-sans, sans-serif)",
         fontWeight: 400,
-        color: "#776B5A",
+        color: "var(--muted-foreground)",
         lineHeight: "1.5",
         transition:
           phase === "exit"
