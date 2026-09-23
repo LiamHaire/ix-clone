@@ -16,6 +16,7 @@ import { SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, ArrowRight, DotsThreeVertical } from "@phosphor-icons/react";
 import { AnimatedPlaceholder } from "@/components/animated-placeholder";
 import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
+import { ThinkingText } from "@/components/chat/thinking-text";
 import {
   shouldShowCards,
   getRecommendedCardCount,
@@ -245,11 +246,7 @@ export default function Home() {
           </div>
         )
       )}
-      {isThinking && (
-        <p className="font-sans text-[14px] text-muted-foreground" style={{ fontVariationSettings: "'wght' 400" }}>
-          Thinking…
-        </p>
-      )}
+      {isThinking && <ThinkingText />}
       <div ref={messagesEndRef} />
     </div>
   );
