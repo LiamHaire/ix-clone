@@ -18,6 +18,7 @@ import { AnimatedPlaceholder } from "@/components/animated-placeholder";
 import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ThinkingText } from "@/components/chat/thinking-text";
 import { MessageToolbar } from "@/components/chat/message-toolbar";
+import { WorkspacePanel } from "@/components/chat/workspace-panel";
 import {
   shouldShowCards,
   getRecommendedCardCount,
@@ -79,12 +80,20 @@ export default function Home() {
   const [overlayOpacity, setOverlayOpacity] = useState(1);
   const [overlayShadow, setOverlayShadow] = useState(true);
 
+  const [isWorkspace, setIsWorkspace] = useState(false);
+
   const overlayRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
+
+  useEffect(() => {
+    if (isWorkspace) chatScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [isWorkspace]);
 
   function resetToHome() {
     setMessages([]);
@@ -97,6 +106,7 @@ export default function Home() {
     setOverlayVisible(false);
     setOverlayOpacity(1);
     setOverlayShadow(true);
+    setIsWorkspace(false);
   }
 
   function handleSubmit() {
@@ -118,6 +128,7 @@ export default function Home() {
           content: cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
           cards,
         }]);
+        if (cards) setIsWorkspace(true);
       }, 2000);
       return;
     }
@@ -133,6 +144,7 @@ export default function Home() {
         content: cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
         cards,
       }]);
+      if (cards) setIsWorkspace(true);
     }, 2000);
 
     setAppState("animating");
@@ -227,35 +239,6 @@ export default function Home() {
     </div>
   );
 
-  const chatMessagesList = (
-    <div className="max-w-[720px] mx-auto px-6 pt-10 pb-4 flex flex-col gap-8">
-      {messages.map((msg, i) =>
-        msg.role === "user" ? (
-          <div key={i} className="flex justify-end">
-            <span className="inline-block font-sans text-[16px] leading-6 text-bubble-foreground bg-bubble rounded-xl px-[17px] py-3 max-w-[560px]"
-              style={{ fontVariationSettings: "'wght' 400" }}>
-              {msg.content}
-            </span>
-          </div>
-        ) : (
-          <div key={i} className="flex flex-col gap-3">
-            <p className="font-sans text-[16px] leading-7 text-foreground"
-              style={{ fontVariationSettings: "'wght' 400" }}>
-              {msg.content}
-            </p>
-            {msg.cards && <AdaptiveCardRenderer layouts={msg.cards} />}
-            <MessageToolbar
-              onCopy={() => navigator.clipboard.writeText(msg.content)}
-              onRepeat={() => { setValue(messages.findLast(m => m.role === "user")?.content ?? ""); }}
-            />
-          </div>
-        )
-      )}
-      {isThinking && <ThinkingText />}
-      <div ref={messagesEndRef} />
-    </div>
-  );
-
   const isHome = appState === "home";
   const isChat = appState === "chat" || appState === "animating";
 
@@ -311,62 +294,96 @@ export default function Home() {
 
       {/* ── Chat layer — rendered during animating AND chat states ── */}
       {isChat && (
-        <>
-          <header
-            className="fixed top-0 right-0 z-20 flex items-start px-5"
-            style={{
-              left: "var(--nav-rail-width)",
-              height: "48px",
-              paddingTop: "16px",
-              opacity: chatContentOpacity,
-              transition: `opacity ${CHAT_FADE_MS}ms ease`,
-            }}
-          >
-            <span className="font-sans text-[16px] font-medium text-foreground truncate capitalize"
-              style={{ fontVariationSettings: "'wght' 500" }}>
-              {chatTitle}
-            </span>
-            <button aria-label="More options"
-              className="ml-auto flex items-center justify-center size-9 rounded-full text-foreground hover:bg-secondary transition-colors"
-              style={{ marginTop: "-6px" }}>
-              <DotsThreeVertical size={20} />
-            </button>
-          </header>
-
+        <div
+          className="fixed flex overflow-hidden"
+          style={{
+            left: "var(--nav-rail-width)", right: 0, top: 0, bottom: 0,
+            opacity: chatContentOpacity,
+            transition: `opacity ${CHAT_FADE_MS}ms ease`,
+          }}
+        >
+          {/* ── Workspace panel — slides in from the left ── */}
           <div
-            className="fixed overflow-y-auto"
+            className="h-full overflow-hidden flex-shrink-0"
             style={{
-              left: "var(--nav-rail-width)", right: 0, top: "48px", bottom: "210px",
-              opacity: chatContentOpacity,
-              transition: `opacity ${CHAT_FADE_MS}ms ease`,
+              width: isWorkspace ? "calc(100% - 420px)" : 0,
+              transition: "width 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
-            {chatMessagesList}
+            {isWorkspace && (
+              <WorkspacePanel onClose={() => setIsWorkspace(false)} />
+            )}
           </div>
 
-          {/* Real chat input — hidden while animating (overlay covers it), visible once in chat */}
+          {/* ── Chat panel ── */}
           <div
-            className="fixed z-10 flex justify-center px-6"
+            className="relative flex flex-col h-full overflow-hidden"
             style={{
-              left: "var(--nav-rail-width)", right: 0, bottom: "40px",
-              visibility: appState === "animating" ? "hidden" : "visible",
+              flex: isWorkspace ? "0 0 420px" : "1 1 0",
+              minWidth: 0,
+              transition: "flex-basis 500ms cubic-bezier(0.16, 1, 0.3, 1)",
+              borderLeft: isWorkspace ? "1px solid var(--border)" : "none",
             }}
           >
-            {inputCard}
-          </div>
+            {/* Header */}
+            <div className="flex items-start px-5 flex-shrink-0" style={{ height: "48px", paddingTop: "16px" }}>
+              <span className="font-sans text-[16px] font-medium text-foreground truncate capitalize"
+                style={{ fontVariationSettings: "'wght' 500" }}>
+                {chatTitle}
+              </span>
+              <button aria-label="More options"
+                className="ml-auto flex items-center justify-center size-9 rounded-full text-foreground hover:bg-secondary transition-colors"
+                style={{ marginTop: "-6px" }}>
+                <DotsThreeVertical size={20} />
+              </button>
+            </div>
 
-          <p
-            className="fixed z-10 text-center text-[11px] leading-none"
-            style={{
-              left: "var(--nav-rail-width)", right: 0, bottom: "14px",
-              color: "rgba(119,107,90,0.55)",
-              opacity: chatContentOpacity,
-              transition: `opacity ${CHAT_FADE_MS}ms ease`,
-            }}
-          >
-            IQ may produce inaccurate information. Always verify important details independently.
-          </p>
-        </>
+            {/* Messages */}
+            <div ref={chatScrollRef} className="flex-1 overflow-y-auto">
+              <div className={`mx-auto px-6 pt-6 pb-4 flex flex-col gap-8 ${isWorkspace ? "max-w-full" : "max-w-[720px]"}`}>
+                {messages.map((msg, i) =>
+                  msg.role === "user" ? (
+                    <div key={i} className="flex justify-end">
+                      <span className="inline-block font-sans text-[16px] leading-6 text-bubble-foreground bg-bubble rounded-xl px-[17px] py-3 max-w-[400px]"
+                        style={{ fontVariationSettings: "'wght' 400" }}>
+                        {msg.content}
+                      </span>
+                    </div>
+                  ) : (
+                    <div key={i} className="flex flex-col gap-3">
+                      <p className="font-sans text-[16px] leading-7 text-foreground"
+                        style={{ fontVariationSettings: "'wght' 400" }}>
+                        {msg.content}
+                      </p>
+                      {msg.cards && !isWorkspace && <AdaptiveCardRenderer layouts={msg.cards} />}
+                      <MessageToolbar
+                        onCopy={() => navigator.clipboard.writeText(msg.content)}
+                        onRepeat={() => { setValue(messages.findLast(m => m.role === "user")?.content ?? ""); }}
+                      />
+                    </div>
+                  )
+                )}
+                {isThinking && <ThinkingText />}
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            {/* Input */}
+            <div
+              className="flex-shrink-0 flex justify-center px-4 pb-10 pt-4"
+              style={{ visibility: appState === "animating" ? "hidden" : "visible" }}
+            >
+              <div className={`w-full rounded-[26px] border border-border bg-surface-raised shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)] ${isWorkspace ? "" : "max-w-[720px]"}`}>
+                {inputInner}
+              </div>
+            </div>
+
+            {/* Disclaimer */}
+            <p className="flex-shrink-0 text-center text-[11px] leading-none pb-3 text-muted-foreground/55">
+              IQ may produce inaccurate information. Always verify important details independently.
+            </p>
+          </div>
+        </div>
       )}
 
       {/* ── Overlay input — always in DOM, visible only during animation ──
