@@ -302,12 +302,13 @@ export default function Home() {
             transition: `opacity ${CHAT_FADE_MS}ms ease`,
           }}
         >
-          {/* ── Workspace panel — slides in from the left ── */}
+          {/* ── Workspace panel — 2/3 ── */}
           <div
-            className="h-full overflow-hidden flex-shrink-0"
+            className="h-full overflow-hidden"
             style={{
-              width: isWorkspace ? "calc(100% - 420px)" : 0,
-              transition: "width 500ms cubic-bezier(0.16, 1, 0.3, 1)",
+              flex: isWorkspace ? "2 1 0" : "0 0 0",
+              minWidth: 0,
+              transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
             {isWorkspace && (
@@ -315,13 +316,13 @@ export default function Home() {
             )}
           </div>
 
-          {/* ── Chat panel ── */}
+          {/* ── Chat panel — 1/3 ── */}
           <div
             className="relative flex flex-col h-full overflow-hidden"
             style={{
-              flex: isWorkspace ? "0 0 420px" : "1 1 0",
+              flex: isWorkspace ? "1 0 0" : "1 1 0",
               minWidth: 0,
-              transition: "flex-basis 500ms cubic-bezier(0.16, 1, 0.3, 1)",
+              transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
               borderLeft: isWorkspace ? "1px solid var(--border)" : "none",
             }}
           >
