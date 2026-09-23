@@ -20,9 +20,9 @@ const fill = 'bg-muted rounded';
 
 export function WorkspacePanel({ onClose }: WorkspacePanelProps) {
   return (
-    <div className="h-full overflow-y-auto p-4">
-      <div className="mx-auto max-w-[1200px]">
-        <Card className="w-full">
+    <div className="h-full p-4 flex flex-col">
+      <div className="mx-auto w-full max-w-[1200px] flex-1 flex flex-col min-h-0">
+        <Card className="w-full flex-1 flex flex-col min-h-0 overflow-hidden">
 
           <CardHeader className="border-b border-border">
             <div>
@@ -42,7 +42,7 @@ export function WorkspacePanel({ onClose }: WorkspacePanelProps) {
             </CardAction>
           </CardHeader>
 
-          <CardContent className="pt-6 pb-8 space-y-8">
+          <CardContent className="flex-1 overflow-y-auto pt-6 pb-8 space-y-8">
 
             {/* Stats row */}
             <div className="grid grid-cols-4 gap-8">
