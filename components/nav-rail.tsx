@@ -4,7 +4,7 @@ import {
   NotePencil,
   ChatsTeardrop,
   ListChecks,
-  Books,
+  Files,
   Info,
   Gear,
 } from "@phosphor-icons/react";
@@ -65,7 +65,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
         <NavItem icon={<NotePencil size={20} weight="duotone" />} label="New chat" onClick={onNewChat} />
         <NavItem icon={<ChatsTeardrop size={20} weight="duotone" />} label="Chats" />
         <NavItem icon={<ListChecks size={20} weight="duotone" />} label="Tasks" />
-        <NavItem icon={<Books size={20} weight="duotone" />} label="Knowledge" />
+        <NavItem icon={<Files size={20} weight="duotone" />} label="Knowledge" />
       </nav>
 
       {/* Bottom nav */}
