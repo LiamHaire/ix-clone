@@ -19,6 +19,8 @@ import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ThinkingText } from "@/components/chat/thinking-text";
 import { MessageToolbar } from "@/components/chat/message-toolbar";
 import { WorkspacePanel } from "@/components/chat/workspace-panel";
+import { Item, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
+import { ArrowSquareOut } from "@phosphor-icons/react";
 import {
   shouldShowCards,
   getRecommendedCardCount,
@@ -81,6 +83,7 @@ export default function Home() {
   const [overlayShadow, setOverlayShadow] = useState(true);
 
   const [isWorkspace, setIsWorkspace] = useState(false);
+  const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -107,6 +110,7 @@ export default function Home() {
     setOverlayOpacity(1);
     setOverlayShadow(true);
     setIsWorkspace(false);
+    setClosedWorkspaceTitle(null);
   }
 
   function handleSubmit() {
@@ -312,7 +316,13 @@ export default function Home() {
             }}
           >
             {isWorkspace && (
-              <WorkspacePanel onClose={() => setIsWorkspace(false)} />
+              <WorkspacePanel
+                title="Today's Appointments"
+                onClose={() => {
+                  setClosedWorkspaceTitle("Today's Appointments");
+                  setIsWorkspace(false);
+                }}
+              />
             )}
           </div>
 
@@ -363,6 +373,23 @@ export default function Home() {
                       />
                     </div>
                   )
+                )}
+                {closedWorkspaceTitle && (
+                  <Item variant="outline">
+                    <ItemContent>
+                      <ItemTitle>{closedWorkspaceTitle} closed</ItemTitle>
+                      <ItemDescription>The workspace view has been closed.</ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                      <button
+                        onClick={() => setIsWorkspace(true)}
+                        className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline transition-colors"
+                      >
+                        <ArrowSquareOut size={14} />
+                        Re-open
+                      </button>
+                    </ItemActions>
+                  </Item>
                 )}
                 {isThinking && <ThinkingText />}
                 <div ref={messagesEndRef} />

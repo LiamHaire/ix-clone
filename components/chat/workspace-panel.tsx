@@ -1,6 +1,6 @@
 'use client';
 
-import { X, ArrowsOut, DotsThreeVertical } from '@phosphor-icons/react';
+import { X, DotsThreeVertical } from '@phosphor-icons/react';
 import { Separator } from '@/components/ui/separator';
 import {
   Card,
@@ -13,12 +13,13 @@ import {
 import { Button } from '@/components/ui/button';
 
 interface WorkspacePanelProps {
+  title: string;
   onClose: () => void;
 }
 
 const fill = 'bg-muted rounded';
 
-export function WorkspacePanel({ onClose }: WorkspacePanelProps) {
+export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
   return (
     <div className="h-full p-4 flex flex-col">
       <div className="mx-auto w-full max-w-[1200px] flex-1 flex flex-col min-h-0">
@@ -26,18 +27,15 @@ export function WorkspacePanel({ onClose }: WorkspacePanelProps) {
 
           <CardHeader className="border-b border-border">
             <div>
-              <CardTitle className="text-base font-semibold text-foreground">Today's Appointments</CardTitle>
+              <CardTitle className="text-base font-semibold text-foreground">{title}</CardTitle>
               <CardDescription>Schedule overview · 12 entries</CardDescription>
             </div>
             <CardAction className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="size-8 rounded-full text-muted-foreground hover:text-foreground" onClick={onClose} aria-label="Close workspace">
-                <X size={16} />
-              </Button>
-              <Button variant="ghost" size="icon" className="size-8 rounded-full text-muted-foreground hover:text-foreground" aria-label="Expand">
-                <ArrowsOut size={16} />
-              </Button>
-              <Button variant="ghost" size="icon" className="size-8 rounded-full text-muted-foreground hover:text-foreground" aria-label="More options">
+              <Button variant="ghost" size="icon" className="size-8 rounded-full text-muted-foreground hover:text-foreground" aria-label="Actions">
                 <DotsThreeVertical size={16} />
+              </Button>
+              <Button variant="ghost" size="icon" className="size-8 rounded-full text-muted-foreground hover:text-foreground" onClick={onClose} aria-label="Close">
+                <X size={16} />
               </Button>
             </CardAction>
           </CardHeader>
