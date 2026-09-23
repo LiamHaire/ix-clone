@@ -341,7 +341,7 @@ export default function Home() {
 
             {/* Messages */}
             <div ref={chatScrollRef} className="flex-1 overflow-y-auto">
-              <div className={`mx-auto px-6 pt-6 pb-4 flex flex-col gap-8 ${isWorkspace ? "max-w-full" : "max-w-[720px]"}`}>
+              <div className="mx-auto w-full max-w-[720px] px-4 pt-6 pb-4 flex flex-col gap-8">
                 {messages.map((msg, i) =>
                   msg.role === "user" ? (
                     <div key={i} className="flex justify-end">
@@ -374,7 +374,7 @@ export default function Home() {
               className="flex-shrink-0 flex justify-center px-4 pb-10 pt-4"
               style={{ visibility: appState === "animating" ? "hidden" : "visible" }}
             >
-              <div className={`w-full rounded-[26px] border border-border bg-surface-raised shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)] ${isWorkspace ? "" : "max-w-[720px]"}`}>
+              <div className="w-full max-w-[720px] rounded-[26px] border border-border bg-surface-raised shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)]">
                 {inputInner}
               </div>
             </div>
