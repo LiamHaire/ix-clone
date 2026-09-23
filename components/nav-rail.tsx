@@ -70,7 +70,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
 
       {/* Bottom nav */}
       <nav className="flex flex-col items-center gap-2 px-3 mt-auto pb-2">
-        <NavItem icon={<Info size={20} weight="duotone" />} label="About" />
+        <NavItem icon={<Info size={20} weight="duotone" />} label="Product Hub" />
         <NavItem icon={<Gear size={20} weight="duotone" />} label="Settings" />
         {/* Avatar */}
         <Tooltip>
