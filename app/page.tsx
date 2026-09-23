@@ -20,6 +20,7 @@ import { ThinkingText } from "@/components/chat/thinking-text";
 import { MessageToolbar } from "@/components/chat/message-toolbar";
 import { WorkspacePanel } from "@/components/chat/workspace-panel";
 import { Item, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
+import { Button } from "@/components/ui/button";
 import { ArrowSquareOut } from "@phosphor-icons/react";
 import {
   shouldShowCards,
@@ -381,13 +382,15 @@ export default function Home() {
                       <ItemDescription>The workspace view has been closed.</ItemDescription>
                     </ItemContent>
                     <ItemActions>
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setIsWorkspace(true)}
-                        className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline transition-colors"
+                        className="gap-1.5"
                       >
                         <ArrowSquareOut size={14} />
                         Re-open
-                      </button>
+                      </Button>
                     </ItemActions>
                   </Item>
                 )}
