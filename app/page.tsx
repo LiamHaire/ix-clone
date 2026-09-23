@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { NavRail } from "@/components/nav-rail";
 import {
   PromptInput,
@@ -80,6 +80,10 @@ export default function Home() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isThinking]);
+
   function resetToHome() {
     setMessages([]);
     setIsThinking(false);
@@ -112,7 +116,6 @@ export default function Home() {
           content: cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
           cards,
         }]);
-        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
       }, 2000);
       return;
     }
@@ -128,7 +131,6 @@ export default function Home() {
         content: cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
         cards,
       }]);
-      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
     }, 2000);
 
     setAppState("animating");
