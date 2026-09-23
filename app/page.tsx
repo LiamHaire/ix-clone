@@ -17,6 +17,7 @@ import { Plus, ArrowRight, DotsThreeVertical } from "@phosphor-icons/react";
 import { AnimatedPlaceholder } from "@/components/animated-placeholder";
 import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ThinkingText } from "@/components/chat/thinking-text";
+import { MessageToolbar } from "@/components/chat/message-toolbar";
 import {
   shouldShowCards,
   getRecommendedCardCount,
@@ -237,12 +238,16 @@ export default function Home() {
             </span>
           </div>
         ) : (
-          <div key={i} className="flex flex-col gap-4">
+          <div key={i} className="flex flex-col gap-3">
             <p className="font-sans text-[16px] leading-7 text-foreground"
               style={{ fontVariationSettings: "'wght' 400" }}>
               {msg.content}
             </p>
             {msg.cards && <AdaptiveCardRenderer layouts={msg.cards} />}
+            <MessageToolbar
+              onCopy={() => navigator.clipboard.writeText(msg.content)}
+              onRepeat={() => { setValue(messages.findLast(m => m.role === "user")?.content ?? ""); }}
+            />
           </div>
         )
       )}
