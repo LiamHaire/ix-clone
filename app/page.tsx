@@ -19,6 +19,7 @@ import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ThinkingText } from "@/components/chat/thinking-text";
 import { MessageToolbar } from "@/components/chat/message-toolbar";
 import { WorkspacePanel } from "@/components/chat/workspace-panel";
+import { AdditionalPanel } from "@/components/chat/additional-panel";
 import { Item, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
 import { Button } from "@/components/ui/button";
 import { ArrowSquareOut } from "@phosphor-icons/react";
@@ -85,6 +86,7 @@ export default function Home() {
 
   const [isWorkspace, setIsWorkspace] = useState(false);
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
+  const [isAdditional, setIsAdditional] = useState(false);
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -112,6 +114,7 @@ export default function Home() {
     setOverlayShadow(true);
     setIsWorkspace(false);
     setClosedWorkspaceTitle(null);
+    setIsAdditional(false);
   }
 
   function handleSubmit() {
@@ -133,7 +136,8 @@ export default function Home() {
           content: cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
           cards,
         }]);
-        if (cards) setIsWorkspace(true);
+        if (cards) { setIsWorkspace(true); setIsAdditional(false); }
+        else { setIsAdditional(true); setIsWorkspace(false); }
       }, 2000);
       return;
     }
@@ -150,6 +154,7 @@ export default function Home() {
         cards,
       }]);
       if (cards) setIsWorkspace(true);
+      else setIsAdditional(true);
     }, 2000);
 
     setAppState("animating");
@@ -307,7 +312,7 @@ export default function Home() {
             transition: `opacity ${CHAT_FADE_MS}ms ease`,
           }}
         >
-          {/* ── Workspace panel — 2/3 ── */}
+          {/* ── Workspace panel (left, 2/3) ── */}
           <div
             className="h-full overflow-hidden"
             style={{
@@ -327,11 +332,11 @@ export default function Home() {
             )}
           </div>
 
-          {/* ── Chat panel — 1/3 ── */}
+          {/* ── Chat panel — full, or 1/3 (workspace), or 2/3 (additional) ── */}
           <div
             className="relative flex flex-col h-full overflow-hidden"
             style={{
-              flex: isWorkspace ? "1 0 0" : "1 1 0",
+              flex: isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
               borderLeft: isWorkspace ? "1px solid var(--border)" : "none",
@@ -414,6 +419,24 @@ export default function Home() {
               IQ may produce inaccurate information. Always verify important details independently.
             </p>
           </div>
+
+          {/* ── Additional panel (right, 1/3) ── */}
+          <div
+            className="h-full overflow-hidden"
+            style={{
+              flex: isAdditional ? "1 0 0" : "0 0 0",
+              minWidth: 0,
+              transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
+            }}
+          >
+            {isAdditional && (
+              <AdditionalPanel
+                title="Related Content"
+                onClose={() => setIsAdditional(false)}
+              />
+            )}
+          </div>
+
         </div>
       )}
 
