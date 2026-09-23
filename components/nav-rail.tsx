@@ -3,7 +3,7 @@
 import {
   NotePencil,
   ChatsTeardrop,
-  CalendarCheck,
+  ListChecks,
   Books,
   Info,
   Gear,
@@ -64,7 +64,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
       <nav className="flex flex-col items-center gap-2 px-3 pt-1">
         <NavItem icon={<NotePencil size={20} weight="duotone" />} label="New chat" onClick={onNewChat} />
         <NavItem icon={<ChatsTeardrop size={20} weight="duotone" />} label="Chats" />
-        <NavItem icon={<CalendarCheck size={20} weight="duotone" />} label="Tasks" />
+        <NavItem icon={<ListChecks size={20} weight="duotone" />} label="Tasks" />
         <NavItem icon={<Books size={20} weight="duotone" />} label="Knowledge" />
       </nav>
 
