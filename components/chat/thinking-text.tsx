@@ -40,7 +40,7 @@ function TwinkleGrid() {
 
     function paint() {
       circles.forEach((c, i) =>
-        c.setAttribute('fill', lit.has(i) ? 'var(--muted-foreground)' : 'var(--border)')
+        c.setAttribute('fill', lit.has(i) ? 'var(--muted-foreground)' : 'transparent')
       );
     }
 
