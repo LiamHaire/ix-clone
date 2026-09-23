@@ -117,18 +117,28 @@ export default function Home() {
     setIsAdditional(false);
   }
 
+  function detectLayout(text: string): "inline" | "workspace" | "additional" | undefined {
+    const lower = text.toLowerCase();
+    if (lower.includes("show small data") || lower.includes("small data")) return "inline";
+    if (lower.includes("show large data") || lower.includes("large data")) return "workspace";
+    if (lower.includes("show additional data") || lower.includes("additional data")) return "additional";
+    return undefined;
+  }
+
   function handleSubmit(overrideText?: string, layout?: "inline" | "workspace" | "additional") {
     const text = (overrideText ?? value).trim();
     if (!text || appState === "animating") return;
     setValue("");
 
+    const resolvedExplicitLayout = layout ?? detectLayout(text);
+
     // Determine cards and panel based on explicit layout or keyword matching
-    const showCards = layout === "inline" || (layout === undefined && shouldShowCards(text));
+    const showCards = resolvedExplicitLayout === "inline" || (resolvedExplicitLayout === undefined && shouldShowCards(text));
     const cards = showCards
       ? getMultipleRandomLayouts(text, getRecommendedCardCount(text))
       : undefined;
 
-    const resolvedLayout = layout ?? (cards ? "workspace" : "additional");
+    const resolvedLayout = resolvedExplicitLayout ?? (cards ? "workspace" : "additional");
 
     function applyLayout() {
       if (resolvedLayout === "workspace") { setIsWorkspace(true); setIsAdditional(false); }
@@ -277,25 +287,6 @@ export default function Home() {
             >
               {getGreeting()}, Jonathan
             </h1>
-            {/* Prompt chips */}
-            <div className="flex items-center gap-2 mb-4 flex-wrap justify-center">
-              {[
-                { label: "Show small data",      text: "Show me today's appointments",  layout: "inline"      },
-                { label: "Show large data",       text: "List all patient records",       layout: "workspace"   },
-                { label: "Show additional data",  text: "Tell me something interesting",  layout: "additional"  },
-              ].map(({ label, text, layout }) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => handleSubmit(text, layout as "inline" | "workspace" | "additional")}
-                  className="px-4 py-2 rounded-full border border-border bg-surface-raised text-[13px] text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-                  style={{ fontVariationSettings: "'wght' 400" }}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
             <div className="relative isolate w-full">
               <img src="/glow.svg" aria-hidden="true" className="absolute pointer-events-none select-none"
                 style={{ width: "1097px", maxWidth: "none", height: "400px", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: -1 }} />
