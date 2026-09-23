@@ -62,16 +62,16 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
 
       {/* Primary nav */}
       <nav className="flex flex-col items-center gap-2 px-3 pt-1">
-        <NavItem icon={<NotePencil size={20} />} label="New chat" onClick={onNewChat} />
-        <NavItem icon={<ChatsTeardrop size={20} />} label="Chats" />
-        <NavItem icon={<CalendarCheck size={20} />} label="Tasks" />
-        <NavItem icon={<Books size={20} />} label="Knowledge" />
+        <NavItem icon={<NotePencil size={20} weight="duotone" />} label="New chat" onClick={onNewChat} />
+        <NavItem icon={<ChatsTeardrop size={20} weight="duotone" />} label="Chats" />
+        <NavItem icon={<CalendarCheck size={20} weight="duotone" />} label="Tasks" />
+        <NavItem icon={<Books size={20} weight="duotone" />} label="Knowledge" />
       </nav>
 
       {/* Bottom nav */}
       <nav className="flex flex-col items-center gap-2 px-3 mt-auto pb-2">
-        <NavItem icon={<Info size={20} />} label="About" />
-<NavItem icon={<Gear size={20} />} label="Settings" />
+        <NavItem icon={<Info size={20} weight="duotone" />} label="About" />
+        <NavItem icon={<Gear size={20} weight="duotone" />} label="Settings" />
         {/* Avatar */}
         <Tooltip>
           <TooltipTrigger
