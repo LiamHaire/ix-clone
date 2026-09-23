@@ -15,6 +15,13 @@ import {
 import { SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, ArrowRight, DotsThreeVertical } from "@phosphor-icons/react";
 import { AnimatedPlaceholder } from "@/components/animated-placeholder";
+import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
+import {
+  shouldShowCards,
+  getRecommendedCardCount,
+  getMultipleRandomLayouts,
+  type CardLayoutType,
+} from "@/lib/adaptive-card-selector";
 
 const MODEL_LABELS: Record<string, string> = {
   "gemini-flash": "Gemini Flash 3.5",
@@ -46,7 +53,7 @@ function generateTitle(prompt: string): string {
   return title || prompt.slice(0, 28).trim();
 }
 
-type Message = { role: "user" | "assistant"; content: string };
+type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[] };
 // home → animating → chat
 // overlay is always in DOM; only its opacity + bottom change
 type AppState = "home" | "animating" | "chat";
@@ -91,13 +98,20 @@ export default function Home() {
     if (!text || appState === "animating") return;
     setValue("");
 
+    const cards = shouldShowCards(text)
+      ? getMultipleRandomLayouts(text, getRecommendedCardCount(text))
+      : undefined;
+
     if (appState === "chat") {
-      // Already in chat — just add the message
       setMessages((prev) => [...prev, { role: "user", content: text }]);
       setIsThinking(true);
       setTimeout(() => {
         setIsThinking(false);
-        setMessages((prev) => [...prev, { role: "assistant", content: "This is a simulated response. Real AI integration would generate a response here based on your message." }]);
+        setMessages((prev) => [...prev, {
+          role: "assistant",
+          content: cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
+          cards,
+        }]);
         setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
       }, 2000);
       return;
@@ -109,7 +123,11 @@ export default function Home() {
     setIsThinking(true);
     setTimeout(() => {
       setIsThinking(false);
-      setMessages((prev) => [...prev, { role: "assistant", content: "This is a simulated response. Real AI integration would generate a response here based on your message." }]);
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
+        cards,
+      }]);
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
     }, 2000);
 
@@ -216,10 +234,13 @@ export default function Home() {
             </span>
           </div>
         ) : (
-          <p key={i} className="font-sans text-[16px] leading-7 text-[#1C160F]"
-            style={{ fontVariationSettings: "'wght' 400" }}>
-            {msg.content}
-          </p>
+          <div key={i} className="flex flex-col gap-4">
+            <p className="font-sans text-[16px] leading-7 text-[#1C160F]"
+              style={{ fontVariationSettings: "'wght' 400" }}>
+              {msg.content}
+            </p>
+            {msg.cards && <AdaptiveCardRenderer layouts={msg.cards} />}
+          </div>
         )
       )}
       {isThinking && (

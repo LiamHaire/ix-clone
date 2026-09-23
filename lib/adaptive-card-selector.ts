@@ -56,3 +56,7 @@ export function getRecommendedCardCount(query: string): number {
     ? Math.floor(Math.random() * 3) + 2
     : 1;
 }
+
+export function shouldShowCards(query: string): boolean {
+  return categorizeQuery(query) !== 'general';
+}
