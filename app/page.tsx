@@ -13,13 +13,16 @@ import {
   PromptInputSelectItem,
 } from "@/components/ai-elements/prompt-input";
 import { SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ArrowRight, DotsThreeVertical } from "@phosphor-icons/react";
+import { Plus, ArrowRight, DotsThreeVertical, CaretDown, X as PhosphorX } from "@phosphor-icons/react";
 import { AnimatedPlaceholder } from "@/components/animated-placeholder";
 import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ThinkingText } from "@/components/chat/thinking-text";
 import { MessageToolbar } from "@/components/chat/message-toolbar";
 import { WorkspacePanel } from "@/components/chat/workspace-panel";
 import { AdditionalPanel } from "@/components/chat/additional-panel";
+import { SheetHeader } from "@/components/ui/sheet";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Warning } from "@phosphor-icons/react";
 import { Item, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
 import { Button } from "@/components/ui/button";
 import { ArrowSquareOut } from "@phosphor-icons/react";
@@ -35,6 +38,11 @@ const MODEL_LABELS: Record<string, string> = {
   "gemini-pro": "Gemini Pro",
   "claude-sonnet": "Claude Sonnet",
 };
+
+function sentenceCase(str: string) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -84,17 +92,17 @@ export default function Home() {
   const [overlayOpacity, setOverlayOpacity] = useState(1);
   const [overlayShadow, setOverlayShadow] = useState(true);
 
+  const [showAlert, setShowAlert] = useState(false);
   const [isWorkspace, setIsWorkspace] = useState(false);
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
 
   const overlayRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    chatScrollRef.current?.scrollTo({ top: chatScrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isThinking]);
 
   useEffect(() => {
@@ -130,15 +138,14 @@ export default function Home() {
     if (!text || appState === "animating") return;
     setValue("");
 
-    const resolvedExplicitLayout = layout ?? detectLayout(text);
+    const resolvedExplicitLayout = layout ?? detectLayout(text) ?? "inline";
 
-    // Determine cards and panel based on explicit layout or keyword matching
-    const showCards = resolvedExplicitLayout === "inline" || (resolvedExplicitLayout === undefined && shouldShowCards(text));
+    const showCards = resolvedExplicitLayout === "inline";
     const cards = showCards
       ? getMultipleRandomLayouts(text, getRecommendedCardCount(text))
       : undefined;
 
-    const resolvedLayout = resolvedExplicitLayout ?? (cards ? "workspace" : "additional");
+    const resolvedLayout = resolvedExplicitLayout;
 
     function applyLayout() {
       if (resolvedLayout === "workspace") { setIsWorkspace(true); setIsAdditional(false); }
@@ -187,7 +194,7 @@ export default function Home() {
         // Start input moving down
         if (overlayRef.current) {
           overlayRef.current.style.transition = `bottom ${MOVE_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`;
-          overlayRef.current.style.bottom = "40px";
+          overlayRef.current.style.bottom = "51px";
         }
         // Fade shadow out as input approaches its destination
         setTimeout(() => setOverlayShadow(false), 250);
@@ -272,7 +279,36 @@ export default function Home() {
 
   return (
     <div className="h-screen overflow-hidden" style={{ background: "var(--background)" }}>
-      <NavRail onNewChat={resetToHome} />
+      <NavRail onNewChat={resetToHome} onInfo={() => setShowAlert(true)} />
+
+      {/* Alert banner */}
+      {showAlert && (
+        <div
+          className="fixed z-50 px-4"
+          style={{ left: "var(--nav-rail-width)", right: 0, top: "40px" }}
+        >
+          <div className="max-w-[720px] mx-auto flex items-center gap-3 px-4 py-3 rounded-lg bg-background border border-border shadow-sm">
+            <Warning size={16} weight="fill" className="text-warning shrink-0 self-start mt-[3px]" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-[14px] text-foreground leading-5">File review due!</p>
+              <p className="text-[14px] text-muted-foreground leading-5 mt-0.5">We&apos;ve noticed it&apos;s nearly a month since the last file review. It&apos;s time to complete another one to keep files up to date and meet compliance requirements.</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button size="sm" className="bg-foreground hover:bg-foreground/90 text-background rounded-full px-4 h-8 text-[13px]">
+                Start a review
+              </Button>
+              <button
+                onClick={() => setShowAlert(false)}
+                aria-label="Dismiss"
+                className="flex items-center justify-center size-8 rounded-full border border-border text-foreground hover:bg-secondary transition-colors"
+              >
+                <PhosphorX size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* ── Home layer ── */}
       {isHome && (
@@ -357,21 +393,45 @@ export default function Home() {
               flex: isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
-              borderLeft: isWorkspace ? "1px solid var(--border)" : "none",
+              borderLeft: "none",
             }}
           >
             {/* Header */}
-            <div className="flex items-start px-5 flex-shrink-0" style={{ height: "48px", paddingTop: "16px" }}>
-              <span className="font-sans text-[16px] font-medium text-foreground truncate capitalize"
-                style={{ fontVariationSettings: "'wght' 500" }}>
-                {chatTitle}
-              </span>
-              <button aria-label="More options"
-                className="ml-auto flex items-center justify-center size-9 rounded-full text-foreground hover:bg-secondary transition-colors"
-                style={{ marginTop: "-6px" }}>
-                <DotsThreeVertical size={20} />
-              </button>
-            </div>
+            <SheetHeader className="flex-shrink-0 px-5 pt-5 pb-4 flex-row items-start justify-between gap-2">
+              <div className="flex flex-col gap-0.5">
+                <p className="font-heading text-base font-medium text-foreground truncate">{sentenceCase(chatTitle)}</p>
+                <p className="text-sm text-muted-foreground truncate max-w-[240px]">
+                  {messages[0]?.content
+                    ? sentenceCase(
+                        messages[0].content.length > 72
+                          ? messages[0].content.slice(0, 72).trimEnd() + "…"
+                          : messages[0].content
+                      )
+                    : ""}
+                </p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                {isWorkspace && (
+                  <Tooltip>
+                    <TooltipTrigger
+                      className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      aria-label="Collapse Chat"
+                    >
+                      <CaretDown size={16} />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Collapse Chat</TooltipContent>
+                  </Tooltip>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 rounded-full text-muted-foreground hover:text-foreground"
+                  aria-label="Actions"
+                >
+                  <DotsThreeVertical size={20} />
+                </Button>
+              </div>
+            </SheetHeader>
 
             {/* Messages */}
             <div ref={chatScrollRef} className="flex-1 overflow-y-auto">
@@ -418,13 +478,12 @@ export default function Home() {
                   </Item>
                 )}
                 {isThinking && <ThinkingText />}
-                <div ref={messagesEndRef} />
               </div>
             </div>
 
             {/* Input */}
             <div
-              className="flex-shrink-0 flex justify-center px-4 pb-10 pt-4"
+              className="flex-shrink-0 flex justify-center px-4 pt-4 mb-4"
               style={{ visibility: appState === "animating" ? "hidden" : "visible" }}
             >
               <div className="w-full max-w-[720px] rounded-[26px] border border-border bg-surface-raised shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)]">
@@ -433,7 +492,7 @@ export default function Home() {
             </div>
 
             {/* Disclaimer */}
-            <p className="flex-shrink-0 text-center text-[11px] leading-none pb-3 text-muted-foreground/55">
+            <p className="flex-shrink-0 text-center text-[11px] leading-none pb-6 text-muted-foreground/55">
               IQ may produce inaccurate information. Always verify important details independently.
             </p>
           </div>

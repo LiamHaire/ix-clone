@@ -8,6 +8,7 @@ import {
   Info,
   Gear,
 } from "@phosphor-icons/react";
+
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +46,7 @@ function NavItem({ icon, label, active, badge, onClick }: NavItemProps) {
   );
 }
 
-export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
+export function NavRail({ onNewChat, onInfo }: { onNewChat?: () => void; onInfo?: () => void }) {
   return (
     <aside
       className="fixed inset-y-0 left-0 z-50 flex flex-col items-center py-2 border-r"
@@ -70,7 +71,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
 
       {/* Bottom nav */}
       <nav className="flex flex-col items-center gap-2 px-3 mt-auto pb-2">
-        <NavItem icon={<Info size={20} weight="duotone" />} label="Product Hub" />
+        <NavItem icon={<Info size={20} weight="duotone" />} label="Product Hub" onClick={onInfo} />
         <NavItem icon={<Gear size={20} weight="duotone" />} label="Settings" />
         {/* Avatar */}
         <Tooltip>

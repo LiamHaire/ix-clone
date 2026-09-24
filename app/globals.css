@@ -89,7 +89,7 @@
   --destructive:             oklch(57.71% .2152 27.33);
   --destructive-foreground:  oklch(99%    .01   27);
   --success:                 oklch(52.73% .1371 150.07);
-  --warning:                 oklch(55.38% .1207 66.44);
+  --warning:                 oklch(52% .16 66);
   --info:                    oklch(48.82% .2172 264.38);
 
   /* ── Borders / Input / Ring ── */
