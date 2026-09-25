@@ -33,7 +33,7 @@ export function AnimatedPlaceholder({ show }: { show: boolean }) {
       }, 400);
 
       return () => clearTimeout(exitTimer);
-    }, 8000);
+    }, 6000);
 
     return () => clearTimeout(visibleTimer);
   }, [index, phase, show]);

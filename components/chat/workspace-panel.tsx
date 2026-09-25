@@ -26,7 +26,7 @@ export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="size-8 rounded-full text-muted-foreground hover:text-foreground"
+            className="size-8 rounded-full text-sidebar-foreground hover:text-foreground"
             aria-label="Actions"
           >
             <DotsThreeVertical size={16} />
@@ -34,7 +34,7 @@ export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="size-8 rounded-full text-muted-foreground hover:text-foreground"
+            className="size-8 rounded-full text-sidebar-foreground hover:text-foreground"
             onClick={onClose}
             aria-label="Close"
           >

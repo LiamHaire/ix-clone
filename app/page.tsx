@@ -13,9 +13,10 @@ import {
   PromptInputSelectItem,
 } from "@/components/ai-elements/prompt-input";
 import { SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ArrowRight, DotsThreeVertical, CaretDown, X as PhosphorX } from "@phosphor-icons/react";
+import { Plus, ArrowRight, ArrowBendDownRight, DotsThreeVertical, CaretDown, X as PhosphorX, Info } from "@phosphor-icons/react";
 import { AnimatedPlaceholder } from "@/components/animated-placeholder";
 import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
+import { ProgressCard } from "@/components/chat/progress-card";
 import { ThinkingText } from "@/components/chat/thinking-text";
 import { MessageToolbar } from "@/components/chat/message-toolbar";
 import { WorkspacePanel } from "@/components/chat/workspace-panel";
@@ -23,7 +24,11 @@ import { AdditionalPanel } from "@/components/chat/additional-panel";
 import { SheetHeader } from "@/components/ui/sheet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Warning } from "@phosphor-icons/react";
-import { Item, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FieldLabel, Field, FieldContent, FieldTitle } from "@/components/ui/field";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Item, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
 import { Button } from "@/components/ui/button";
 import { ArrowSquareOut } from "@phosphor-icons/react";
 import {
@@ -68,7 +73,8 @@ function generateTitle(prompt: string): string {
   return title || prompt.slice(0, 28).trim();
 }
 
-type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[] };
+type RadioOption = { value: string; label: string };
+type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; suggestions?: string[] };
 // home → animating → chat
 // overlay is always in DOM; only its opacity + bottom change
 type AppState = "home" | "animating" | "chat";
@@ -96,6 +102,7 @@ export default function Home() {
   const [isWorkspace, setIsWorkspace] = useState(false);
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
+  const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email'>('default');
 
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -138,12 +145,26 @@ export default function Home() {
     if (!text || appState === "animating") return;
     setValue("");
 
+    const isFileReview = text.toLowerCase().includes("file review");
+    const isFileReviewYes = text === "__file_review_yes__";
+    const isDraftEmailYes = text === "__draft_email_yes__";
     const resolvedExplicitLayout = layout ?? detectLayout(text) ?? "inline";
 
-    const showCards = resolvedExplicitLayout === "inline";
+    const showCards = resolvedExplicitLayout === "inline" && !isFileReview && !isFileReviewYes && !isDraftEmailYes;
     const cards = showCards
       ? getMultipleRandomLayouts(text, getRecommendedCardCount(text))
       : undefined;
+    const radioOptions: RadioOption[] | undefined = isFileReview
+      ? [{ value: "yes", label: "Yes" }, { value: "no", label: "No" }]
+      : isFileReviewYes
+      ? [{ value: "yes", label: "Yes" }, { value: "no", label: "No" }]
+      : undefined;
+    const radioLabel = isFileReviewYes
+      ? "Would you like me to draft an email to the owning fee earner regarding the corrective actions?"
+      : isFileReview
+      ? "Would you like me to select a file at random?"
+      : undefined;
+    const showFileReviewCard = isFileReviewYes;
 
     const resolvedLayout = resolvedExplicitLayout;
 
@@ -160,8 +181,12 @@ export default function Home() {
         setIsThinking(false);
         setMessages((prev) => [...prev, {
           role: "assistant",
-          content: cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
+          content: isDraftEmailYes ? "Your draft email is ready for review." : isFileReviewYes ? "Okay, I've reviewed the following file and it scores 95% because there's a conflict check that hasn't been done." : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
           cards,
+          radioOptions,
+          radioLabel,
+          showFileReviewCard,
+          showEmailReadyItem: isDraftEmailYes,
         }]);
         applyLayout();
       }, 2000);
@@ -176,8 +201,10 @@ export default function Home() {
       setIsThinking(false);
       setMessages((prev) => [...prev, {
         role: "assistant",
-        content: cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
+        content: isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
         cards,
+        radioOptions,
+        radioLabel,
       }]);
       applyLayout();
     }, 2000);
@@ -294,7 +321,7 @@ export default function Home() {
               <p className="text-[14px] text-muted-foreground leading-5 mt-0.5">We&apos;ve noticed it&apos;s nearly a month since the last file review. It&apos;s time to complete another one to keep files up to date and meet compliance requirements.</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <Button size="sm" className="bg-foreground hover:bg-foreground/90 text-background rounded-full px-4 h-8 text-[13px]">
+              <Button size="sm" className="bg-foreground hover:bg-foreground/90 text-background rounded-[10px] px-4 h-8 text-[13px]" onClick={() => { setShowAlert(false); handleSubmit("Help me perform a file review", "inline"); }}>
                 Start a review
               </Button>
               <button
@@ -414,7 +441,7 @@ export default function Home() {
                 {isWorkspace && (
                   <Tooltip>
                     <TooltipTrigger
-                      className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      className="flex items-center justify-center size-8 rounded-full text-sidebar-foreground hover:text-foreground hover:bg-accent transition-colors"
                       aria-label="Collapse Chat"
                     >
                       <CaretDown size={16} />
@@ -425,7 +452,7 @@ export default function Home() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-8 rounded-full text-muted-foreground hover:text-foreground"
+                  className="size-8 rounded-full text-sidebar-foreground hover:text-foreground"
                   aria-label="Actions"
                 >
                   <DotsThreeVertical size={20} />
@@ -441,20 +468,123 @@ export default function Home() {
                     <div key={i} className="flex justify-end">
                       <span className="inline-block font-sans text-[16px] leading-6 text-bubble-foreground bg-bubble rounded-xl px-[17px] py-3 max-w-[400px]"
                         style={{ fontVariationSettings: "'wght' 400" }}>
-                        {msg.content}
+                        {["__file_review_yes__", "__draft_email_yes__", "__email_sent__", "__task_yes__"].includes(msg.content) ? "Yes" : msg.content}
                       </span>
                     </div>
                   ) : (
                     <div key={i} className="flex flex-col gap-3">
-                      <p className="font-sans text-[16px] leading-7 text-foreground"
-                        style={{ fontVariationSettings: "'wght' 400" }}>
-                        {msg.content}
-                      </p>
+                      {msg.content.includes('\n\n') ? (
+                        <div className="flex flex-col gap-4">
+                          {msg.content.split('\n\n').map((para, pi) => (
+                            <p key={pi} className="font-sans text-[16px] leading-7 text-foreground" style={{ fontVariationSettings: "'wght' 400" }}>{para}</p>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="font-sans text-[16px] leading-7 text-foreground" style={{ fontVariationSettings: "'wght' 400" }}>
+                          {msg.content}
+                        </p>
+                      )}
                       {msg.cards && !isWorkspace && <AdaptiveCardRenderer layouts={msg.cards} />}
+                      {msg.showFileReviewCard && (
+                        <Card className="gap-0">
+                          <CardHeader className="border-b border-border">
+                            <CardTitle>File review</CardTitle>
+                            <CardDescription>Summary</CardDescription>
+                          </CardHeader>
+                          <CardContent className="px-2 pb-4 pt-2">
+                            {[
+                              { label: "Client", value: "Sarah & James Whitmore", highlight: false },
+                              { label: "Matter", value: "Purchase of 12 Oakwood Avenue", highlight: false },
+                              { label: "Reference", value: "CON-2026-0626", highlight: false },
+                              { label: "Score", value: "95%", highlight: true },
+                            ].map(({ label, value, highlight }) => (
+                              <div key={label} className={`flex items-center justify-between py-3 [&:not(:last-child)]:border-b border-border${highlight ? " bg-muted/40" : ""}`}>
+                                <span className="text-[14px] font-medium text-foreground px-2">{label}</span>
+                                <span className="text-[14px] text-muted-foreground px-2">{value}</span>
+                              </div>
+                            ))}
+                          </CardContent>
+                          <CardFooter className="justify-end gap-2">
+                            <Button variant="outline" size="sm" className="rounded-[10px] h-8 px-4 text-[13px]">Export</Button>
+                            <Button variant="outline" size="sm" className="rounded-[10px] h-8 px-4 text-[13px]">More details</Button>
+                          </CardFooter>
+                        </Card>
+                      )}
+                      {msg.showEmailReadyItem && (
+                        <Item variant="outline">
+                          <ItemMedia variant="icon" className="self-center">
+                            <div className="flex size-8 items-center justify-center rounded-[10px] border border-border">
+                              <Info size={16} className="text-muted-foreground" />
+                            </div>
+                          </ItemMedia>
+                          <ItemContent>
+                            <ItemTitle>Email ready for review</ItemTitle>
+                            <ItemDescription>Here&apos;s a draft email for you to review and send to the fee earner</ItemDescription>
+                          </ItemContent>
+                          <ItemActions>
+                            <Button variant="outline" size="sm" className="rounded-[10px] h-8 px-4 text-[13px] gap-1.5" onClick={() => { setAdditionalMode('draft-email'); setIsAdditional(true); setIsWorkspace(false); }}>
+                              Review <ArrowRight size={13} />
+                            </Button>
+                          </ItemActions>
+                        </Item>
+                      )}
+                      {msg.showProgressCard && (
+                        <ProgressCard onComplete={() => {
+                          setMessages(prev => [...prev, {
+                            role: 'assistant',
+                            content: 'All done! A task has been created and assigned to the owning fee earner, and the 14-day deadline has been diarised.',
+                            suggestions: [
+                              'Schedule a follow-up review?',
+                              'Create a task to chase the corrective actions?',
+                              'Review another file at random?',
+                            ],
+                          }]);
+                        }} />
+                      )}
+                      {msg.radioOptions && (
+                        <div className={`flex flex-col gap-3${msg.showFileReviewCard || msg.showEmailReadyItem ? ' mt-3' : ''}`}>
+                        {msg.radioLabel && <p className="font-sans text-[16px] leading-7 text-foreground" style={{ fontVariationSettings: "'wght' 400" }}>{msg.radioLabel}</p>}
+                        <RadioGroup className="gap-2" onValueChange={(val) => {
+                          if (val === "yes" && msg.radioLabel?.includes("select a file at random")) {
+                            setTimeout(() => handleSubmit("__file_review_yes__", "inline"), 300);
+                          } else if (val === "yes" && msg.radioLabel?.includes("draft an email")) {
+                            setTimeout(() => handleSubmit("__draft_email_yes__", "inline"), 300);
+                          } else if (val === "yes" && !msg.radioLabel) {
+                            setTimeout(() => {
+                              setMessages(prev => [...prev,
+                                { role: 'user', content: '__task_yes__' },
+                                { role: 'assistant', content: '', showProgressCard: true },
+                              ]);
+                            }, 300);
+                          }
+                        }}>
+                          {msg.radioOptions.map((opt) => (
+                            <FieldLabel key={opt.value}>
+                              <Field orientation="horizontal">
+                                <RadioGroupItem value={opt.value} id={opt.value} />
+                                <FieldContent>
+                                  <FieldTitle>{opt.label}</FieldTitle>
+                                </FieldContent>
+                              </Field>
+                            </FieldLabel>
+                          ))}
+                        </RadioGroup>
+                        </div>
+                      )}
                       <MessageToolbar
                         onCopy={() => navigator.clipboard.writeText(msg.content)}
                         onRepeat={() => { setValue(messages.findLast(m => m.role === "user")?.content ?? ""); }}
                       />
+                      {msg.suggestions && (
+                        <div className="flex flex-col items-start gap-1">
+                          {msg.suggestions.map((s) => (
+                            <Button key={s} variant="ghost" size="sm" className="h-auto py-1 px-2 text-[14px] text-muted-foreground hover:text-foreground gap-2 font-normal">
+                              <ArrowBendDownRight size={14} className="shrink-0" />
+                              {s}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )
                 )}
@@ -493,7 +623,7 @@ export default function Home() {
 
             {/* Disclaimer */}
             <p className="flex-shrink-0 text-center text-[11px] leading-none pb-6 text-muted-foreground/55">
-              IQ may produce inaccurate information. Always verify important details independently.
+              IQ can make mistakes. <span className="underline underline-offset-2">Read our AI usage policy.</span>
             </p>
           </div>
 
@@ -508,8 +638,26 @@ export default function Home() {
           >
             {isAdditional && (
               <AdditionalPanel
-                title="Related Content"
-                onClose={() => setIsAdditional(false)}
+                title={additionalMode === 'draft-email' ? 'Draft email' : 'Related Content'}
+                variant={additionalMode}
+                onClose={() => { setIsAdditional(false); setAdditionalMode('default'); }}
+                onSend={() => {
+                  setIsAdditional(false);
+                  setAdditionalMode('default');
+                  setMessages(prev => [
+                    ...prev,
+                    { role: 'user', content: '__email_sent__' },
+                  ]);
+                  setIsThinking(true);
+                  setTimeout(() => {
+                    setIsThinking(false);
+                    setMessages(prev => [...prev, {
+                      role: 'assistant',
+                      content: "The email has been sent to the owning fee earner (Arthur Pendleton) and has been read.\n\nShall I create a fee earner task and diarise the 14-day deadline?",
+                      radioOptions: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }],
+                    }]);
+                  }, 2000);
+                }}
               />
             )}
           </div>
