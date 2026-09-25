@@ -123,9 +123,12 @@ export interface Patient {
   carePlans?: Array<{ area: string; plan: string }>;
   recentActivityFeed?: ActivityEvent[];
   aiSummary: {
+    complexity: 'Low' | 'Moderate' | 'High';
+    risk: 'Low' | 'Moderate' | 'High';
     keyThemes: string[];
     recentActivity: string;
     longitudinalSummary: string;
+    sections: Array<{ heading: string; bullets: string[] }>;
   };
   patientTracker?: {
     outstandingTasks: number;
@@ -335,6 +338,8 @@ export const PATIENT_ELLISON: Patient = {
     { id: 'e5', type: 'appointment', actor: { initials: 'HM', color: '#5E7F5C' }, datetime: '11 Feb 2025, 10:00', meta: { label: 'Appointment', value: 'Annual COPD Review' } },
   ],
   aiSummary: {
+    complexity: 'High',
+    risk: 'Moderate',
     keyThemes: [
       'COPD, hypertension, type 2 diabetes, osteoarthritis, and CKD Stage 2',
       'Progressive respiratory decline with recent hospital admission',
@@ -343,6 +348,39 @@ export const PATIENT_ELLISON: Patient = {
     ],
     recentActivity: 'Over the past year the patient has required four clinical contacts relating to respiratory symptoms, diabetes monitoring, and functional decline. A COPD exacerbation resulted in a three-day hospital admission requiring nebuliser therapy, steroids, and antibiotics. Follow-up assessments demonstrate persistent breathlessness, suboptimal glycaemic control with early peripheral sensory changes, and a mechanical fall at home indicating progressive deconditioning.',
     longitudinalSummary: 'The clinical record reflects progressive multi-morbidity with increasing frailty indicators and rising healthcare dependency. Respiratory disease remains the dominant driver of clinical risk, with ongoing focus on exacerbation prevention, falls reduction, rehabilitation support, and optimisation of long-term condition management.',
+    sections: [
+      {
+        heading: 'Medical History',
+        bullets: [
+          'COPD — moderate severity, progressive with recent acute exacerbation (April 2025)',
+          'Type 2 Diabetes — suboptimal glycaemic control (HbA1c 7.4%), early peripheral neuropathy suspected',
+          'Hypertension — well controlled on ramipril',
+          'CKD Stage 2 — eGFR stable at 68 ml/min, 6-monthly monitoring required',
+          'Osteoarthritis — knees and hips, managed conservatively',
+        ],
+      },
+      {
+        heading: 'Medications',
+        bullets: [
+          'Salbutamol 100 mcg inhaler PRN',
+          'Tiotropium 18 mcg inhaler daily',
+          'Ramipril 5 mg daily',
+          'Metformin 500 mg twice daily',
+          'Atorvastatin 20 mg nightly',
+          'Paracetamol 1 g PRN',
+        ],
+      },
+      {
+        heading: 'Clinical Summary',
+        bullets: [
+          'Four clinical contacts in the past year covering respiratory, diabetes, and falls assessment',
+          'COPD exacerbation managed with three-day hospital admission in April 2025',
+          'Suboptimal diabetes control with early neuropathic changes — medication review outstanding',
+          'Mechanical fall in September 2025; physiotherapy and home safety assessment arranged',
+          'Management focused on exacerbation prevention, falls reduction, and long-term condition optimisation',
+        ],
+      },
+    ],
   },
   patientTracker: {
     outstandingTasks: 3,

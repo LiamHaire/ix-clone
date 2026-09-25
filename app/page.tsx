@@ -17,9 +17,12 @@ import { Plus, ArrowRight, ArrowBendDownRight, DotsThreeVertical, CaretDown, X a
 import { AnimatedPlaceholder } from "@/components/animated-placeholder";
 import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ProgressCard } from "@/components/chat/progress-card";
+import { PatientAppointmentItem } from "@/components/chat/patient-appointment-item";
+import { pickRandomAppointment, type AppointmentContext } from "@/lib/appointmentData";
 import { ThinkingText } from "@/components/chat/thinking-text";
 import { MessageToolbar } from "@/components/chat/message-toolbar";
 import { WorkspacePanel } from "@/components/chat/workspace-panel";
+import { PatientSummaryPanel } from "@/components/chat/patient-summary-panel";
 import { AdditionalPanel } from "@/components/chat/additional-panel";
 import { SheetHeader } from "@/components/ui/sheet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -74,7 +77,7 @@ function generateTitle(prompt: string): string {
 }
 
 type RadioOption = { value: string; label: string };
-type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; suggestions?: string[] };
+type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; suggestions?: string[]; appointment?: AppointmentContext; followUpText?: string };
 // home → animating → chat
 // overlay is always in DOM; only its opacity + bottom change
 type AppState = "home" | "animating" | "chat";
@@ -103,6 +106,7 @@ export default function Home() {
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
   const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email'>('default');
+  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary'>('default');
 
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -130,6 +134,7 @@ export default function Home() {
     setIsWorkspace(false);
     setClosedWorkspaceTitle(null);
     setIsAdditional(false);
+    setWorkspaceMode('default');
   }
 
   function detectLayout(text: string): "inline" | "workspace" | "additional" | undefined {
@@ -148,9 +153,11 @@ export default function Home() {
     const isFileReview = text.toLowerCase().includes("file review");
     const isFileReviewYes = text === "__file_review_yes__";
     const isDraftEmailYes = text === "__draft_email_yes__";
+    const isNextAppointment = text.toLowerCase().includes("next appointment");
+    const appt = isNextAppointment ? pickRandomAppointment() : undefined;
     const resolvedExplicitLayout = layout ?? detectLayout(text) ?? "inline";
 
-    const showCards = resolvedExplicitLayout === "inline" && !isFileReview && !isFileReviewYes && !isDraftEmailYes;
+    const showCards = resolvedExplicitLayout === "inline" && !isFileReview && !isFileReviewYes && !isDraftEmailYes && !isNextAppointment;
     const cards = showCards
       ? getMultipleRandomLayouts(text, getRecommendedCardCount(text))
       : undefined;
@@ -181,12 +188,15 @@ export default function Home() {
         setIsThinking(false);
         setMessages((prev) => [...prev, {
           role: "assistant",
-          content: isDraftEmailYes ? "Your draft email is ready for review." : isFileReviewYes ? "Okay, I've reviewed the following file and it scores 95% because there's a conflict check that hasn't been done." : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
+          content: isNextAppointment && appt ? `Your next appointment is in ${appt.minutesUntil} minutes at ${appt.time} with ${appt.patientName}.` : isDraftEmailYes ? "Your draft email is ready for review." : isFileReviewYes ? "Okay, I've reviewed the following file and it scores 95% because there's a conflict check that hasn't been done." : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
           cards,
           radioOptions,
           radioLabel,
           showFileReviewCard,
           showEmailReadyItem: isDraftEmailYes,
+          appointment: appt,
+          followUpText: appt?.followUpText,
+          suggestions: isNextAppointment && appt ? appt.suggestions : undefined,
         }]);
         applyLayout();
       }, 2000);
@@ -201,10 +211,13 @@ export default function Home() {
       setIsThinking(false);
       setMessages((prev) => [...prev, {
         role: "assistant",
-        content: isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
+        content: isNextAppointment && appt ? `Your next appointment is in ${appt.minutesUntil} minutes at ${appt.time} with ${appt.patientName}.` : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
         cards,
         radioOptions,
         radioLabel,
+        appointment: appt,
+        followUpText: appt?.followUpText,
+        suggestions: isNextAppointment && appt ? appt.suggestions : undefined,
       }]);
       applyLayout();
     }, 2000);
@@ -402,7 +415,12 @@ export default function Home() {
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
-            {isWorkspace && (
+            {isWorkspace && workspaceMode === 'patient-summary' && (
+              <PatientSummaryPanel
+                onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+              />
+            )}
+            {isWorkspace && workspaceMode === 'default' && (
               <WorkspacePanel
                 title="Today's Appointments"
                 onClose={() => {
@@ -472,7 +490,7 @@ export default function Home() {
                       </span>
                     </div>
                   ) : (
-                    <div key={i} className="flex flex-col gap-3">
+                    <div key={i} className="flex flex-col gap-4">
                       {msg.content.includes('\n\n') ? (
                         <div className="flex flex-col gap-4">
                           {msg.content.split('\n\n').map((para, pi) => (
@@ -528,6 +546,15 @@ export default function Home() {
                           </ItemActions>
                         </Item>
                       )}
+                      {msg.appointment && (
+                        <PatientAppointmentItem
+                          appointment={msg.appointment}
+                          onView={() => { setWorkspaceMode('patient-summary'); setIsWorkspace(true); setIsAdditional(false); }}
+                        />
+                      )}
+                      {msg.followUpText && (
+                        <p className="font-sans text-[16px] leading-7 text-foreground" style={{ fontVariationSettings: "'wght' 400" }}>{msg.followUpText}</p>
+                      )}
                       {msg.showProgressCard && (
                         <ProgressCard onComplete={() => {
                           setMessages(prev => [...prev, {
@@ -542,7 +569,7 @@ export default function Home() {
                         }} />
                       )}
                       {msg.radioOptions && (
-                        <div className={`flex flex-col gap-3${msg.showFileReviewCard || msg.showEmailReadyItem ? ' mt-3' : ''}`}>
+                        <div className={`flex flex-col gap-4${msg.showFileReviewCard || msg.showEmailReadyItem ? ' mt-4' : ''}`}>
                         {msg.radioLabel && <p className="font-sans text-[16px] leading-7 text-foreground" style={{ fontVariationSettings: "'wght' 400" }}>{msg.radioLabel}</p>}
                         <RadioGroup className="gap-2" onValueChange={(val) => {
                           if (val === "yes" && msg.radioLabel?.includes("select a file at random")) {
@@ -578,7 +605,16 @@ export default function Home() {
                       {msg.suggestions && (
                         <div className="flex flex-col items-start gap-1">
                           {msg.suggestions.map((s) => (
-                            <Button key={s} variant="ghost" size="sm" className="h-auto py-1 px-2 text-[14px] text-muted-foreground hover:text-foreground gap-2 font-normal">
+                            <Button key={s} variant="ghost" size="sm"
+                              className="h-auto py-1 px-2 text-[14px] text-muted-foreground hover:text-foreground gap-2 font-normal"
+                              onClick={() => {
+                                if (s.toLowerCase().includes('patient summary')) {
+                                  setWorkspaceMode('patient-summary');
+                                  setIsWorkspace(true);
+                                  setIsAdditional(false);
+                                }
+                              }}
+                            >
                               <ArrowBendDownRight size={14} className="shrink-0" />
                               {s}
                             </Button>
