@@ -65,7 +65,7 @@ export function NavRail({ onNewChat, onInfo }: { onNewChat?: () => void; onInfo?
       <nav className="flex flex-col items-center gap-2 px-3 pt-1">
         <NavItem icon={<NotePencil size={20} weight="duotone" />} label="New chat" onClick={onNewChat} />
         <NavItem icon={<ChatsTeardrop size={20} weight="duotone" />} label="Chats" />
-        <NavItem icon={<ListChecks size={20} weight="duotone" />} label="Tasks" />
+        <NavItem icon={<ListChecks size={20} weight="duotone" />} label="Work" />
         <NavItem icon={<Files size={20} weight="duotone" />} label="Knowledge" />
       </nav>
 

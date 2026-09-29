@@ -77,11 +77,12 @@ function TwinkleGrid() {
 
 type Phase = 'visible' | 'exit' | 'enter';
 
-export function ThinkingText() {
+export function ThinkingText({ phrase }: { phrase?: string }) {
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>('visible');
 
   useEffect(() => {
+    if (phrase) return;
     const id = setInterval(() => {
       setPhase('exit');
       setTimeout(() => {
@@ -91,7 +92,7 @@ export function ThinkingText() {
       }, 250);
     }, 2500);
     return () => clearInterval(id);
-  }, []);
+  }, [phrase]);
 
   return (
     <div className="thinking-row">
@@ -104,7 +105,7 @@ export function ThinkingText() {
           transition: phase === 'visible' ? 'opacity 250ms ease, transform 250ms ease' : 'none',
         }}
       >
-        {PHRASES[index]}
+        {phrase ?? PHRASES[index]}
       </span>
     </div>
   );

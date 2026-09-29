@@ -19,10 +19,15 @@ import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ProgressCard } from "@/components/chat/progress-card";
 import { PatientAppointmentItem } from "@/components/chat/patient-appointment-item";
 import { pickRandomAppointment, type AppointmentContext } from "@/lib/appointmentData";
+import confetti from "canvas-confetti";
 import { ThinkingText } from "@/components/chat/thinking-text";
 import { MessageToolbar } from "@/components/chat/message-toolbar";
 import { WorkspacePanel } from "@/components/chat/workspace-panel";
 import { PatientSummaryPanel } from "@/components/chat/patient-summary-panel";
+import { MedicationReviewForm, type MedicationReviewData } from "@/components/chat/medication-review-form";
+import { MedicationReviewSummaryCard } from "@/components/chat/medication-review-summary-card";
+import { ACTIVE_PATIENT } from "@/lib/patientData";
+import { PatientTaskList } from "@/components/chat/patient-task-list";
 import { AdditionalPanel } from "@/components/chat/additional-panel";
 import { SheetHeader } from "@/components/ui/sheet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -77,7 +82,7 @@ function generateTitle(prompt: string): string {
 }
 
 type RadioOption = { value: string; label: string };
-type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; suggestions?: string[]; appointment?: AppointmentContext; followUpText?: string };
+type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; showPatientTasks?: boolean; showMedicationReviewForm?: boolean; medicationReviewData?: MedicationReviewData; suggestions?: string[]; appointment?: AppointmentContext; followUpText?: string };
 // home → animating → chat
 // overlay is always in DOM; only its opacity + bottom change
 type AppState = "home" | "animating" | "chat";
@@ -91,6 +96,7 @@ export default function Home() {
   const [value, setValue] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
+  const [thinkingPhrase, setThinkingPhrase] = useState<string | undefined>(undefined);
   const [chatTitle, setChatTitle] = useState("");
   const [appState, setAppState] = useState<AppState>("home");
 
@@ -106,11 +112,22 @@ export default function Home() {
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
   const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email'>('default');
-  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary'>('default');
+  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review'>('default');
+  function transitionToPanel(fn: () => void, responseMessage?: string, suggestions?: string[]) {
+    setIsThinking(true);
+    setTimeout(() => {
+      setIsThinking(false);
+      if (responseMessage) {
+        setMessages(prev => [...prev, { role: 'assistant' as const, content: responseMessage, suggestions }]);
+      }
+      fn();
+    }, 1500);
+  }
 
   const overlayRef = useRef<HTMLDivElement>(null);
 
   const chatScrollRef = useRef<HTMLDivElement>(null);
+  const chatPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatScrollRef.current?.scrollTo({ top: chatScrollRef.current.scrollHeight, behavior: "smooth" });
@@ -135,6 +152,7 @@ export default function Home() {
     setClosedWorkspaceTitle(null);
     setIsAdditional(false);
     setWorkspaceMode('default');
+    setAdditionalMode('default');
   }
 
   function detectLayout(text: string): "inline" | "workspace" | "additional" | undefined {
@@ -196,7 +214,7 @@ export default function Home() {
           showEmailReadyItem: isDraftEmailYes,
           appointment: appt,
           followUpText: appt?.followUpText,
-          suggestions: isNextAppointment && appt ? appt.suggestions : undefined,
+          suggestions: undefined,
         }]);
         applyLayout();
       }, 2000);
@@ -217,7 +235,7 @@ export default function Home() {
         radioLabel,
         appointment: appt,
         followUpText: appt?.followUpText,
-        suggestions: isNextAppointment && appt ? appt.suggestions : undefined,
+        suggestions: undefined,
       }]);
       applyLayout();
     }, 2000);
@@ -406,19 +424,60 @@ export default function Home() {
             transition: `opacity ${CHAT_FADE_MS}ms ease`,
           }}
         >
-          {/* ── Workspace panel (left, 2/3) ── */}
+          {/* ── Workspace panel (right, 2/3) ── */}
           <div
             className="h-full overflow-hidden"
             style={{
               flex: isWorkspace ? "2 1 0" : "0 0 0",
               minWidth: 0,
+              order: 2,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
             {isWorkspace && workspaceMode === 'patient-summary' && (
               <PatientSummaryPanel
                 onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+                onTasksClick={() => {
+                  setIsThinking(true);
+                  setTimeout(() => {
+                    setIsThinking(false);
+                    setMessages(prev => [...prev,
+                      { role: 'user', content: 'Show outstanding tasks' },
+                      { role: 'assistant', content: `Here are the ${ACTIVE_PATIENT.patientTracker?.outstandingTasks ?? 0} outstanding tasks for ${ACTIVE_PATIENT.demographics.displayName}.`, showPatientTasks: true },
+                    ]);
+                  }, 1200);
+                }}
               />
+            )}
+            {isWorkspace && workspaceMode === 'medication-review' && (
+              <div className="h-full flex flex-col border-l border-border bg-popover">
+                <SheetHeader className="px-5 pt-5 pb-4 flex-row items-start justify-between gap-2 shrink-0">
+                  <div className="flex flex-col gap-0.5">
+                    <p className="font-heading text-base font-medium text-foreground leading-none">Medication review</p>
+                    <p className="text-sm text-muted-foreground">{ACTIVE_PATIENT.demographics.displayName}</p>
+                  </div>
+                  <button
+                    onClick={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+                    className="flex items-center justify-center size-8 rounded-full text-sidebar-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    aria-label="Close"
+                  >
+                    <PhosphorX size={16} />
+                  </button>
+                </SheetHeader>
+                <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-6">
+                  <MedicationReviewForm
+                    onCancel={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+                    onSave={() => {
+                      setIsWorkspace(false);
+                      setWorkspaceMode('default');
+                      setMessages(prev => [...prev, {
+                        role: 'assistant',
+                        content: `Medication review for ${ACTIVE_PATIENT.demographics.displayName} has been saved successfully.`,
+                      }]);
+                    }}
+                  />
+                </div>
+              </div>
             )}
             {isWorkspace && workspaceMode === 'default' && (
               <WorkspacePanel
@@ -433,18 +492,19 @@ export default function Home() {
 
           {/* ── Chat panel — full, or 1/3 (workspace), or 2/3 (additional) ── */}
           <div
+            ref={chatPanelRef}
             className="relative flex flex-col h-full overflow-hidden"
             style={{
               flex: isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: 0,
+              order: 1,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
-              borderLeft: "none",
             }}
           >
             {/* Header */}
             <SheetHeader className="flex-shrink-0 px-5 pt-5 pb-4 flex-row items-start justify-between gap-2">
               <div className="flex flex-col gap-0.5">
-                <p className="font-heading text-base font-medium text-foreground truncate">{sentenceCase(chatTitle)}</p>
+                <p className="font-heading text-base font-medium text-foreground leading-none truncate">{sentenceCase(chatTitle)}</p>
                 <p className="text-sm text-muted-foreground truncate max-w-[240px]">
                   {messages[0]?.content
                     ? sentenceCase(
@@ -486,7 +546,7 @@ export default function Home() {
                     <div key={i} className="flex justify-end">
                       <span className="inline-block font-sans text-[16px] leading-6 text-bubble-foreground bg-bubble rounded-xl px-[17px] py-3 max-w-[400px]"
                         style={{ fontVariationSettings: "'wght' 400" }}>
-                        {["__file_review_yes__", "__draft_email_yes__", "__email_sent__", "__task_yes__"].includes(msg.content) ? "Yes" : msg.content}
+                        {msg.content === "__email_sent__" ? "Your email has been sent" : ["__file_review_yes__", "__draft_email_yes__", "__task_yes__"].includes(msg.content) ? "Yes" : msg.content}
                       </span>
                     </div>
                   ) : (
@@ -540,7 +600,7 @@ export default function Home() {
                             <ItemDescription>Here&apos;s a draft email for you to review and send to the fee earner</ItemDescription>
                           </ItemContent>
                           <ItemActions>
-                            <Button variant="outline" size="sm" className="rounded-[10px] h-8 px-4 text-[13px] gap-1.5" onClick={() => { setAdditionalMode('draft-email'); setIsAdditional(true); setIsWorkspace(false); }}>
+                            <Button variant="outline" size="sm" className="rounded-[10px] h-8 px-4 text-[13px] gap-1.5" onClick={() => transitionToPanel(() => { setAdditionalMode('draft-email'); setIsAdditional(true); setIsWorkspace(false); }, 'Opening draft email for review.')}>
                               Review <ArrowRight size={13} />
                             </Button>
                           </ItemActions>
@@ -549,7 +609,62 @@ export default function Home() {
                       {msg.appointment && (
                         <PatientAppointmentItem
                           appointment={msg.appointment}
-                          onView={() => { setWorkspaceMode('patient-summary'); setIsWorkspace(true); setIsAdditional(false); }}
+                          onView={() => transitionToPanel(() => { setWorkspaceMode('patient-summary'); setIsWorkspace(true); setIsAdditional(false); }, `Opened OneView patient summary for ${ACTIVE_PATIENT.demographics.displayName}.`, ['Show outstanding tasks for this patient?', 'Review current medications before the appointment?'])}
+                        />
+                      )}
+                      {msg.showPatientTasks && ACTIVE_PATIENT.tasks && (
+                        <PatientTaskList
+                          tasks={ACTIVE_PATIENT.tasks}
+                          onTaskClick={(task) => {
+                            if (task.title.toLowerCase().includes('medication review')) {
+                              setIsThinking(true);
+                              setTimeout(() => {
+                                setIsThinking(false);
+                                setMessages(prev => [...prev,
+                                  { role: 'user', content: task.title },
+                                  { role: 'assistant', content: 'Here\'s the medication review form for Margaret Ellison.', showMedicationReviewForm: true },
+                                ]);
+                              }, 1000);
+                            }
+                          }}
+                        />
+                      )}
+                      {msg.medicationReviewData && (
+                        <MedicationReviewSummaryCard data={msg.medicationReviewData} />
+                      )}
+                      {msg.showMedicationReviewForm && (
+                        <MedicationReviewForm
+                          onCancel={() => setMessages(prev => prev.filter(m => !m.showMedicationReviewForm))}
+                          onSave={(data) => {
+                            // Replace form with summary card, then append success message
+                            setMessages(prev => prev.map(m =>
+                              m.showMedicationReviewForm
+                                ? { ...m, showMedicationReviewForm: false, medicationReviewData: data }
+                                : m
+                            ));
+                            setThinkingPhrase('Saving...');
+                            setIsThinking(true);
+                            setTimeout(() => {
+                              setIsThinking(false);
+                              setThinkingPhrase(undefined);
+                              setMessages(prev => [...prev, {
+                                role: 'assistant',
+                                content: `Medication review for ${ACTIVE_PATIENT.demographics.displayName} has been completed and saved. The next review has been scheduled in ${data.nextReview}.`,
+                              }]);
+                              const rect = chatPanelRef.current?.getBoundingClientRect();
+                              if (rect) {
+                                confetti({
+                                  particleCount: 140,
+                                  spread: 60,
+                                  angle: 90,
+                                  origin: {
+                                    x: (rect.left + rect.width / 2) / window.innerWidth,
+                                    y: 1,
+                                  },
+                                });
+                              }
+                            }, 1200);
+                          }}
                         />
                       )}
                       {msg.followUpText && (
@@ -609,9 +724,18 @@ export default function Home() {
                               className="h-auto py-1 px-2 text-[14px] text-muted-foreground hover:text-foreground gap-2 font-normal"
                               onClick={() => {
                                 if (s.toLowerCase().includes('patient summary')) {
-                                  setWorkspaceMode('patient-summary');
-                                  setIsWorkspace(true);
-                                  setIsAdditional(false);
+                                  transitionToPanel(() => { setWorkspaceMode('patient-summary'); setIsWorkspace(true); setIsAdditional(false); }, `Opened OneView patient summary for ${ACTIVE_PATIENT.demographics.displayName}.`, ['Show outstanding tasks for this patient?', 'Review current medications before the appointment?']);
+                                } else if (s.toLowerCase().includes('review current medications') || s.toLowerCase().includes('medication review')) {
+                                  transitionToPanel(() => { setWorkspaceMode('medication-review'); setIsWorkspace(true); setIsAdditional(false); }, `Opening medication review form for ${ACTIVE_PATIENT.demographics.displayName}.`);
+                                } else if (s.toLowerCase().includes('outstanding tasks') || s.toLowerCase().includes('tasks for')) {
+                                  setIsThinking(true);
+                                  setTimeout(() => {
+                                    setIsThinking(false);
+                                    setMessages(prev => [...prev,
+                                      { role: 'user', content: s },
+                                      { role: 'assistant', content: `Here are the ${ACTIVE_PATIENT.patientTracker?.outstandingTasks ?? 0} outstanding tasks for ${ACTIVE_PATIENT.demographics.displayName}.`, showPatientTasks: true },
+                                    ]);
+                                  }, 1200);
                                 }
                               }}
                             >
@@ -643,7 +767,7 @@ export default function Home() {
                     </ItemActions>
                   </Item>
                 )}
-                {isThinking && <ThinkingText />}
+                {isThinking && <ThinkingText phrase={thinkingPhrase} />}
               </div>
             </div>
 
@@ -663,12 +787,13 @@ export default function Home() {
             </p>
           </div>
 
-          {/* ── Additional panel (right, 1/3) ── */}
+          {/* ── Additional panel (left, 1/3) ── */}
           <div
             className="h-full overflow-hidden"
             style={{
               flex: isAdditional ? "1 0 0" : "0 0 0",
               minWidth: 0,
+              order: 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >

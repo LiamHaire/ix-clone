@@ -216,5 +216,6 @@
   }
   html {
     @apply font-sans;
+    scrollbar-gutter: stable both-edges;
   }
 }

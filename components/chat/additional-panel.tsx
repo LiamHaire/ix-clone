@@ -18,13 +18,13 @@ const fill = 'bg-muted rounded';
 
 export function AdditionalPanel({ title, onClose, onSend, variant = 'default' }: AdditionalPanelProps) {
   return (
-    <div className="h-full flex flex-col border-l border-border bg-popover">
+    <div className="h-full flex flex-col border-r border-border bg-popover">
       <div className="flex flex-col flex-1 min-h-0 w-full max-w-[720px] mx-auto">
 
       {/* Header */}
       <SheetHeader className="px-5 pt-5 pb-4 flex-row items-start justify-between gap-2">
         <div className="flex flex-col gap-0.5">
-          <p className="font-heading text-base font-medium text-foreground">{title}</p>
+          <p className="font-heading text-base font-medium text-foreground leading-none">{title}</p>
           <p className="text-sm text-muted-foreground">
             {variant === 'draft-email' ? 'File review corrective actions' : 'Related context'}
           </p>
