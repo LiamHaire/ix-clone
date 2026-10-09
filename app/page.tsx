@@ -331,7 +331,7 @@ export default function Home() {
   );
 
   const inputCard = (
-    <div className="w-full max-w-[720px] rounded-[26px] border border-border bg-surface-raised shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)]">
+    <div className="w-full max-w-[720px] rounded-[26px] border border-border bg-surface-raised shadow-sm">
       {inputInner}
     </div>
   );
@@ -340,7 +340,7 @@ export default function Home() {
   const isChat = appState === "chat" || appState === "animating";
 
   return (
-    <div className="h-screen overflow-hidden" style={{ background: "var(--background)" }}>
+    <div className="h-screen overflow-hidden bg-background">
       {/* Alert banner */}
       {showAlert && (
         <div
@@ -387,7 +387,7 @@ export default function Home() {
             <div className="relative isolate w-full">
               <img src="/glow.svg" aria-hidden="true" className="absolute pointer-events-none select-none"
                 style={{ width: "1097px", maxWidth: "none", height: "400px", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: -1 }} />
-              <div className="w-full rounded-[26px] border border-border bg-surface-raised shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)]">
+              <div className="w-full rounded-[26px] border border-border bg-surface-raised shadow-sm">
                 {inputInner}
               </div>
             </div>
@@ -760,7 +760,7 @@ export default function Home() {
               className="flex-shrink-0 flex justify-center px-4 pt-4 mb-4"
               style={{ visibility: appState === "animating" ? "hidden" : "visible" }}
             >
-              <div className="w-full max-w-[720px] rounded-[26px] border border-border bg-surface-raised shadow-[0_2px_4px_-2px_rgba(0,0,0,0.10),0_4px_6px_-2px_rgba(0,0,0,0.10)]">
+              <div className="w-full max-w-[720px] rounded-[26px] border border-border bg-surface-raised shadow-sm">
                 {inputInner}
               </div>
             </div>
@@ -825,13 +825,8 @@ export default function Home() {
           }}
         >
           <div
-            className="w-full max-w-[720px] rounded-[26px] border border-border bg-surface-raised"
-            style={{
-              boxShadow: overlayShadow
-                ? "0 2px 4px -2px rgba(0,0,0,0.10), 0 4px 6px -2px rgba(0,0,0,0.10)"
-                : "none",
-              transition: `box-shadow ${MOVE_MS - 250}ms ease`,
-            }}
+            className={`w-full max-w-[720px] rounded-[26px] border border-border bg-surface-raised transition-shadow`}
+            style={{ transitionDuration: `${MOVE_MS - 250}ms`, boxShadow: overlayShadow ? undefined : "none" }}
           >
             {inputInner}
           </div>

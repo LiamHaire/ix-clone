@@ -76,7 +76,7 @@ export function PatientBanner({ patient, onTasksClick }: PatientBannerProps) {
                 <ClipboardText size={18} />
               </TooltipTrigger>
               {outstandingTasks > 0 && (
-                <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-[#C0392B] border-2 border-background" />
+                <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-destructive border-2 border-background" />
               )}
             </div>
             <TooltipContent side="top">{tasksLabel}</TooltipContent>

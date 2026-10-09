@@ -39,7 +39,7 @@ function Progress({
       >
         <ProgressPrimitive.Indicator
           data-slot="progress-indicator"
-          className="h-full rounded-full bg-[#3a7d44] ease-in-out"
+          className="h-full rounded-full bg-success ease-in-out"
           style={{ width: `${value ?? 0}%`, transition: `width ${duration}ms ease-in-out` }}
         />
       </ProgressPrimitive.Track>

@@ -40,11 +40,18 @@ function PriorityIcon({ priority }: { priority: TaskPriority }) {
 
 // ── Assignee avatar ───────────────────────────────────────────────────────────
 
+const CHART_BG: Record<string, string> = {
+  'chart-1': 'bg-chart-1',
+  'chart-2': 'bg-chart-2',
+  'chart-3': 'bg-chart-3',
+  'chart-4': 'bg-chart-4',
+  'chart-5': 'bg-chart-5',
+};
+
 function AssigneeAvatar({ initials, color }: { initials: string; color: string }) {
   return (
     <span
-      className="inline-flex size-6 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0"
-      style={{ backgroundColor: color }}
+      className={`inline-flex size-6 items-center justify-center rounded-full text-[10px] font-semibold text-background shrink-0 ${CHART_BG[color] ?? 'bg-muted'}`}
     >
       {initials}
     </span>

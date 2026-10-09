@@ -44,7 +44,7 @@ const SEVERITY_STYLES: Record<string, string> = {
 function AllergyBadge({ label, variant = 'default' }: { label: string; variant?: 'severity' | 'default' }) {
   const cls = variant === 'severity'
     ? (SEVERITY_STYLES[label] ?? 'border-border bg-muted text-muted-foreground')
-    : 'border-[#D8D1C7] bg-[#F0EBE3]/50 text-muted-foreground';
+    : 'border-border bg-muted/50 text-muted-foreground';
   return (
     <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ${cls}`}>
       {label}

@@ -121,7 +121,7 @@ export function AdditionalPanel({ title, onClose, onSend, variant = 'default' }:
         <Button variant="outline" className="flex-1 rounded-[10px]" onClick={onClose}>
           Close
         </Button>
-        <Button className="flex-1 rounded-[10px] bg-[#463A2C] hover:bg-[#5a4a38] text-white" onClick={variant === 'draft-email' ? onSend : undefined}>
+        <Button className="flex-1 rounded-[10px]" onClick={variant === 'draft-email' ? onSend : undefined}>
           {variant === 'draft-email' ? 'Send' : 'Confirm'}
         </Button>
       </SheetFooter>

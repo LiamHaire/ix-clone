@@ -347,11 +347,11 @@ export const PATIENT_ELLISON: Patient = {
     { area: 'Social',         plan: 'Community wellbeing referral' },
   ],
   recentActivityFeed: [
-    { id: 'e1', type: 'viewed',      actor: { initials: 'RC', color: '#B24E45' }, datetime: '01 Sep 2025, 15:20' },
-    { id: 'e2', type: 'work-item',   actor: { initials: 'RC', color: '#B24E45' }, datetime: '01 Sep 2025, 15:22', meta: { label: 'Work item', value: 'Physiotherapy Referral' } },
-    { id: 'e3', type: 'filed',       actor: { initials: 'HM', color: '#5E7F5C' }, datetime: '14 Jun 2025, 14:35', meta: { label: 'Filed to', value: 'Diabetes Review' } },
-    { id: 'e4', type: 'filed',       actor: { initials: 'MA', color: '#724E91' }, datetime: '26 Apr 2025, 02:20', meta: { label: 'Filed to', value: 'COPD Exacerbation' } },
-    { id: 'e5', type: 'appointment', actor: { initials: 'HM', color: '#5E7F5C' }, datetime: '11 Feb 2025, 10:00', meta: { label: 'Appointment', value: 'Annual COPD Review' } },
+    { id: 'e1', type: 'viewed',      actor: { initials: 'RC', color: 'chart-1' }, datetime: '01 Sep 2025, 15:20' },
+    { id: 'e2', type: 'work-item',   actor: { initials: 'RC', color: 'chart-1' }, datetime: '01 Sep 2025, 15:22', meta: { label: 'Work item', value: 'Physiotherapy Referral' } },
+    { id: 'e3', type: 'filed',       actor: { initials: 'HM', color: 'chart-2' }, datetime: '14 Jun 2025, 14:35', meta: { label: 'Filed to', value: 'Diabetes Review' } },
+    { id: 'e4', type: 'filed',       actor: { initials: 'MA', color: 'chart-3' }, datetime: '26 Apr 2025, 02:20', meta: { label: 'Filed to', value: 'COPD Exacerbation' } },
+    { id: 'e5', type: 'appointment', actor: { initials: 'HM', color: 'chart-2' }, datetime: '11 Feb 2025, 10:00', meta: { label: 'Appointment', value: 'Annual COPD Review' } },
   ],
   aiSummary: {
     complexity: 'High',
