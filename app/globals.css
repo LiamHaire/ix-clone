@@ -5,61 +5,101 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* ── Fonts ── */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-border-subtle: var(--border-subtle);
+
+  /* ── Surfaces ── */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-raised-foreground: var(--surface-raised-foreground);
+
+  /* ── Brand ── */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* ── Semantic ── */
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-info: var(--info);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-surface-raised: var(--surface-raised);
-  --color-surface-raised-foreground: var(--surface-raised-foreground);
-  /* Submit button — dark brown action colour */
+
+  /* ── Borders / Input / Ring ── */
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ── Charts ── */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* ── Sidebar ── */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ── File type icons ── */
+  --color-file-pdf: var(--file-pdf);
+  --color-file-document: var(--file-document);
+  --color-file-spreadsheet: var(--file-spreadsheet);
+  --color-file-image: var(--file-image);
+  --color-file-slide: var(--file-slide);
+  --color-file-code: var(--file-code);
+  --color-file-archive: var(--file-archive);
+  --color-file-video: var(--file-video);
+  --color-file-audio: var(--file-audio);
+  --color-file-email: var(--file-email);
+
+  /* ── Action (submit / CTA button) ── */
   --color-action: var(--action);
   --color-action-foreground: var(--action-foreground);
   --color-action-hover: var(--action-hover);
-  /* User message bubble */
+
+  /* ── User message bubble ── */
   --color-bubble: var(--bubble);
   --color-bubble-foreground: var(--bubble-foreground);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ── Radius scale (base 0.625rem = 10px) ── */
+  --radius-sm:  calc(var(--radius) * 0.6);   /* 6px  — badges, chips */
+  --radius-md:  calc(var(--radius) * 0.8);   /* 8px  — buttons, inputs */
+  --radius-lg:  var(--radius);               /* 10px — cards, dialogs */
+  --radius-xl:  calc(var(--radius) * 1.4);   /* 14px — panels, sheets */
+  --radius-2xl: calc(var(--radius) * 1.8);   /* 18px — section containers */
+  --radius-3xl: calc(var(--radius) * 2.2);   /* 22px — pill shapes */
+  --radius-4xl: calc(var(--radius) * 2.6);   /* 26px — avatar containers */
+
+  /* ── Icon size scale ── */
+  --size-icon-xs: 14px;
+  --size-icon-sm: 16px;
+  --size-icon:    18px;
+  --size-icon-lg: 20px;
+
+  /* ── Shadow scale (theme-aware — light values; dark overrides below) ── */
+  --shadow-sm: var(--shadow-sm-value);
+  --shadow-md: var(--shadow-md-value);
+  --shadow-lg: var(--shadow-lg-value);
 }
 
 :root {
@@ -124,10 +164,22 @@
   --bubble:                  oklch(95.76% .0086 67.72);
   --bubble-foreground:       oklch(12%   .016  71.06);
 
-  /* ── Nav rail ── */
-  --nav-rail-bg:             oklch(97.03% .0062 75.41);
-  --nav-rail-border:         oklch(92.03% .0132 82.4);
-  --nav-rail-width:          56px;
+  /* ── File type icon colours ── */
+  --file-pdf:          oklch(55% .22 27);
+  --file-document:     oklch(52% .18 260);
+  --file-spreadsheet:  oklch(52% .18 150);
+  --file-image:        oklch(58% .18 295);
+  --file-slide:        oklch(58% .20 45);
+  --file-code:         oklch(52% .16 185);
+  --file-archive:      oklch(55% .12 71);
+  --file-video:        oklch(52% .18 264);
+  --file-audio:        oklch(55% .16 310);
+  --file-email:        oklch(52% .14 220);
+
+  /* ── Shadow scale — light theme ── */
+  --shadow-sm-value: 0 1px 2px oklch(0.25 0.03 255 / 0.06), 0 1px 1px oklch(0.25 0.03 255 / 0.04);
+  --shadow-md-value: 0 4px 12px -2px oklch(0.25 0.03 255 / 0.08), 0 2px 6px -2px oklch(0.25 0.03 255 / 0.06);
+  --shadow-lg-value: 0 14px 32px -8px oklch(0.25 0.05 255 / 0.14), 0 4px 10px -4px oklch(0.25 0.05 255 / 0.08);
 
   /* ── Radius ── */
   --radius: 0.625rem;
@@ -174,8 +226,11 @@
   --action-hover:            oklch(85%    0     0);
   --bubble:                  oklch(26.9%  0     0);
   --bubble-foreground:       oklch(98.5%  0     0);
-  --nav-rail-bg:             oklch(20.5%  0     0);
-  --nav-rail-border:         oklch(100%   0     0 / 10%);
+
+  /* ── Shadow scale — dark theme ── */
+  --shadow-sm-value: 0 1px 2px oklch(0 0 0 / 0.5);
+  --shadow-md-value: 0 4px 14px -4px oklch(0 0 0 / 0.55), 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-lg-value: 0 14px 36px -10px oklch(0 0 0 / 0.66), inset 0 1px 0 oklch(1 0 0 / 0.05);
 }
 
 /* ── Thinking animation ── */
