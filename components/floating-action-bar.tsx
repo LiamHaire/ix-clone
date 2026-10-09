@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   NotePencil,
   ClockCounterClockwise,
@@ -77,6 +78,9 @@ interface FloatingActionBarProps {
 }
 
 export function FloatingActionBar({ onNewChat, position = "absolute" }: FloatingActionBarProps) {
+  const [appSwitcherOpen, setAppSwitcherOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
+
   return (
     <div
       className={`${position} top-[13px] right-5 z-50 flex items-center gap-0.5 px-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-md shadow-sm`}
@@ -86,13 +90,15 @@ export function FloatingActionBar({ onNewChat, position = "absolute" }: Floating
       <ActionButton icon={<ClockCounterClockwise size={20} weight="duotone" />} label="Chat history" />
 
       {/* App switcher */}
-      <DropdownMenu>
+      <DropdownMenu open={appSwitcherOpen} onOpenChange={setAppSwitcherOpen}>
         <DropdownMenuTrigger
           aria-label="App switcher"
           className={cn(
             "flex items-center justify-center rounded-full transition-colors size-9",
-            "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+            appSwitcherOpen
+              ? "bg-sidebar-accent/60 text-sidebar-accent-foreground"
+              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           )}
         >
           <SquaresFour size={20} weight="duotone" />
@@ -129,14 +135,17 @@ export function FloatingActionBar({ onNewChat, position = "absolute" }: Floating
       <div className="w-px h-5 bg-border/60 mx-0.5" />
 
       {/* Avatar with dropdown */}
-      <DropdownMenu>
+      <DropdownMenu open={avatarOpen} onOpenChange={setAvatarOpen}>
         <DropdownMenuTrigger
           aria-label="Jonathan Smith"
           className={cn(
             "flex items-center justify-center rounded-full text-xs font-semibold",
-            "border border-sidebar-border bg-sidebar text-sidebar-accent-foreground",
-            "transition-colors hover:bg-sidebar-accent size-9",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+            "border border-sidebar-border text-sidebar-accent-foreground",
+            "transition-colors size-9",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+            avatarOpen
+              ? "bg-sidebar-accent/60"
+              : "bg-sidebar hover:bg-sidebar-accent"
           )}
         >
           JS
