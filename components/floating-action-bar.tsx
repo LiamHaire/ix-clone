@@ -10,12 +10,12 @@ import {
   SignOut,
   User,
   Wrench,
-  ChatCircle,
   ListChecks,
-  Files,
-  Calendar,
+  Books,
+  CalendarBlank,
   ChartBar,
-  BookOpen,
+  Heartbeat,
+  Monitor,
 } from "@phosphor-icons/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -32,12 +32,12 @@ import { cn } from "@/lib/utils";
 // ── App switcher data ────────────────────────────────────────────────────────
 
 const APPS = [
-  { label: "Chat",      icon: ChatCircle  },
-  { label: "Tasks",     icon: ListChecks  },
-  { label: "Knowledge", icon: Files       },
-  { label: "Calendar",  icon: Calendar    },
-  { label: "Reports",   icon: ChartBar    },
-  { label: "Docs",      icon: BookOpen    },
+  { label: "Tasks",          icon: ListChecks  },
+  { label: "Knowledge Base", icon: Books       },
+  { label: "Calendar",       icon: CalendarBlank },
+  { label: "Reporting",      icon: ChartBar    },
+  { label: "IQ Health",      icon: Heartbeat   },
+  { label: "Admin",          icon: Monitor     },
 ] as const;
 
 // ── Action button ────────────────────────────────────────────────────────────
