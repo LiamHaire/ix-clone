@@ -1,11 +1,13 @@
 'use client';
 
-import { Warning, ShieldCheck, ShieldSlash, DotsThreeVertical } from '@phosphor-icons/react';
+import { Warning, ShieldCheck, ShieldSlash, DotsThreeVertical, Info, ClipboardText } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import type { Patient } from '@/lib/patientData';
 
 interface PatientBannerProps {
   patient: Patient;
+  onTasksClick?: () => void;
 }
 
 type AllergyStatus = 'known' | 'none' | 'not-recorded' | 'unavailable';
@@ -37,9 +39,11 @@ function AllergyChip({ allergyText }: { allergyText: string }) {
   );
 }
 
-export function PatientBanner({ patient }: PatientBannerProps) {
-  const { demographics } = patient;
+export function PatientBanner({ patient, onTasksClick }: PatientBannerProps) {
+  const { demographics, patientTracker } = patient;
   const idLabel = demographics.patientIdType === 'CHI' ? 'CHI' : demographics.patientIdType === 'NHS' ? 'NHS' : 'Patient ID';
+  const outstandingTasks = patientTracker?.outstandingTasks ?? 0;
+  const tasksLabel = outstandingTasks > 0 ? `${outstandingTasks} outstanding patient tasks` : 'Patient tasks';
 
   return (
     <div className="flex items-center gap-4 rounded-xl border border-border bg-muted/50 px-4 py-3 mb-4">
@@ -56,6 +60,29 @@ export function PatientBanner({ patient }: PatientBannerProps) {
           <span>Sex: {demographics.sex}</span>
         </p>
       </div>
+
+      {/* Icon buttons: Patient info + Tasks */}
+      <TooltipProvider>
+        <div className="flex items-center gap-1 shrink-0">
+          <Tooltip>
+            <TooltipTrigger className="inline-flex size-8 items-center justify-center rounded-full text-sidebar-foreground hover:text-foreground hover:bg-accent transition-colors" aria-label="Patient information">
+              <Info size={18} />
+            </TooltipTrigger>
+            <TooltipContent side="top">Patient information</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <div className="relative">
+              <TooltipTrigger onClick={onTasksClick} className="inline-flex size-8 items-center justify-center rounded-full border border-border text-sidebar-foreground hover:text-foreground hover:bg-accent transition-colors" aria-label={tasksLabel}>
+                <ClipboardText size={18} />
+              </TooltipTrigger>
+              {outstandingTasks > 0 && (
+                <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-[#C0392B] border-2 border-background" />
+              )}
+            </div>
+            <TooltipContent side="top">{tasksLabel}</TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
 
       {/* Allergy chip */}
       <AllergyChip allergyText={demographics.allergies} />

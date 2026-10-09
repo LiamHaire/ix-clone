@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { NavRail } from "@/components/nav-rail";
+import { FloatingActionBar } from "@/components/floating-action-bar";
 import {
   PromptInput,
   PromptInputBody,
@@ -101,6 +101,7 @@ export default function Home() {
   const [appState, setAppState] = useState<AppState>("home");
 
   // Separate opacity states for each layer
+  const [greeting] = useState(getGreeting);
   const [greetingOpacity, setGreetingOpacity] = useState(1);
   const [chatContentOpacity, setChatContentOpacity] = useState(0);
   const [overlayVisible, setOverlayVisible] = useState(false);
@@ -172,11 +173,14 @@ export default function Home() {
     const isFileReviewYes = text === "__file_review_yes__";
     const isDraftEmailYes = text === "__draft_email_yes__";
     const isNextAppointment = text.toLowerCase().includes("next appointment");
+    const isChangeAddress = text.toLowerCase().includes("change address");
     const appt = isNextAppointment ? pickRandomAppointment() : undefined;
     const resolvedExplicitLayout = layout ?? detectLayout(text) ?? "inline";
 
-    const showCards = resolvedExplicitLayout === "inline" && !isFileReview && !isFileReviewYes && !isDraftEmailYes && !isNextAppointment;
-    const cards = showCards
+    const showCards = resolvedExplicitLayout === "inline" && !isFileReview && !isFileReviewYes && !isDraftEmailYes && !isNextAppointment && !isChangeAddress;
+    const cards = isChangeAddress
+      ? ['address-form' as const]
+      : showCards
       ? getMultipleRandomLayouts(text, getRecommendedCardCount(text))
       : undefined;
     const radioOptions: RadioOption[] | undefined = isFileReview
@@ -337,13 +341,11 @@ export default function Home() {
 
   return (
     <div className="h-screen overflow-hidden" style={{ background: "var(--background)" }}>
-      <NavRail onNewChat={resetToHome} onInfo={() => setShowAlert(true)} />
-
       {/* Alert banner */}
       {showAlert && (
         <div
           className="fixed z-50 px-4"
-          style={{ left: "var(--nav-rail-width)", right: 0, top: "40px" }}
+          style={{ left: 0, right: 0, top: "40px" }}
         >
           <div className="max-w-[720px] mx-auto flex items-center gap-3 px-4 py-3 rounded-lg bg-background border border-border shadow-sm">
             <Warning size={16} weight="fill" className="text-warning shrink-0 self-start mt-[3px]" />
@@ -371,15 +373,16 @@ export default function Home() {
       {/* ── Home layer ── */}
       {isHome && (
         <main
-          className="flex flex-col flex-1 items-center justify-end pb-[calc(50vh-12px)]"
-          style={{ marginLeft: "var(--nav-rail-width)", height: "100%" }}
+          className="relative flex flex-col flex-1 items-center justify-end pb-[calc(50vh-12px)]"
+          style={{ height: "100%" }}
         >
+          <FloatingActionBar onNewChat={resetToHome} onInfo={() => setShowAlert(true)} />
           <div className="flex flex-col items-center w-full max-w-[720px] px-0">
             <h1
               className="font-sans text-[30px] font-semibold text-foreground mb-6 tracking-tight"
               style={{ fontVariationSettings: "'wght' 600" }}
             >
-              {getGreeting()}, Jonathan
+              {greeting}, Jonathan
             </h1>
             <div className="relative isolate w-full">
               <img src="/glow.svg" aria-hidden="true" className="absolute pointer-events-none select-none"
@@ -397,7 +400,7 @@ export default function Home() {
         <>
           <div
             className="fixed flex flex-col items-center justify-end pb-[calc(50vh-12px)]"
-            style={{ left: "var(--nav-rail-width)", right: 0, top: 0, bottom: 0 }}
+            style={{ left: 0, right: 0, top: 0, bottom: 0 }}
           >
             <h1
               className="font-sans text-[30px] font-semibold text-foreground mb-6 tracking-tight"
@@ -407,7 +410,7 @@ export default function Home() {
                 transition: "opacity 0.35s ease",
               }}
             >
-              {getGreeting()}, Jonathan
+              {greeting}, Jonathan
             </h1>
             <div style={{ width: "100%", maxWidth: 720, minHeight: 128 }} aria-hidden />
           </div>
@@ -419,7 +422,7 @@ export default function Home() {
         <div
           className="fixed flex overflow-hidden"
           style={{
-            left: "var(--nav-rail-width)", right: 0, top: 0, bottom: 0,
+            left: 0, right: 0, top: 0, bottom: 0,
             opacity: chatContentOpacity,
             transition: `opacity ${CHAT_FADE_MS}ms ease`,
           }}
@@ -430,7 +433,7 @@ export default function Home() {
             style={{
               flex: isWorkspace ? "2 1 0" : "0 0 0",
               minWidth: 0,
-              order: 2,
+              order: 1,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -497,10 +500,12 @@ export default function Home() {
             style={{
               flex: isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: 0,
-              order: 1,
+              order: 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
+            <FloatingActionBar onNewChat={resetToHome} onInfo={() => setShowAlert(true)} />
+
             {/* Header */}
             <SheetHeader className="flex-shrink-0 px-5 pt-5 pb-4 flex-row items-start justify-between gap-2">
               <div className="flex flex-col gap-0.5">
@@ -514,27 +519,6 @@ export default function Home() {
                       )
                     : ""}
                 </p>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {isWorkspace && (
-                  <Tooltip>
-                    <TooltipTrigger
-                      className="flex items-center justify-center size-8 rounded-full text-sidebar-foreground hover:text-foreground hover:bg-accent transition-colors"
-                      aria-label="Collapse Chat"
-                    >
-                      <CaretDown size={16} />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">Collapse Chat</TooltipContent>
-                  </Tooltip>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 rounded-full text-sidebar-foreground hover:text-foreground"
-                  aria-label="Actions"
-                >
-                  <DotsThreeVertical size={20} />
-                </Button>
               </div>
             </SheetHeader>
 
@@ -793,7 +777,7 @@ export default function Home() {
             style={{
               flex: isAdditional ? "1 0 0" : "0 0 0",
               minWidth: 0,
-              order: 0,
+              order: 1,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -833,7 +817,7 @@ export default function Home() {
           ref={overlayRef}
           className="fixed z-50 flex justify-center px-6 pointer-events-none"
           style={{
-            left: "var(--nav-rail-width)",
+            left: 0,
             right: 0,
             bottom: "calc(50vh - 12px)",
             opacity: overlayOpacity,

@@ -8,7 +8,8 @@ export type CardLayoutType =
   | 'calendar'
   | 'profile'
   | 'table'
-  | 'form';
+  | 'form'
+  | 'address-form';
 
 type QueryCategory = 'list' | 'schedule' | 'stats' | 'people' | 'data' | 'form' | 'general';
 

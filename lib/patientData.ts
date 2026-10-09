@@ -3,6 +3,18 @@
 
 export type ActivityEventType = 'viewed' | 'work-item' | 'filed' | 'appointment' | 'task';
 
+export type TaskStatus   = 'Draft' | 'Active' | 'Due' | 'Overdue';
+export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
+
+export interface PatientTask {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate: string;
+  assignee: { name: string; initials: string; color: string };
+}
+
 export interface ActivityEvent {
   id: string;
   type: ActivityEventType;
@@ -66,6 +78,9 @@ export interface Patient {
     prescriptionType?: string;
     drugForm?: string;
     strength?: string;
+    prescriptionContext?: string;
+    prescribedLocation?: string;
+    notes?: string;
   }>;
   encounters: Array<{
     date: string;
@@ -120,6 +135,7 @@ export interface Patient {
     requestContext?: string;
     source?: string;
   }>;
+  tasks?: PatientTask[];
   carePlans?: Array<{ area: string; plan: string }>;
   recentActivityFeed?: ActivityEvent[];
   aiSummary: {
@@ -218,12 +234,12 @@ export const PATIENT_ELLISON: Patient = {
     { substance: 'Penicillin', reaction: 'Rash', type: 'Drug', recordedDate: '14 Feb 2024', severity: 'Mild', status: 'Active', recordedBy: 'Dr Amelia Foster', drugForm: 'Tablet', strength: '500 mg' },
   ],
   currentMedications: [
-    { name: 'Salbutamol Inhaler', dose: '100 mcg', frequency: 'PRN', prescriber: 'Dr Helen Murray', prescribedDate: '11 Feb 2025', prescriptionType: 'Repeat', drugForm: 'Inhaler', strength: '100 mcg/actuation' },
-    { name: 'Tiotropium', dose: '18 mcg', frequency: 'Daily', prescriber: 'Dr Helen Murray', prescribedDate: '11 Feb 2025', prescriptionType: 'Repeat', drugForm: 'Inhaler (capsule)', strength: '18 mcg' },
-    { name: 'Ramipril', dose: '5 mg', frequency: 'Daily', prescriber: 'Dr Rebecca Collins', prescribedDate: '01 Sep 2025', prescriptionType: 'Repeat', drugForm: 'Capsule', strength: '5 mg' },
-    { name: 'Metformin', dose: '500 mg', frequency: 'Twice daily', prescriber: 'Dr Helen Murray', prescribedDate: '14 Jun 2025', prescriptionType: 'Repeat', drugForm: 'Tablet', strength: '500 mg' },
-    { name: 'Atorvastatin', dose: '20 mg', frequency: 'Nightly', prescriber: 'Dr Marcus Allen', prescribedDate: '26 Apr 2025', prescriptionType: 'Repeat', drugForm: 'Tablet', strength: '20 mg' },
-    { name: 'Paracetamol', dose: '1 g', frequency: 'PRN', prescriber: 'Dr Rebecca Collins', prescribedDate: '01 Sep 2025', prescriptionType: 'Acute', drugForm: 'Tablet', strength: '500 mg' },
+    { name: 'Salbutamol Inhaler', dose: '100 mcg', frequency: 'PRN', prescriber: 'Dr Helen Murray', prescribedDate: '11 Feb 2025', prescriptionType: 'Repeat', drugForm: 'Inhaler', strength: '100 mcg/actuation', prescriptionContext: 'In consultation', prescribedLocation: 'GP Surgery — Annual COPD Review', notes: 'Continue as required for acute breathlessness. Reviewed and re-authorised at annual COPD review.' },
+    { name: 'Tiotropium', dose: '18 mcg', frequency: 'Daily', prescriber: 'Dr Helen Murray', prescribedDate: '11 Feb 2025', prescriptionType: 'Repeat', drugForm: 'Inhaler (capsule)', strength: '18 mcg', prescriptionContext: 'In consultation', prescribedLocation: 'GP Surgery — Annual COPD Review', notes: 'Long-acting bronchodilator for COPD maintenance. Patient using HandiHaler device.' },
+    { name: 'Ramipril', dose: '5 mg', frequency: 'Daily', prescriber: 'Dr Rebecca Collins', prescribedDate: '01 Sep 2025', prescriptionType: 'Repeat', drugForm: 'Capsule', strength: '5 mg', prescriptionContext: 'Home visit', prescribedLocation: 'Patient home — Falls Assessment', notes: 'Continued for hypertension management. BP 150/90 at last review — dose maintained pending repeat reading.' },
+    { name: 'Metformin', dose: '500 mg', frequency: 'Twice daily', prescriber: 'Dr Helen Murray', prescribedDate: '14 Jun 2025', prescriptionType: 'Repeat', drugForm: 'Tablet', strength: '500 mg', prescriptionContext: 'In consultation', prescribedLocation: 'GP Surgery — Diabetes Review', notes: 'Maximum tolerated dose. HbA1c 7.4% — borderline controlled. SGLT2 inhibitor under consideration subject to eGFR monitoring.' },
+    { name: 'Atorvastatin', dose: '20 mg', frequency: 'Nightly', prescriber: 'Dr Marcus Allen', prescribedDate: '26 Apr 2025', prescriptionType: 'Repeat', drugForm: 'Tablet', strength: '20 mg', prescriptionContext: 'Discharge', prescribedLocation: 'Emergency Department — A&E Admission', notes: 'Prescribed at A&E discharge following COPD exacerbation. Cardiovascular risk profile reviewed.' },
+    { name: 'Paracetamol', dose: '1 g', frequency: 'PRN', prescriber: 'Dr Rebecca Collins', prescribedDate: '01 Sep 2025', prescriptionType: 'Acute', drugForm: 'Tablet', strength: '500 mg', prescriptionContext: 'Home visit', prescribedLocation: 'Patient home — Falls Assessment', notes: 'Prescribed for pain relief following minor wrist injury. Short course — not for long-term use.' },
   ],
   encounters: [
     {
@@ -382,8 +398,26 @@ export const PATIENT_ELLISON: Patient = {
       },
     ],
   },
+  tasks: [
+    {
+      id: 'TSK-0041',
+      title: 'Annual diabetic medication review — consider SGLT2 inhibitor',
+      status: 'Overdue',
+      priority: 'High',
+      dueDate: '14 Sep 2025',
+      assignee: { name: 'Dr Helen Murray', initials: 'HM', color: '#5E7F5C' },
+    },
+    {
+      id: 'TSK-0044',
+      title: 'Arrange home safety assessment following September fall',
+      status: 'Active',
+      priority: 'Medium',
+      dueDate: '22 Oct 2025',
+      assignee: { name: 'Dr Rebecca Collins', initials: 'RC', color: '#B24E45' },
+    },
+  ],
   patientTracker: {
-    outstandingTasks: 3,
+    outstandingTasks: 2,
     openReferrals: 2,
     medicationReviewsDue: 1,
     nextAppointment: '22 Oct 2025',

@@ -12,6 +12,7 @@ import {
   TableRow,
   FormCard,
 } from '@/components/ui/adaptive-cards';
+import { AddressFormCard } from '@/components/chat/address-form-card';
 import type { CardLayoutType } from '@/lib/adaptive-card-selector';
 
 interface AdaptiveCardRendererProps {
@@ -30,6 +31,7 @@ const cardComponents: Record<CardLayoutType, React.ComponentType<{ className?: s
   profile:        ProfileCard,
   table:          TableRow,
   form:           FormCard,
+  'address-form': AddressFormCard,
 };
 
 export function AdaptiveCardRenderer({ layouts, className = '' }: AdaptiveCardRendererProps) {
