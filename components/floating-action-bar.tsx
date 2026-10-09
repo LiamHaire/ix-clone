@@ -16,6 +16,9 @@ import {
   ChartBar,
   Heartbeat,
   Monitor,
+  Microphone,
+  PuzzlePiece,
+  Sparkle,
 } from "@phosphor-icons/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -30,6 +33,12 @@ import {
 import { cn } from "@/lib/utils";
 
 // ── App switcher data ────────────────────────────────────────────────────────
+
+const TOOLS = [
+  { label: "Scribe",  icon: Microphone },
+  { label: "Tool 2",  icon: PuzzlePiece },
+  { label: "Tool 3",  icon: Sparkle    },
+] as const;
 
 const APPS = [
   { label: "Tasks",          icon: ListChecks  },
@@ -79,6 +88,7 @@ interface FloatingActionBarProps {
 
 export function FloatingActionBar({ onNewChat, position = "absolute" }: FloatingActionBarProps) {
   const [appSwitcherOpen, setAppSwitcherOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
 
   return (
@@ -128,7 +138,40 @@ export function FloatingActionBar({ onNewChat, position = "absolute" }: Floating
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <ActionButton icon={<Wrench size={20} weight="duotone" />} label="Tools" />
+      {/* Tools */}
+      <DropdownMenu open={toolsOpen} onOpenChange={setToolsOpen}>
+        <DropdownMenuTrigger
+          aria-label="Tools"
+          className={cn(
+            "flex items-center justify-center rounded-full transition-colors size-9",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+            toolsOpen
+              ? "bg-sidebar-accent/60 text-sidebar-accent-foreground"
+              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          )}
+        >
+          <Wrench size={20} weight="duotone" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={4} className="p-3 w-auto">
+          <div className="grid grid-cols-3 gap-2">
+            {TOOLS.map(({ label, icon: Icon }) => (
+              <button
+                key={label}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-2",
+                  "w-[88px] py-3 px-2 rounded-lg",
+                  "border border-border bg-background",
+                  "text-muted-foreground hover:text-foreground hover:bg-accent",
+                  "transition-colors cursor-pointer"
+                )}
+              >
+                <Icon size={24} weight="duotone" />
+                <span className="text-xs font-medium leading-none">{label}</span>
+              </button>
+            ))}
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <ActionButton icon={<DotsThree size={20} weight="bold" />} label="More" />
 
       {/* Divider */}
