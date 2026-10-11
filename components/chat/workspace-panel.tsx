@@ -14,13 +14,12 @@ const fill = 'bg-muted rounded';
 
 export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
   return (
-    <div className="h-full flex flex-col border-l border-border bg-popover">
+    <div className="h-full flex flex-col border-r border-border bg-popover">
 
       {/* Header — no border, matches AdditionalPanel */}
-      <SheetHeader className="px-5 pt-5 pb-4 flex-row items-start justify-between gap-2">
+      <SheetHeader className="px-4 pt-4 pb-3 flex-row items-start justify-between gap-2 border-b border-border">
         <div className="flex flex-col gap-0.5">
           <p className="font-heading text-base font-medium text-foreground">{title}</p>
-          <p className="text-sm text-muted-foreground">Schedule overview · 12 entries</p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button
@@ -44,7 +43,7 @@ export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
       </SheetHeader>
 
       {/* Content in a stroked rounded container, pb-6 to match 24px base margin */}
-      <div className="flex-1 min-h-0 px-5 pb-6 overflow-hidden flex flex-col">
+      <div className="flex-1 min-h-0 px-5 pt-4 pb-6 overflow-hidden flex flex-col">
         <div className="flex-1 min-h-0 overflow-y-auto rounded-xl border border-border px-4 py-5 space-y-8">
 
           {/* Stats row */}

@@ -19,41 +19,24 @@ const fill = 'bg-muted rounded';
 export function AdditionalPanel({ title, onClose, onSend, variant = 'default' }: AdditionalPanelProps) {
   return (
     <div className="h-full flex flex-col border-r border-border bg-popover">
-      <div className="flex flex-col flex-1 min-h-0 w-full max-w-[720px] mx-auto">
-
       {/* Header */}
-      <SheetHeader className="px-5 pt-5 pb-4 flex-row items-start justify-between gap-2">
-        <div className="flex flex-col gap-0.5">
-          <p className="font-heading text-base font-medium text-foreground leading-none">{title}</p>
-          <p className="text-sm text-muted-foreground">
-            {variant === 'draft-email' ? 'File review corrective actions' : 'Related context'}
-          </p>
-        </div>
+      <SheetHeader className="px-4 pt-4 pb-3 flex-row items-center justify-between gap-2 shrink-0 border-b border-border">
+        <p className="font-heading text-base font-medium text-foreground leading-none">{title}</p>
         <div className="flex items-center gap-1 shrink-0">
           {variant !== 'draft-email' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-full text-sidebar-foreground hover:text-foreground"
-              aria-label="Actions"
-            >
+            <Button variant="ghost" size="icon" className="size-8 rounded-full text-sidebar-foreground hover:text-foreground" aria-label="Actions">
               <DotsThreeVertical size={16} />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8 rounded-full text-sidebar-foreground hover:text-foreground"
-            onClick={onClose}
-            aria-label="Close"
-          >
+          <Button variant="ghost" size="icon" className="size-8 rounded-full text-sidebar-foreground hover:text-foreground" onClick={onClose} aria-label="Close">
             <X size={16} />
           </Button>
         </div>
       </SheetHeader>
 
       {/* Content */}
-      <div className="flex-1 min-h-0 px-5 pb-4 overflow-hidden flex flex-col">
+      <div className="flex-1 min-h-0 p-4 overflow-hidden flex flex-col">
+        <div className="flex flex-col flex-1 min-h-0 w-full max-w-[720px] mx-auto">
         <div className="flex-1 min-h-0 overflow-y-auto rounded-xl border border-border px-4 py-5">
 
           {variant === 'draft-email' ? (
@@ -114,10 +97,11 @@ export function AdditionalPanel({ title, onClose, onSend, variant = 'default' }:
           )}
 
         </div>
+        </div>
       </div>
 
       {/* Footer */}
-      <SheetFooter className="px-4 pb-6 pt-0 flex-row gap-2">
+      <SheetFooter className="px-4 pb-4 pt-0 flex-row gap-2">
         <Button variant="outline" className="flex-1 rounded-[10px]" onClick={onClose}>
           Close
         </Button>
@@ -125,8 +109,6 @@ export function AdditionalPanel({ title, onClose, onSend, variant = 'default' }:
           {variant === 'draft-email' ? 'Send' : 'Confirm'}
         </Button>
       </SheetFooter>
-
-      </div>
     </div>
   );
 }

@@ -183,6 +183,11 @@
 
   /* ── Radius ── */
   --radius: 0.625rem;
+
+  /* ── Nav rail ── */
+  --nav-rail-width:   56px;
+  --nav-rail-bg:      oklch(99.4% .004 78.31);
+  --nav-rail-border:  oklch(92.03% .0132 82.4);
 }
 
 .dark {
@@ -231,6 +236,10 @@
   --shadow-sm-value: 0 1px 2px oklch(0 0 0 / 0.5);
   --shadow-md-value: 0 4px 14px -4px oklch(0 0 0 / 0.55), 0 1px 2px oklch(0 0 0 / 0.4);
   --shadow-lg-value: 0 14px 36px -10px oklch(0 0 0 / 0.66), inset 0 1px 0 oklch(1 0 0 / 0.05);
+
+  /* ── Nav rail ── */
+  --nav-rail-bg:     oklch(20.5% 0 0);
+  --nav-rail-border: oklch(100% 0 0 / 10%);
 }
 
 /* ── Thinking animation ── */
@@ -272,5 +281,25 @@
   html {
     @apply font-sans;
     scrollbar-gutter: stable;
+    scrollbar-color: oklch(85% .012 78) transparent;
+    scrollbar-width: thin;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(85% .012 78);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(75% .016 78);
   }
 }

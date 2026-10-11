@@ -31,10 +31,10 @@ export function PatientSummaryPanel({ onClose, onTasksClick }: PatientSummaryPan
   };
 
   return (
-    <div className="h-full flex flex-col border-l border-border bg-popover">
+    <div className="h-full flex flex-col border-r border-border bg-popover">
 
       {/* Header */}
-      <SheetHeader className="px-5 pt-5 pb-4 flex-row items-start justify-between gap-2 shrink-0">
+      <SheetHeader className="px-4 pt-4 pb-3 flex-row items-start justify-between gap-2 shrink-0 border-b border-border">
         <div className="flex flex-col gap-0.5">
           {/* Breadcrumbs */}
           <div className="flex items-center gap-1 flex-wrap">
@@ -53,7 +53,6 @@ export function PatientSummaryPanel({ onClose, onTasksClick }: PatientSummaryPan
               </>
             )}
           </div>
-          <p className="text-sm text-muted-foreground">{demographics.displayName}</p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="icon" className="size-8 rounded-full text-sidebar-foreground hover:text-foreground" aria-label="Actions">

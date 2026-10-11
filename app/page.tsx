@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { FloatingActionBar } from "@/components/floating-action-bar";
 import {
   PromptInput,
   PromptInputBody,
@@ -19,10 +18,10 @@ import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ProgressCard } from "@/components/chat/progress-card";
 import { PatientAppointmentItem } from "@/components/chat/patient-appointment-item";
 import { pickRandomAppointment, type AppointmentContext } from "@/lib/appointmentData";
-import confetti from "canvas-confetti";
 import { ThinkingText } from "@/components/chat/thinking-text";
 import { MessageToolbar } from "@/components/chat/message-toolbar";
 import { WorkspacePanel } from "@/components/chat/workspace-panel";
+import { WorkPanel } from "@/components/work/work-panel";
 import { PatientSummaryPanel } from "@/components/chat/patient-summary-panel";
 import { MedicationReviewForm, type MedicationReviewData } from "@/components/chat/medication-review-form";
 import { MedicationReviewSummaryCard } from "@/components/chat/medication-review-summary-card";
@@ -113,7 +112,7 @@ export default function Home() {
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
   const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email'>('default');
-  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review'>('default');
+  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work'>('default');
   function transitionToPanel(fn: () => void, responseMessage?: string, suggestions?: string[]) {
     setIsThinking(true);
     setTimeout(() => {
@@ -137,6 +136,50 @@ export default function Home() {
   useEffect(() => {
     if (isWorkspace) chatScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, [isWorkspace]);
+
+  useEffect(() => {
+    const handler = () => resetToHome();
+    window.addEventListener("ix:new-chat", handler);
+    return () => window.removeEventListener("ix:new-chat", handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = () => {
+      setWorkspaceMode('work');
+      setIsWorkspace(true);
+      setIsAdditional(false);
+
+      const greetings = [
+        "Welcome to the Work view. I can help you manage tasks, track workflows, or find what needs attention today.",
+        "Here's your Work view. Want me to summarise what's overdue, or help you prioritise what to tackle first?",
+        "Good to see you in the Work view. I can walk you through the features here, or just ask me what you're looking to solve today.",
+        "You're in the Work view. I can help you find tasks, manage workflows, or dig into anything that needs your attention.",
+      ];
+      const suggestions = [
+        ["Show me what's overdue", "Walk me through the Work view features", "What tasks are assigned to me?"],
+        ["What's my highest priority task?", "Show me blocked items", "Summarise today's workload"],
+        ["Show me overdue tasks", "What workflows are awaiting input?", "What are the key features here?"],
+        ["What needs my attention today?", "Show me tasks by matter", "Walk me through this view"],
+      ];
+      const idx = Math.floor(Math.random() * greetings.length);
+      const welcomeMessage = {
+        role: 'assistant' as const,
+        content: greetings[idx],
+        suggestions: suggestions[idx],
+      };
+
+      if (appState === "home") {
+        setChatTitle("Work");
+        setMessages([welcomeMessage]);
+        setAppState("chat");
+        setChatContentOpacity(1);
+      } else {
+        setMessages(prev => [...prev, welcomeMessage]);
+      }
+    };
+    window.addEventListener("ix:open-work", handler);
+    return () => window.removeEventListener("ix:open-work", handler);
+  }, [appState]);
 
   function resetToHome() {
     setMessages([]);
@@ -376,7 +419,6 @@ export default function Home() {
           className="relative flex flex-col flex-1 items-center justify-end pb-[calc(50vh-12px)]"
           style={{ height: "100%" }}
         >
-          <FloatingActionBar onNewChat={resetToHome} onInfo={() => setShowAlert(true)} />
           <div className="flex flex-col items-center w-full max-w-[720px] px-0">
             <h1
               className="font-sans text-[30px] font-semibold text-foreground mb-6 tracking-tight"
@@ -400,7 +442,7 @@ export default function Home() {
         <>
           <div
             className="fixed flex flex-col items-center justify-end pb-[calc(50vh-12px)]"
-            style={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            style={{ left: "var(--nav-rail-width)", right: 0, top: 0, bottom: 0 }}
           >
             <h1
               className="font-sans text-[30px] font-semibold text-foreground mb-6 tracking-tight"
@@ -422,7 +464,7 @@ export default function Home() {
         <div
           className="fixed flex overflow-hidden"
           style={{
-            left: 0, right: 0, top: 0, bottom: 0,
+            left: "var(--nav-rail-width)", right: 0, top: 0, bottom: 0,
             opacity: chatContentOpacity,
             transition: `opacity ${CHAT_FADE_MS}ms ease`,
           }}
@@ -433,7 +475,7 @@ export default function Home() {
             style={{
               flex: isWorkspace ? "2 1 0" : "0 0 0",
               minWidth: 0,
-              order: 1,
+              order: 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -453,11 +495,10 @@ export default function Home() {
               />
             )}
             {isWorkspace && workspaceMode === 'medication-review' && (
-              <div className="h-full flex flex-col border-l border-border bg-popover">
-                <SheetHeader className="px-5 pt-5 pb-4 flex-row items-start justify-between gap-2 shrink-0">
+              <div className="h-full flex flex-col border-r border-border bg-popover">
+                <SheetHeader className="px-4 pt-4 pb-3 flex-row items-start justify-between gap-2 shrink-0 border-b border-border">
                   <div className="flex flex-col gap-0.5">
                     <p className="font-heading text-base font-medium text-foreground leading-none">Medication review</p>
-                    <p className="text-sm text-muted-foreground">{ACTIVE_PATIENT.demographics.displayName}</p>
                   </div>
                   <button
                     onClick={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
@@ -467,7 +508,7 @@ export default function Home() {
                     <PhosphorX size={16} />
                   </button>
                 </SheetHeader>
-                <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-6">
+                <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-4 pb-6">
                   <MedicationReviewForm
                     onCancel={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
                     onSave={() => {
@@ -491,6 +532,11 @@ export default function Home() {
                 }}
               />
             )}
+            {isWorkspace && workspaceMode === 'work' && (
+              <WorkPanel
+                onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+              />
+            )}
           </div>
 
           {/* ── Chat panel — full, or 1/3 (workspace), or 2/3 (additional) ── */}
@@ -500,26 +546,22 @@ export default function Home() {
             style={{
               flex: isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: 0,
-              order: 0,
+              order: 1,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
-            <FloatingActionBar onNewChat={resetToHome} onInfo={() => setShowAlert(true)} />
-
+  
             {/* Header */}
-            <SheetHeader className="flex-shrink-0 px-5 pt-5 pb-4 flex-row items-start justify-between gap-2">
-              <div className="flex flex-col gap-0.5">
+            <SheetHeader className="flex-shrink-0 px-4 pt-4 pb-3 flex-row items-center justify-between gap-2 border-b border-border">
+              <div className="flex flex-col gap-0.5 min-w-0">
                 <p className="font-heading text-base font-medium text-foreground leading-none truncate">{sentenceCase(chatTitle)}</p>
-                <p className="text-sm text-muted-foreground truncate max-w-[240px]">
-                  {messages[0]?.content
-                    ? sentenceCase(
-                        messages[0].content.length > 72
-                          ? messages[0].content.slice(0, 72).trimEnd() + "…"
-                          : messages[0].content
-                      )
-                    : ""}
-                </p>
               </div>
+              <button
+                aria-label="More options"
+                className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+              >
+                <DotsThreeVertical size={18} weight="bold" />
+              </button>
             </SheetHeader>
 
             {/* Messages */}
@@ -635,18 +677,6 @@ export default function Home() {
                                 role: 'assistant',
                                 content: `Medication review for ${ACTIVE_PATIENT.demographics.displayName} has been completed and saved. The next review has been scheduled in ${data.nextReview}.`,
                               }]);
-                              const rect = chatPanelRef.current?.getBoundingClientRect();
-                              if (rect) {
-                                confetti({
-                                  particleCount: 140,
-                                  spread: 60,
-                                  angle: 90,
-                                  origin: {
-                                    x: (rect.left + rect.width / 2) / window.innerWidth,
-                                    y: 1,
-                                  },
-                                });
-                              }
                             }, 1200);
                           }}
                         />
@@ -777,7 +807,7 @@ export default function Home() {
             style={{
               flex: isAdditional ? "1 0 0" : "0 0 0",
               minWidth: 0,
-              order: 1,
+              order: 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -817,7 +847,7 @@ export default function Home() {
           ref={overlayRef}
           className="fixed z-50 flex justify-center px-6 pointer-events-none"
           style={{
-            left: 0,
+            left: "var(--nav-rail-width)",
             right: 0,
             bottom: "calc(50vh - 12px)",
             opacity: overlayOpacity,

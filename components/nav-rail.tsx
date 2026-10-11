@@ -1,16 +1,44 @@
 "use client";
 
+import { useState } from "react";
 import {
   NotePencil,
-  ChatsTeardrop,
-  ListChecks,
-  Files,
+  ClockCounterClockwise,
+  SquaresFour,
+  Bell,
   Info,
   Gear,
+  SignOut,
+  User,
+  ListChecks,
+  Books,
+  CalendarBlank,
+  ChartBar,
+  Heartbeat,
+  Monitor,
+  Microphone,
 } from "@phosphor-icons/react";
-
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+
+const APPS = [
+  { label: "Tasks",          icon: ListChecks    },
+  { label: "Knowledge Base", icon: Books         },
+  { label: "Calendar",       icon: CalendarBlank },
+  { label: "Reporting",      icon: ChartBar      },
+  { label: "IQ Health",      icon: Heartbeat     },
+  { label: "Admin",          icon: Monitor       },
+  { label: "Scribe",         icon: Microphone    },
+] as const;
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -36,7 +64,7 @@ function NavItem({ icon, label, active, badge, onClick }: NavItemProps) {
       >
         {icon}
         {badge !== undefined && badge > 0 && (
-          <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-semibold leading-none">
+          <span className="pointer-events-none absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold leading-none px-1">
             {badge}
           </span>
         )}
@@ -46,7 +74,10 @@ function NavItem({ icon, label, active, badge, onClick }: NavItemProps) {
   );
 }
 
-export function NavRail({ onNewChat, onInfo }: { onNewChat?: () => void; onInfo?: () => void }) {
+export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
+  const [appSwitcherOpen, setAppSwitcherOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
+
   return (
     <aside
       className="fixed inset-y-0 left-0 z-50 flex flex-col items-center py-2 border-r"
@@ -63,27 +94,103 @@ export function NavRail({ onNewChat, onInfo }: { onNewChat?: () => void; onInfo?
 
       {/* Primary nav */}
       <nav className="flex flex-col items-center gap-2 px-3 pt-1">
-        <NavItem icon={<NotePencil size={20} weight="duotone" />} label="New chat" onClick={onNewChat} />
-        <NavItem icon={<ChatsTeardrop size={20} weight="duotone" />} label="Chats" />
-        <NavItem icon={<ListChecks size={20} weight="duotone" />} label="Work" />
-        <NavItem icon={<Files size={20} weight="duotone" />} label="Knowledge" />
+        <NavItem icon={<NotePencil size={20} weight="duotone" />} label="New chat" onClick={() => window.dispatchEvent(new CustomEvent("ix:new-chat"))} />
+        <NavItem icon={<ClockCounterClockwise size={20} weight="duotone" />} label="Chat history" />
+        <NavItem icon={<ListChecks size={20} weight="duotone" />} label="Work" onClick={() => window.dispatchEvent(new CustomEvent("ix:open-work"))} />
+
+        {/* App switcher */}
+        <DropdownMenu open={appSwitcherOpen} onOpenChange={setAppSwitcherOpen}>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <DropdownMenuTrigger
+                  aria-label="Apps"
+                  className={cn(
+                    "relative flex items-center justify-center rounded-full transition-colors",
+                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                    appSwitcherOpen
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  )}
+                  style={{ width: 36, height: 36 }}
+                />
+              }
+            >
+              <SquaresFour size={20} weight="duotone" />
+            </TooltipTrigger>
+            <TooltipContent side="right">Apps</TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent side="right" align="start" sideOffset={8} className="p-3 w-auto">
+            <div className="grid grid-cols-3 gap-2">
+              {APPS.map(({ label, icon: Icon }) => (
+                <button
+                  key={label}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-2",
+                    "w-[88px] py-3 px-2 rounded-lg",
+                    "border border-border bg-background",
+                    "text-muted-foreground hover:text-foreground hover:bg-accent",
+                    "transition-colors cursor-pointer"
+                  )}
+                >
+                  <Icon size={24} weight="duotone" />
+                  <span className="text-xs font-medium leading-none">{label}</span>
+                </button>
+              ))}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </nav>
 
       {/* Bottom nav */}
       <nav className="flex flex-col items-center gap-2 px-3 mt-auto pb-2">
-        <NavItem icon={<Info size={20} weight="duotone" />} label="Product Hub" onClick={onInfo} />
+        <NavItem icon={<Bell size={20} weight="duotone" />} label="Notifications" badge={3} />
+        <NavItem icon={<Info size={20} weight="duotone" />} label="Info" />
         <NavItem icon={<Gear size={20} weight="duotone" />} label="Settings" />
+
         {/* Avatar */}
-        <Tooltip>
-          <TooltipTrigger
-            className="flex items-center justify-center rounded-full bg-sidebar text-sidebar-accent-foreground text-xs font-semibold border border-sidebar-border hover:bg-sidebar-accent transition-colors mt-1"
-            aria-label="Profile"
+        <DropdownMenu open={avatarOpen} onOpenChange={setAvatarOpen}>
+          <DropdownMenuTrigger
+            aria-label="Jonathan Smith"
+            className={cn(
+              "flex items-center justify-center rounded-full text-xs font-semibold mt-1",
+              "border border-sidebar-border text-sidebar-accent-foreground",
+              "transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+              avatarOpen
+                ? "bg-sidebar-accent/60"
+                : "bg-sidebar hover:bg-sidebar-accent"
+            )}
             style={{ width: 36, height: 36 }}
           >
             JS
-          </TooltipTrigger>
-          <TooltipContent side="right">Jonathan Smith</TooltipContent>
-        </Tooltip>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="right" align="end" sideOffset={8} className="w-48">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="font-normal">
+                <p className="text-sm font-medium text-foreground">Jonathan Smith</p>
+                <p className="text-xs text-muted-foreground">j.smith@chambers.co.uk</p>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem className="gap-2">
+                <User size={15} className="text-muted-foreground" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2">
+                <Gear size={15} className="text-muted-foreground" />
+                Settings
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive">
+                <SignOut size={15} />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </nav>
     </aside>
   );
