@@ -35,23 +35,25 @@ export function SessionHistoryPanel({ onClose }: SessionHistoryPanelProps) {
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {preview ? (
-            <Button
-              variant="outline"
-              size="default"
-              className="gap-1.5"
-              onClick={() => setPreview(null)}
-            >
-              <ArrowLeft size={14} />
-              Close preview
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-full text-sidebar-foreground hover:text-foreground"
-              aria-label="More options"
-            >
-              <DotsThreeVertical size={16} />
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="default"
+                className="gap-1.5"
+                onClick={() => setPreview(null)}
+              >
+                <ArrowLeft size={14} />
+                Close preview
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 rounded-full text-sidebar-foreground hover:text-foreground"
+                aria-label="More options"
+              >
+                <DotsThreeVertical size={16} />
+              </Button>
+            </>
           ) : (
             <>
               <Button
