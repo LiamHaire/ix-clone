@@ -94,8 +94,8 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
 
       {/* Primary nav */}
       <nav className="flex flex-col items-center gap-2 px-3 pt-1">
-        <NavItem icon={<NotePencil size={20} weight="duotone" />} label="New chat" onClick={() => window.dispatchEvent(new CustomEvent("ix:new-chat"))} />
-        <NavItem icon={<ClockCounterClockwise size={20} weight="duotone" />} label="Chat history" />
+        <NavItem icon={<NotePencil size={20} weight="duotone" />} label="New session" onClick={() => window.dispatchEvent(new CustomEvent("ix:new-chat"))} />
+        <NavItem icon={<ClockCounterClockwise size={20} weight="duotone" />} label="Session history" onClick={() => window.dispatchEvent(new CustomEvent("ix:open-session-history"))} />
         <NavItem icon={<ListChecks size={20} weight="duotone" />} label="Work" onClick={() => window.dispatchEvent(new CustomEvent("ix:open-work"))} />
 
         {/* App switcher */}

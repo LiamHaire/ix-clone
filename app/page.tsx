@@ -22,6 +22,10 @@ import { ThinkingText } from "@/components/chat/thinking-text";
 import { MessageToolbar } from "@/components/chat/message-toolbar";
 import { WorkspacePanel } from "@/components/chat/workspace-panel";
 import { WorkPanel } from "@/components/work/work-panel";
+import { SessionHistoryPanel } from "@/components/chat/session-history-panel";
+import { SessionResultCard } from "@/components/chat/session-result-card";
+import { MOCK_SESSIONS } from "@/components/chat/session-history-list";
+import type { Session } from "@/components/chat/session-history-list";
 import { PatientSummaryPanel } from "@/components/chat/patient-summary-panel";
 import { MedicationReviewForm, type MedicationReviewData } from "@/components/chat/medication-review-form";
 import { MedicationReviewSummaryCard } from "@/components/chat/medication-review-summary-card";
@@ -81,7 +85,7 @@ function generateTitle(prompt: string): string {
 }
 
 type RadioOption = { value: string; label: string };
-type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; showPatientTasks?: boolean; showMedicationReviewForm?: boolean; medicationReviewData?: MedicationReviewData; suggestions?: string[]; appointment?: AppointmentContext; followUpText?: string };
+type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; showPatientTasks?: boolean; showMedicationReviewForm?: boolean; medicationReviewData?: MedicationReviewData; suggestions?: string[]; appointment?: AppointmentContext; followUpText?: string; sessionResult?: Session };
 // home → animating → chat
 // overlay is always in DOM; only its opacity + bottom change
 type AppState = "home" | "animating" | "chat";
@@ -112,7 +116,7 @@ export default function Home() {
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
   const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email'>('default');
-  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work'>('default');
+  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work' | 'session-history'>('default');
   function transitionToPanel(fn: () => void, responseMessage?: string, suggestions?: string[]) {
     setIsThinking(true);
     setTimeout(() => {
@@ -179,6 +183,47 @@ export default function Home() {
     };
     window.addEventListener("ix:open-work", handler);
     return () => window.removeEventListener("ix:open-work", handler);
+  }, [appState]);
+
+  useEffect(() => {
+    const handler = () => {
+      setWorkspaceMode('session-history');
+      setIsWorkspace(true);
+      setIsAdditional(false);
+
+      const variants = [
+        { noun: "patient",
+          greeting: "Welcome to session history. Your previous sessions are listed in the main view, grouped by patient. Expand a session to see a summary and the items you viewed, or ask me to find something for you." },
+        { noun: "case",
+          greeting: "Welcome to session history. Your previous sessions are listed in the main view, grouped by case. Expand any session to see what was covered and the items you accessed, or ask me to track something down." },
+        { noun: "patient",
+          greeting: "Welcome to session history. Your previous sessions are shown in the main view, grouped by patient. Open a session to review its summary and activity, or let me know what you're looking for." },
+        { noun: "case",
+          greeting: "Welcome to session history. Past sessions are listed in the main view, grouped by case. Expand one to see a summary and everything you viewed, or ask me to find a specific session for you." },
+      ];
+      const greetings = variants.map(v => v.greeting);
+      const suggestions = variants.map(v => [
+        "What did I work on yesterday?",
+        `Find my most recent session for a ${v.noun}`,
+      ]);
+      const idx = Math.floor(Math.random() * greetings.length);
+      const welcomeMessage = {
+        role: 'assistant' as const,
+        content: greetings[idx],
+        suggestions: suggestions[idx],
+      };
+
+      if (appState === "home") {
+        setChatTitle("Session history");
+        setMessages([welcomeMessage]);
+        setAppState("chat");
+        setChatContentOpacity(1);
+      } else {
+        setMessages(prev => [...prev, welcomeMessage]);
+      }
+    };
+    window.addEventListener("ix:open-session-history", handler);
+    return () => window.removeEventListener("ix:open-session-history", handler);
   }, [appState]);
 
   function resetToHome() {
@@ -537,6 +582,11 @@ export default function Home() {
                 onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
               />
             )}
+            {isWorkspace && workspaceMode === 'session-history' && (
+              <SessionHistoryPanel
+                onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+              />
+            )}
           </div>
 
           {/* ── Chat panel — full, or 1/3 (workspace), or 2/3 (additional) ── */}
@@ -638,6 +688,9 @@ export default function Home() {
                           onView={() => transitionToPanel(() => { setWorkspaceMode('patient-summary'); setIsWorkspace(true); setIsAdditional(false); }, `Opened OneView patient summary for ${ACTIVE_PATIENT.demographics.displayName}.`, ['Show outstanding tasks for this patient?', 'Review current medications before the appointment?'])}
                         />
                       )}
+                      {msg.sessionResult && (
+                        <SessionResultCard session={msg.sessionResult} />
+                      )}
                       {msg.showPatientTasks && ACTIVE_PATIENT.tasks && (
                         <PatientTaskList
                           tasks={ACTIVE_PATIENT.tasks}
@@ -737,7 +790,30 @@ export default function Home() {
                             <Button key={s} variant="ghost" size="sm"
                               className="h-auto py-1 px-2 text-[14px] text-muted-foreground hover:text-foreground gap-2 font-normal"
                               onClick={() => {
-                                if (s.toLowerCase().includes('patient summary')) {
+                                if (s.toLowerCase().includes('what did i work on yesterday')) {
+                                  const yesterday = new Date();
+                                  yesterday.setDate(yesterday.getDate() - 1);
+                                  const yDate = yesterday.toISOString().slice(0, 10);
+                                  const yesterdaySessions = MOCK_SESSIONS.filter(s => s.isoDate.startsWith(yDate));
+                                  if (yesterdaySessions.length === 0) {
+                                    setMessages(prev => [...prev,
+                                      { role: 'user', content: s },
+                                      { role: 'assistant', content: "I couldn't find any sessions from yesterday." },
+                                    ]);
+                                  } else {
+                                    const session = yesterdaySessions[0];
+                                    setMessages(prev => [...prev,
+                                      { role: 'user', content: s },
+                                      { role: 'assistant', content: `Yesterday you worked on "${session.title}". Here's a summary of the session and everything you accessed.`, sessionResult: session },
+                                    ]);
+                                  }
+                                } else if (s.toLowerCase().startsWith('find my most recent session for a')) {
+                                  const noun = s.endsWith('patient') ? 'patient' : 'case';
+                                  setMessages(prev => [...prev,
+                                    { role: 'user', content: s },
+                                    { role: 'assistant', content: `Which ${noun} would you like to search for?` },
+                                  ]);
+                                } else if (s.toLowerCase().includes('patient summary')) {
                                   transitionToPanel(() => { setWorkspaceMode('patient-summary'); setIsWorkspace(true); setIsAdditional(false); }, `Opened OneView patient summary for ${ACTIVE_PATIENT.demographics.displayName}.`, ['Show outstanding tasks for this patient?', 'Review current medications before the appointment?']);
                                 } else if (s.toLowerCase().includes('review current medications') || s.toLowerCase().includes('medication review')) {
                                   transitionToPanel(() => { setWorkspaceMode('medication-review'); setIsWorkspace(true); setIsAdditional(false); }, `Opening medication review form for ${ACTIVE_PATIENT.demographics.displayName}.`);

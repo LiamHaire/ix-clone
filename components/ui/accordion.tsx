@@ -2,11 +2,16 @@ import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion"
 import { cn } from "cn"
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 
-function Accordion({ className, ...props }: AccordionPrimitive.Root.Props) {
+function Accordion({ className, variant, ...props }: AccordionPrimitive.Root.Props & { variant?: "default" | "bordered" }) {
   return (
     <AccordionPrimitive.Root
       data-slot="accordion"
-      className={cn("flex w-full flex-col", className)}
+      data-variant={variant ?? "default"}
+      className={cn(
+        "flex w-full flex-col",
+        variant === "bordered" ? "gap-2" : "",
+        className
+      )}
       {...props}
     />
   )
@@ -16,7 +21,11 @@ function AccordionItem({ className, ...props }: AccordionPrimitive.Item.Props) {
   return (
     <AccordionPrimitive.Item
       data-slot="accordion-item"
-      className={cn("not-last:border-b", className)}
+      className={cn(
+        "in-data-[variant=bordered]:rounded-lg in-data-[variant=bordered]:border in-data-[variant=bordered]:border-border",
+        "not-last:in-data-[variant=default]:border-b",
+        className
+      )}
       {...props}
     />
   )
