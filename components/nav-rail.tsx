@@ -5,7 +5,6 @@ import {
   NotePencil,
   ClockCounterClockwise,
   SquaresFour,
-  Bell,
   Info,
   Gear,
   SignOut,
@@ -29,10 +28,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { NotificationsPopover } from "@/components/nav-rail-notifications";
 
 const APPS = [
-  { label: "Tasks",          icon: ListChecks    },
-  { label: "Knowledge Base", icon: Books         },
   { label: "Calendar",       icon: CalendarBlank },
   { label: "Reporting",      icon: ChartBar      },
   { label: "IQ Health",      icon: Heartbeat     },
@@ -97,6 +95,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
         <NavItem icon={<NotePencil size={20} weight="duotone" />} label="New session" onClick={() => window.dispatchEvent(new CustomEvent("ix:new-chat"))} />
         <NavItem icon={<ClockCounterClockwise size={20} weight="duotone" />} label="Session history" onClick={() => window.dispatchEvent(new CustomEvent("ix:open-session-history"))} />
         <NavItem icon={<ListChecks size={20} weight="duotone" />} label="Work" onClick={() => window.dispatchEvent(new CustomEvent("ix:open-work"))} />
+        <NavItem icon={<Books size={20} weight="duotone" />} label="Knowledge base" />
 
         {/* App switcher */}
         <DropdownMenu open={appSwitcherOpen} onOpenChange={setAppSwitcherOpen}>
@@ -144,9 +143,9 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
 
       {/* Bottom nav */}
       <nav className="flex flex-col items-center gap-2 px-3 mt-auto pb-2">
-        <NavItem icon={<Bell size={20} weight="duotone" />} label="Notifications" badge={3} />
+        <NotificationsPopover />
         <NavItem icon={<Info size={20} weight="duotone" />} label="Info" />
-        <NavItem icon={<Gear size={20} weight="duotone" />} label="Settings" />
+        <NavItem icon={<Gear size={20} weight="duotone" />} label="Settings" onClick={() => window.dispatchEvent(new CustomEvent("ix:open-settings"))} />
 
         {/* Avatar */}
         <DropdownMenu open={avatarOpen} onOpenChange={setAvatarOpen}>

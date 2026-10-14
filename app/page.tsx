@@ -32,6 +32,7 @@ import { MedicationReviewSummaryCard } from "@/components/chat/medication-review
 import { ACTIVE_PATIENT } from "@/lib/patientData";
 import { PatientTaskList } from "@/components/chat/patient-task-list";
 import { AdditionalPanel } from "@/components/chat/additional-panel";
+import { SettingsPanel } from "@/components/settings/settings-panel";
 import { SheetHeader } from "@/components/ui/sheet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Warning } from "@phosphor-icons/react";
@@ -117,7 +118,7 @@ export default function Home() {
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
   const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email'>('default');
-  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work' | 'session-history'>('default');
+  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work' | 'session-history' | 'settings'>('default');
   function transitionToPanel(fn: () => void, responseMessage?: string, suggestions?: string[]) {
     setIsThinking(true);
     setTimeout(() => {
@@ -225,6 +226,46 @@ export default function Home() {
     };
     window.addEventListener("ix:open-session-history", handler);
     return () => window.removeEventListener("ix:open-session-history", handler);
+  }, [appState]);
+
+  useEffect(() => {
+    const handler = () => {
+      setWorkspaceMode('settings');
+      setIsWorkspace(true);
+      setIsAdditional(false);
+
+      const greetings = [
+        "Settings — this is where you fine-tune the way you work. Let me know if you need a hand with anything.",
+        "Here are your settings. Everything from appearance to chat behaviour lives here. Just ask if you need help finding something.",
+        "You're in Settings. Feel free to explore — or tell me what you're trying to change and I'll point you in the right direction.",
+        "Settings. A good place to make IQ feel a bit more like yours. Let me know if I can help with anything here.",
+      ];
+      const allSuggestions = [
+        "How do I change my theme?",
+        "Where are my chat preferences?",
+        "What can I personalise?",
+        "How do I manage my memories?",
+        "Walk me through what's here",
+        "How do I add a new skill?",
+        "What does the Personalisation section do?",
+        "How do I update my profile?",
+        "Can I change the default AI model?",
+      ];
+      const shuffled = [...allSuggestions].sort(() => Math.random() - 0.5).slice(0, 3);
+      const idx = Math.floor(Math.random() * greetings.length);
+      const welcomeMessage = { role: 'assistant' as const, content: greetings[idx], suggestions: shuffled };
+
+      if (appState === "home") {
+        setChatTitle("Settings");
+        setMessages([welcomeMessage]);
+        setAppState("chat");
+        setChatContentOpacity(1);
+      } else {
+        setMessages(prev => [...prev, welcomeMessage]);
+      }
+    };
+    window.addEventListener("ix:open-settings", handler);
+    return () => window.removeEventListener("ix:open-settings", handler);
   }, [appState]);
 
   function resetToHome() {
@@ -427,6 +468,7 @@ export default function Home() {
 
   const isHome = appState === "home";
   const isChat = appState === "chat" || appState === "animating";
+  const lastAssistantIdx = messages.reduce((acc, m, i) => m.role === 'assistant' ? i : acc, -1);
 
   return (
     <div className="h-screen overflow-hidden bg-background">
@@ -585,6 +627,11 @@ export default function Home() {
             )}
             {isWorkspace && workspaceMode === 'session-history' && (
               <SessionHistoryPanel
+                onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+              />
+            )}
+            {isWorkspace && workspaceMode === 'settings' && (
+              <SettingsPanel
                 onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
               />
             )}
@@ -788,7 +835,7 @@ export default function Home() {
                         onCopy={() => navigator.clipboard.writeText(msg.content)}
                         onRepeat={() => { setValue(messages.findLast(m => m.role === "user")?.content ?? ""); }}
                       />
-                      {msg.suggestions && (
+                      {msg.suggestions && i === lastAssistantIdx && !isThinking && (
                         <div className="flex flex-col items-start gap-1">
                           {msg.suggestions.map((s) => (
                             <Button key={s} variant="ghost" size="sm"
