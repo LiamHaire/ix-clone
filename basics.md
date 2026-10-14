@@ -1,4 +1,4 @@
-# Design Basics
+﻿# Design Basics
 
 **Date:** 10/09/2026  
 **Version:** 1.0  

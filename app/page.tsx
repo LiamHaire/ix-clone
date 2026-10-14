@@ -35,6 +35,7 @@ import { AdditionalPanel } from "@/components/chat/additional-panel";
 import { SheetHeader } from "@/components/ui/sheet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Warning } from "@phosphor-icons/react";
+import { IndexPopover } from "@/components/chat/index-popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FieldLabel, Field, FieldContent, FieldTitle } from "@/components/ui/field";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -606,12 +607,15 @@ export default function Home() {
               <div className="flex flex-col gap-0.5 min-w-0">
                 <p className="font-heading text-base font-medium text-foreground leading-none truncate">{sentenceCase(chatTitle)}</p>
               </div>
-              <button
-                aria-label="More options"
-                className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
-              >
-                <DotsThreeVertical size={18} weight="bold" />
-              </button>
+              <div className="flex items-center gap-1 shrink-0">
+                <IndexPopover index={MOCK_SESSIONS[0].index} />
+                <button
+                  aria-label="More options"
+                  className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+                >
+                  <DotsThreeVertical size={18} weight="bold" />
+                </button>
+              </div>
             </SheetHeader>
 
             {/* Messages */}

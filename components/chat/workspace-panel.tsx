@@ -17,7 +17,7 @@ export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
     <div className="h-full flex flex-col border-r border-border bg-popover">
 
       {/* Header — no border, matches AdditionalPanel */}
-      <SheetHeader className="px-4 pt-4 pb-3 flex-row items-start justify-between gap-2 border-b border-border">
+      <SheetHeader className="px-4 pt-4 pb-3 flex-row items-center justify-between gap-2 border-b border-border">
         <div className="flex flex-col gap-0.5">
           <p className="font-heading text-base font-medium text-foreground">{title}</p>
         </div>
@@ -44,7 +44,8 @@ export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
 
       {/* Content in a stroked rounded container, pb-6 to match 24px base margin */}
       <div className="flex-1 min-h-0 px-5 pt-4 pb-6 overflow-hidden flex flex-col">
-        <div className="flex-1 min-h-0 overflow-y-auto rounded-xl border border-border px-4 py-5 space-y-8">
+        <div className="flex-1 min-h-0 overflow-y-auto rounded-xl border border-border px-4 py-5">
+          <div className="max-w-[1200px] mx-auto space-y-8">
 
           {/* Stats row */}
           <div className="grid grid-cols-4 gap-8">
@@ -94,6 +95,7 @@ export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
             ))}
           </div>
 
+          </div>
         </div>
       </div>
 
