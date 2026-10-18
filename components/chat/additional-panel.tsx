@@ -18,7 +18,7 @@ const fill = 'bg-muted rounded';
 
 export function AdditionalPanel({ title, onClose, onSend, variant = 'default' }: AdditionalPanelProps) {
   return (
-    <div className="h-full flex flex-col border-r border-border bg-popover">
+    <div className="h-full flex flex-col bg-popover">
       {/* Header */}
       <SheetHeader className="px-4 pt-4 pb-3 flex-row items-center justify-between gap-2 shrink-0 border-b border-border">
         <p className="font-heading text-base font-medium text-foreground leading-none">{title}</p>

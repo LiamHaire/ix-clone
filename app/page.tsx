@@ -12,7 +12,7 @@ import {
   PromptInputSelectItem,
 } from "@/components/ai-elements/prompt-input";
 import { SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ArrowRight, ArrowBendDownRight, DotsThreeVertical, CaretDown, X as PhosphorX, Info } from "@phosphor-icons/react";
+import { Plus, ArrowRight, ArrowBendDownRight, DotsThreeVertical, CaretDown, X as PhosphorX, Info, NotePencil } from "@phosphor-icons/react";
 import { AnimatedPlaceholder } from "@/components/animated-placeholder";
 import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ProgressCard } from "@/components/chat/progress-card";
@@ -33,6 +33,8 @@ import { ACTIVE_PATIENT } from "@/lib/patientData";
 import { PatientTaskList } from "@/components/chat/patient-task-list";
 import { AdditionalPanel } from "@/components/chat/additional-panel";
 import { SettingsPanel } from "@/components/settings/settings-panel";
+import { NavRail } from "@/components/nav-rail";
+import { NavIsland } from "@/components/nav-island/nav-island";
 import { SheetHeader } from "@/components/ui/sheet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Warning } from "@phosphor-icons/react";
@@ -114,6 +116,7 @@ export default function Home() {
   const [overlayShadow, setOverlayShadow] = useState(true);
 
   const [showAlert, setShowAlert] = useState(false);
+  const [navMode, setNavMode] = useState<'navrail' | 'island'>('navrail');
   const [isWorkspace, setIsWorkspace] = useState(false);
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
@@ -174,14 +177,11 @@ export default function Home() {
         suggestions: suggestions[idx],
       };
 
-      if (appState === "home") {
-        setChatTitle("Work");
-        setMessages([welcomeMessage]);
-        setAppState("chat");
-        setChatContentOpacity(1);
-      } else {
-        setMessages(prev => [...prev, welcomeMessage]);
-      }
+      setChatTitle("Work");
+      setMessages([welcomeMessage]);
+      setIsThinking(false);
+      setAppState("chat");
+      setChatContentOpacity(1);
     };
     window.addEventListener("ix:open-work", handler);
     return () => window.removeEventListener("ix:open-work", handler);
@@ -215,14 +215,11 @@ export default function Home() {
         suggestions: suggestions[idx],
       };
 
-      if (appState === "home") {
-        setChatTitle("Session history");
-        setMessages([welcomeMessage]);
-        setAppState("chat");
-        setChatContentOpacity(1);
-      } else {
-        setMessages(prev => [...prev, welcomeMessage]);
-      }
+      setChatTitle("Session history");
+      setMessages([welcomeMessage]);
+      setIsThinking(false);
+      setAppState("chat");
+      setChatContentOpacity(1);
     };
     window.addEventListener("ix:open-session-history", handler);
     return () => window.removeEventListener("ix:open-session-history", handler);
@@ -255,14 +252,11 @@ export default function Home() {
       const idx = Math.floor(Math.random() * greetings.length);
       const welcomeMessage = { role: 'assistant' as const, content: greetings[idx], suggestions: shuffled };
 
-      if (appState === "home") {
-        setChatTitle("Settings");
-        setMessages([welcomeMessage]);
-        setAppState("chat");
-        setChatContentOpacity(1);
-      } else {
-        setMessages(prev => [...prev, welcomeMessage]);
-      }
+      setChatTitle("Settings");
+      setMessages([welcomeMessage]);
+      setIsThinking(false);
+      setAppState("chat");
+      setChatContentOpacity(1);
     };
     window.addEventListener("ix:open-settings", handler);
     return () => window.removeEventListener("ix:open-settings", handler);
@@ -298,6 +292,11 @@ export default function Home() {
     const text = (overrideText ?? value).trim();
     if (!text || appState === "animating") return;
     setValue("");
+
+    if (text.toLowerCase() === "show island") { setNavMode('island'); return; }
+    if (text.toLowerCase() === "show navrail") { setNavMode('navrail'); return; }
+    if (text.toLowerCase() === "new notification") { window.dispatchEvent(new CustomEvent('ix:new-notification')); return; }
+    if (text.toLowerCase() === "show meeting") { window.dispatchEvent(new CustomEvent('ix:appointment-reminder')); return; }
 
     const isFileReview = text.toLowerCase().includes("file review");
     const isFileReviewYes = text === "__file_review_yes__";
@@ -471,11 +470,20 @@ export default function Home() {
   const lastAssistantIdx = messages.reduce((acc, m, i) => m.role === 'assistant' ? i : acc, -1);
 
   return (
-    <div className="h-screen overflow-hidden bg-background">
+    <div className="h-full overflow-hidden bg-background flex flex-1 min-w-0">
+      {navMode === 'navrail' && <NavRail />}
+      {navMode === 'island' && (
+        <NavIsland
+          onSessionHistory={() => window.dispatchEvent(new CustomEvent('ix:open-session-history'))}
+          onWork={() => window.dispatchEvent(new CustomEvent('ix:open-work'))}
+          onSettings={() => window.dispatchEvent(new CustomEvent('ix:open-settings'))}
+        />
+      )}
+      <div className="relative flex flex-col flex-1 min-w-0 h-full overflow-hidden" style={{ minHeight: 0 }}>
       {/* Alert banner */}
       {showAlert && (
         <div
-          className="fixed z-50 px-4"
+          className="absolute z-50 px-4"
           style={{ left: 0, right: 0, top: "40px" }}
         >
           <div className="max-w-[720px] mx-auto flex items-center gap-3 px-4 py-3 rounded-lg bg-background border border-border shadow-sm">
@@ -521,6 +529,7 @@ export default function Home() {
                 {inputInner}
               </div>
             </div>
+
           </div>
         </main>
       )}
@@ -529,8 +538,8 @@ export default function Home() {
       {appState === "animating" && (
         <>
           <div
-            className="fixed flex flex-col items-center justify-end pb-[calc(50vh-12px)]"
-            style={{ left: "var(--nav-rail-width)", right: 0, top: 0, bottom: 0 }}
+            className="absolute flex flex-col items-center justify-end pb-[calc(50vh-12px)]"
+            style={{ left: 0, right: 0, top: 0, bottom: 0 }}
           >
             <h1
               className="font-sans text-[30px] font-semibold text-foreground mb-6 tracking-tight"
@@ -550,20 +559,20 @@ export default function Home() {
       {/* ── Chat layer — rendered during animating AND chat states ── */}
       {isChat && (
         <div
-          className="fixed flex overflow-hidden"
+          className="absolute flex overflow-hidden"
           style={{
-            left: "var(--nav-rail-width)", right: 0, top: 0, bottom: 0,
+            left: 0, right: 0, top: 0, bottom: 0,
             opacity: chatContentOpacity,
             transition: `opacity ${CHAT_FADE_MS}ms ease`,
           }}
         >
-          {/* ── Workspace panel (right, 2/3) ── */}
+          {/* ── Workspace panel ── */}
           <div
-            className="h-full overflow-hidden"
+            className={`h-full overflow-hidden ${navMode === 'island' ? 'border-l' : 'border-r'} border-border`}
             style={{
               flex: isWorkspace ? "2 1 0" : "0 0 0",
               minWidth: 0,
-              order: 0,
+              order: navMode === 'island' ? 1 : 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -583,7 +592,7 @@ export default function Home() {
               />
             )}
             {isWorkspace && workspaceMode === 'medication-review' && (
-              <div className="h-full flex flex-col border-r border-border bg-popover">
+              <div className={`h-full flex flex-col bg-popover ${navMode === 'island' ? 'border-l' : 'border-r'} border-border`}>
                 <SheetHeader className="px-4 pt-4 pb-3 flex-row items-start justify-between gap-2 shrink-0 border-b border-border">
                   <div className="flex flex-col gap-0.5">
                     <p className="font-heading text-base font-medium text-foreground leading-none">Medication review</p>
@@ -644,7 +653,7 @@ export default function Home() {
             style={{
               flex: isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: 0,
-              order: 1,
+              order: navMode === 'island' ? 0 : 1,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -655,6 +664,18 @@ export default function Home() {
                 <p className="font-heading text-base font-medium text-foreground leading-none truncate">{sentenceCase(chatTitle)}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                {navMode === 'island' && (
+                  <Tooltip>
+                    <TooltipTrigger
+                      aria-label="New session"
+                      onClick={() => window.dispatchEvent(new CustomEvent('ix:new-chat'))}
+                      className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+                    >
+                      <NotePencil size={18} weight="duotone" />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">New session</TooltipContent>
+                  </Tooltip>
+                )}
                 <IndexPopover index={MOCK_SESSIONS[0].index} />
                 <button
                   aria-label="More options"
@@ -928,13 +949,13 @@ export default function Home() {
             </p>
           </div>
 
-          {/* ── Additional panel (left, 1/3) ── */}
+          {/* ── Additional panel (left in navrail, right in island) ── */}
           <div
-            className="h-full overflow-hidden"
+            className={`h-full overflow-hidden ${navMode === 'island' ? 'border-l' : 'border-r'} border-border`}
             style={{
               flex: isAdditional ? "1 0 0" : "0 0 0",
               minWidth: 0,
-              order: 0,
+              order: navMode === 'island' ? 1 : 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -972,9 +993,9 @@ export default function Home() {
       {overlayVisible && (
         <div
           ref={overlayRef}
-          className="fixed z-50 flex justify-center px-6 pointer-events-none"
+          className="absolute z-50 flex justify-center px-6 pointer-events-none"
           style={{
-            left: "var(--nav-rail-width)",
+            left: 0,
             right: 0,
             bottom: "calc(50vh - 12px)",
             opacity: overlayOpacity,
@@ -989,6 +1010,7 @@ export default function Home() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

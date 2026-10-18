@@ -14,7 +14,7 @@ const fill = 'bg-muted rounded';
 
 export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
   return (
-    <div className="h-full flex flex-col border-r border-border bg-popover">
+    <div className="h-full flex flex-col bg-popover">
 
       {/* Header — no border, matches AdditionalPanel */}
       <SheetHeader className="px-4 pt-4 pb-3 flex-row items-center justify-between gap-2 border-b border-border">

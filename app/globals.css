@@ -242,6 +242,67 @@
   --nav-rail-border: oklch(100% 0 0 / 10%);
 }
 
+/* ── Island notification animations ── */
+@keyframes island-notify-shake {
+  0%   { opacity: 0; transform: rotate(-16deg); }
+  8%   { opacity: 1; transform: rotate(-16deg); }
+  20%  { transform: rotate(14deg); }
+  33%  { transform: rotate(-12deg); }
+  45%  { transform: rotate(10deg); }
+  57%  { transform: rotate(-7deg); }
+  68%  { transform: rotate(5deg); }
+  78%  { transform: rotate(-3deg); }
+  87%  { transform: rotate(2deg); }
+  94%  { transform: rotate(-1deg); }
+  100% { transform: rotate(0deg); opacity: 1; }
+}
+@keyframes island-badge-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes island-notify-label-in {
+  0%   { opacity: 0; transform: translateX(-4px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.island-notify-spring { } /* removed */
+.island-notify-shake  { animation: island-notify-shake 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.island-badge-pop     { animation: island-badge-pop 300ms 200ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ── Island animations ── */
+@keyframes island-expand {
+  0%   { clip-path: inset(0 calc(50% - 40px) calc(100% - 32px) calc(50% - 40px) round 0 0 4px 4px); opacity: 0.6; }
+  60%  { opacity: 1; }
+  100% { clip-path: inset(0 0% 0% 0% round 0 0 8px 8px); opacity: 1; }
+}
+@keyframes island-collapse {
+  0%   { clip-path: inset(0 0% 0% 0% round 0 0 8px 8px); opacity: 1; }
+  40%  { opacity: 0.6; }
+  100% { clip-path: inset(0 calc(50% - 40px) calc(100% - 32px) calc(50% - 40px) round 0 0 4px 4px); opacity: 0; }
+}
+@keyframes island-content-in {
+  0%   { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes island-content-out {
+  0%   { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+@keyframes island-scrim-in {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes island-scrim-out {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+.island-expand  { animation: island-expand  320ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.island-collapse { animation: island-collapse 240ms cubic-bezier(0.4, 0, 1, 1) forwards; }
+.island-content-in  { animation: island-content-in  200ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.island-content-out { animation: island-content-out 120ms cubic-bezier(0.4, 0, 1, 1) forwards; }
+.island-scrim-in  { animation: island-scrim-in  280ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.island-scrim-out { animation: island-scrim-out 240ms cubic-bezier(0.4, 0, 1, 1) forwards; }
+
 /* ── Thinking animation ── */
 @keyframes thinking-shimmer {
   0%   { background-position: 200% center; }
@@ -280,7 +341,6 @@
   }
   html {
     @apply font-sans;
-    scrollbar-gutter: stable;
     scrollbar-color: oklch(85% .012 78) transparent;
     scrollbar-width: thin;
   }

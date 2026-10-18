@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { X, DotsThreeVertical, ArrowRight, CaretRight } from '@phosphor-icons/react';
+import { X, DotsThreeVertical, ArrowRight, ArrowLeft, CaretRight } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { SheetHeader } from '@/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ACTIVE_PATIENT } from '@/lib/patientData';
 import { PatientBanner } from '@/components/chat/patient-banner';
@@ -31,28 +32,24 @@ export function PatientSummaryPanel({ onClose, onTasksClick }: PatientSummaryPan
   };
 
   return (
-    <div className="h-full flex flex-col border-r border-border bg-popover">
+    <div className="h-full flex flex-col bg-popover">
 
       {/* Header */}
-      <SheetHeader className="px-4 pt-4 pb-3 flex-row items-start justify-between gap-2 shrink-0 border-b border-border">
-        <div className="flex flex-col gap-0.5">
-          {/* Breadcrumbs */}
-          <div className="flex items-center gap-1 flex-wrap">
-            <button
-              onClick={() => setView('summary')}
-              className={`font-heading text-base font-medium leading-none transition-colors ${view === 'summary' ? 'text-foreground pointer-events-none' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              OneView
-            </button>
-            {view !== 'summary' && (
-              <>
-                <CaretRight size={12} className="text-muted-foreground shrink-0" />
-                <span className="font-heading text-base font-medium text-foreground leading-none">
-                  {VIEW_LABELS[view]}
-                </span>
-              </>
-            )}
-          </div>
+      <SheetHeader className="px-4 pt-4 pb-3 flex-row items-center justify-between gap-2 shrink-0 border-b border-border">
+        <div className="flex items-center gap-1.5 min-w-0">
+          {view !== 'summary' && (
+            <Tooltip>
+              <TooltipTrigger
+                onClick={() => setView('summary')}
+                className="flex items-center justify-center size-5 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+                aria-label="Go back"
+              >
+                <ArrowLeft size={12} />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Back</TooltipContent>
+            </Tooltip>
+          )}
+          <p className="font-heading text-base font-medium text-foreground leading-none">{VIEW_LABELS[view]}</p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="icon" className="size-8 rounded-full text-sidebar-foreground hover:text-foreground" aria-label="Actions">
@@ -63,6 +60,17 @@ export function PatientSummaryPanel({ onClose, onTasksClick }: PatientSummaryPan
           </Button>
         </div>
       </SheetHeader>
+
+      {/* Breadcrumbs — shown below header when on a sub-view */}
+      {view !== 'summary' && (
+        <div className="flex items-center gap-1 px-5 pt-4">
+          <button onClick={() => setView('summary')} className="text-[12px] font-medium tracking-[0.02em] text-muted-foreground hover:text-foreground transition-colors leading-none">
+            OneView
+          </button>
+          <CaretRight size={10} className="text-muted-foreground/60 shrink-0" />
+          <span className="text-[12px] font-medium tracking-[0.02em] text-muted-foreground/60 leading-none">{VIEW_LABELS[view]}</span>
+        </div>
+      )}
 
       {/* Scrollable content */}
       <div className="flex-1 min-h-0 overflow-y-auto px-5 [scrollbar-gutter:stable]">

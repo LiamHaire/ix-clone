@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { NavRail } from "@/components/nav-rail";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,10 +24,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="h-screen p-[4px] bg-background">
         <TooltipProvider>
-          <NavRail />
-          <div className="flex flex-col flex-1" style={{ marginLeft: "var(--nav-rail-width)" }}>
+          <div className="relative flex h-full rounded-[8px] border border-border overflow-hidden">
             {children}
           </div>
         </TooltipProvider>

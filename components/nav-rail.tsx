@@ -78,7 +78,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
 
   return (
     <aside
-      className="fixed inset-y-0 left-0 z-50 flex flex-col items-center py-2 border-r"
+      className="shrink-0 flex flex-col items-center py-2 border-r h-full z-50"
       style={{
         width: "var(--nav-rail-width)",
         background: "var(--nav-rail-bg)",
