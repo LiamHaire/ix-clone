@@ -30,7 +30,7 @@ Two navigation modes toggled via chat prompt:
 
 **Nav Rail** (default) — fixed 56px rail on the left with primary nav icons, avatar dropdown, and settings.
 
-**Nav Island** — Dynamic Island-style notch anchored to the top centre of the viewport. Collapses to a pill, expands to a full navigation panel with:
+**Nav Notch** — Dynamic Notch-style notch anchored to the top centre of the viewport. Collapses to a pill, expands to a full navigation panel with:
 - Global search
 - Recent sessions widget (View all → session history)
 - Notifications widget (View all button, clickable notification items)
@@ -38,9 +38,9 @@ Two navigation modes toggled via chat prompt:
 - Apps launcher (Calendar, Reporting, IQ Health, Admin, Scribe, Knowledge)
 - Avatar dropdown (Profile, Settings, Sign out)
 
-### Docked island states
+### Docked notch states
 
-When collapsed, the island pill shows animated icons for active events:
+When collapsed, the notch pill shows animated icons for active events:
 
 | State | Visual |
 |---|---|
@@ -63,7 +63,7 @@ The app has three adaptive layout states:
 | **Workspace** | Various prompts | Chat (1/3) · Workspace panel (2/3) |
 | **Additional** | Various prompts | Chat (2/3) · Additional panel (1/3) |
 
-In island mode the workspace panel opens on the left, chat on the right (reversed vs nav rail mode).
+In notch mode the workspace panel opens on the left, chat on the right (reversed vs nav rail mode).
 
 ### Panels
 
@@ -92,17 +92,17 @@ Type these into the chat input to trigger specific behaviours:
 
 | Prompt | Effect |
 |---|---|
-| `show island` | Switches to Nav Island mode |
+| `show notch` | Switches to Nav Notch mode |
 | `show navrail` | Switches back to Nav Rail mode |
 | `Dark` | Switches to dark mode |
 | `Light` | Switches to light mode |
 
-### Island event triggers
+### Notch event triggers
 
 | Prompt | Effect |
 |---|---|
-| `new notification` | Fires `ix:new-notification` — bell shakes with badge on docked island |
-| `show meeting` | Fires `ix:appointment-reminder` — calendar icon shakes on docked island |
+| `new notification` | Fires `ix:new-notification` — bell shakes with badge on docked notch |
+| `show meeting` | Fires `ix:appointment-reminder` — calendar icon shakes on docked notch |
 | `show report` | Fires `ix:report-complete` — report shake → check → done animation sequence |
 
 ### Layout & data
@@ -135,9 +135,9 @@ components/
   nav-rail.tsx                    — fixed left nav rail
   animated-placeholder.tsx        — rotating chat input placeholder
 
-  nav-island/
-    nav-island.tsx                — Dynamic Island nav component
-    island-mock-events.ts         — mock events, tasks, and notification data
+  nav-notch/
+    nav-notch.tsx                — Dynamic Notch nav component
+    notch-mock-events.ts         — mock events, tasks, and notification data
 
   ai-elements/
     prompt-input.tsx              — chat input primitives
@@ -202,7 +202,7 @@ Key dark mode surfaces:
 4. Render it in the messages loop inside the chat panel
 5. To open a panel: call `setIsWorkspace(true)` / `setIsAdditional(true)` and set `setWorkspaceMode()`
 
-## Firing island events from outside the component
+## Firing notch events from outside the component
 
 ```ts
 window.dispatchEvent(new CustomEvent('ix:new-notification'));

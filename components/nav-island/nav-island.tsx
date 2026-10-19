@@ -40,12 +40,14 @@ import { MOCK_EVENTS, MOCK_TODAY_TASKS, formatRelative, type IslandEvent } from 
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type IslandState = 'idle' | 'event' | 'expanded';
+type NotchState = 'idle' | 'event' | 'expanded';
 
-interface NavIslandProps {
+interface NavNotchProps {
   onSessionHistory?: () => void;
   onWork?: () => void;
   onSettings?: () => void;
+  onMedicationReview?: () => void;
+  onFileReview?: () => void;
 }
 
 // ── Event icon map ────────────────────────────────────────────────────────────
@@ -84,6 +86,8 @@ function ExpandedPanel({
   onWork,
   onSettings,
   onMarkRead,
+  onMedicationReview,
+  onFileReview,
 }: {
   events: IslandEvent[];
   onClose: () => void;
@@ -91,6 +95,8 @@ function ExpandedPanel({
   onWork?: () => void;
   onSettings?: () => void;
   onMarkRead: (id: string) => void;
+  onMedicationReview?: () => void;
+  onFileReview?: () => void;
 }) {
   const [search, setSearch] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
@@ -217,7 +223,7 @@ function ExpandedPanel({
         <div className="flex-1 min-w-0 flex flex-col rounded-xl border border-border bg-background overflow-hidden">
           <div className="flex items-center justify-between px-3 pt-3 pb-2 border-b border-border">
             <p className="text-[11px] font-semibold text-muted-foreground">Recent sessions</p>
-            <button type="button" className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">View all</button>
+            <button type="button" onClick={() => { onSessionHistory?.(); onClose(); }} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">View all</button>
           </div>
           <div className="flex flex-col gap-0 flex-1">
             {MOCK_SESSIONS.slice(0, 3).map((session, i) => (
@@ -254,7 +260,10 @@ function ExpandedPanel({
               <button
                 key={event.id}
                 type="button"
-                onClick={() => onMarkRead(event.id)}
+                onClick={() => {
+                  onMarkRead(event.id);
+                  if (event.title.toLowerCase().includes('file review')) { onFileReview?.(); onClose(); }
+                }}
                 className={cn(
                   'flex flex-col gap-0.5 w-full text-left px-3 py-2.5 hover:bg-accent transition-colors',
                   i < arr.length - 1 && 'border-b border-border',
@@ -290,6 +299,9 @@ function ExpandedPanel({
               <button
                 key={task.id}
                 type="button"
+                onClick={() => {
+                  if (task.title.toLowerCase().includes('medication review')) { onMedicationReview?.(); onClose(); }
+                }}
                 className={cn(
                   'flex items-start gap-2.5 w-full text-left px-3 py-2.5 hover:bg-accent transition-colors',
                   i < MOCK_TODAY_TASKS.length - 1 && 'border-b border-border',
@@ -369,10 +381,10 @@ function NavAction({
 }
 
 
-// ── Root component ────────────────────────────────────────────────────────────
+// ── Root component (NavNotch) ─────────────────────────────────────────────────
 
-export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandProps) {
-  const [islandState, setIslandState] = useState<IslandState>('idle');
+export function NavNotch({ onSessionHistory, onWork, onSettings, onMedicationReview, onFileReview }: NavIslandProps) {
+  const [notchState, setNotchState] = useState<NotchState>('idle');
   const [isClosing, setIsClosing] = useState(false);
   const [events, setEvents] = useState<IslandEvent[]>(MOCK_EVENTS);
   const [activeEvent, setActiveEvent] = useState<IslandEvent | null>(null);
@@ -392,18 +404,18 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
   // Listen for appointment reminder events
   useEffect(() => {
     const handler = () => {
-      if (islandState === 'expanded') return;
+      if (notchState === 'expanded') return;
       setHasAppointment(true);
       setAppointmentAnimKey((k) => k + 1);
     };
     window.addEventListener('ix:appointment-reminder', handler);
     return () => window.removeEventListener('ix:appointment-reminder', handler);
-  }, [islandState]);
+  }, [notchState]);
 
   // Listen for report-complete events
   useEffect(() => {
     const handler = () => {
-      if (islandState === 'expanded') return;
+      if (notchState === 'expanded') return;
       setReportPhase('shake');
       setReportAnimKey((k) => k + 1);
       // After shake (900ms) → show check
@@ -413,12 +425,12 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
     };
     window.addEventListener('ix:report-complete', handler);
     return () => window.removeEventListener('ix:report-complete', handler);
-  }, [islandState]);
+  }, [notchState]);
 
   // Listen for new notification events
   useEffect(() => {
     const handler = () => {
-      if (islandState === 'expanded') return;
+      if (notchState === 'expanded') return;
       setHasNotification(true);
       setNotifyAnimKey((k) => k + 1);
       const newEvent: IslandEvent = {
@@ -433,30 +445,30 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
     };
     window.addEventListener('ix:new-notification', handler);
     return () => window.removeEventListener('ix:new-notification', handler);
-  }, [islandState]);
+  }, [notchState]);
 
   const unreadCount = events.filter((e) => !e.read).length;
-  const isExpanded = islandState === 'expanded';
+  const isExpanded = notchState === 'expanded';
 
   const closeIsland = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
-      setIslandState('idle');
+      setNotchState('idle');
       setIsClosing(false);
-    }, 240); // matches island-collapse duration
+    }, 240); // matches notch-collapse duration
   }, []);
 
   // Show an event notification temporarily
   const showEvent = useCallback((event: IslandEvent) => {
-    if (islandState === 'expanded') return;
+    if (notchState === 'expanded') return;
     setActiveEvent(event);
-    setIslandState('event');
+    setNotchState('event');
     if (eventTimerRef.current) clearTimeout(eventTimerRef.current);
     eventTimerRef.current = setTimeout(() => {
-      setIslandState('idle');
+      setNotchState('idle');
       setActiveEvent(null);
     }, 4000);
-  }, [islandState]);
+  }, [notchState]);
 
 
   // Keyboard: Escape closes
@@ -480,7 +492,7 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
   const handlePillClick = () => {
     if (eventTimerRef.current) clearTimeout(eventTimerRef.current);
     if (isExpanded) { closeIsland(); return; }
-    setIslandState('expanded');
+    setNotchState('expanded');
     setActiveEvent(null);
   };
 
@@ -496,7 +508,7 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
     ? createPortal(
         <div
           aria-hidden="true"
-          className={isClosing ? 'island-scrim-out' : 'island-scrim-in'}
+          className={isClosing ? 'notch-scrim-out' : 'notch-scrim-in'}
           style={{ position: 'fixed', inset: 0, zIndex: 98, background: 'rgba(0,0,0,0.45)' }}
         />,
         document.body,
@@ -509,33 +521,33 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
       style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}
     >
       <TooltipProvider delay={300}>
-      {/* Collapsed pill — hidden while panel is open/closing */}
+      {/* Collapsed notch — hidden while panel is open/closing */}
       {!showPanel && (
         <button
           type="button"
           aria-label={unreadCount > 0 ? `Open navigation (${unreadCount} unread)` : 'Open navigation'}
           onClick={() => { setHasNotification(false); setHasAppointment(false); setReportPhase('idle'); handlePillClick(); }}
-          className="relative flex items-center justify-center gap-2 bg-secondary text-foreground border border-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-accent active:opacity-80 overflow-hidden transition-all duration-300"
+          className="relative flex items-center justify-center gap-2 bg-secondary text-sidebar-foreground border border-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-accent active:opacity-80 overflow-hidden transition-all duration-300"
           style={{ width: hasNotification && hasAppointment ? 112 : 80, height: 32, borderRadius: '0 0 4px 4px', borderTop: 'none' }}
         >
           {reportPhase !== 'idle' ? (
             <span key={reportAnimKey} className="relative inline-flex items-center justify-center shrink-0">
               {reportPhase === 'shake' && (
-                <span className="island-notify-shake inline-flex text-foreground">
+                <span className="notch-notify-shake inline-flex text-foreground">
                   <FileText size={20} weight="regular" />
                 </span>
               )}
               {reportPhase === 'check' && (
-                <span className="island-icon-fade-in inline-flex" style={{ color: 'var(--success)' }}>
+                <span className="notch-icon-fade-in inline-flex" style={{ color: 'var(--success)' }}>
                   <CheckCircle size={20} weight="regular" />
                 </span>
               )}
               {reportPhase === 'done' && (
                 <>
-                  <span className="island-icon-fade-in inline-flex text-foreground">
+                  <span className="notch-icon-fade-in inline-flex text-foreground">
                     <FileText size={20} weight="regular" />
                   </span>
-                  <span className="island-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full text-[7px] font-bold text-white leading-none" style={{ background: 'var(--success)' }}>
+                  <span className="notch-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full text-[7px] font-bold text-white leading-none" style={{ background: 'var(--success)' }}>
                     ✓
                   </span>
                 </>
@@ -545,26 +557,26 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
             <span className="flex items-center gap-2">
               {hasNotification && (
                 <span className="relative inline-flex items-center justify-center shrink-0">
-                  <span key={notifyAnimKey} className="island-notify-shake inline-flex">
+                  <span key={notifyAnimKey} className="notch-notify-shake inline-flex">
                     <BellRinging size={20} weight="regular" />
                   </span>
-                  <span className="island-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full bg-destructive text-[7px] font-bold text-white leading-none">
+                  <span className="notch-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full bg-destructive text-[7px] font-bold text-white leading-none">
                     1
                   </span>
                 </span>
               )}
               {hasAppointment && (
                 <span className="relative inline-flex items-center justify-center shrink-0">
-                  <span key={appointmentAnimKey} className="island-notify-shake inline-flex">
+                  <span key={appointmentAnimKey} className="notch-notify-shake inline-flex">
                     <CalendarBlank size={20} weight="regular" />
                   </span>
                 </span>
               )}
             </span>
-          ) : islandState === 'event' && activeEvent ? (
+          ) : notchState === 'event' && activeEvent ? (
             <EventIcon type={activeEvent.type} size={20} />
           ) : (
-            <span className="block rounded-full bg-muted-foreground" style={{ width: 24, height: 2 }} />
+            <span className="block rounded-full" style={{ width: 24, height: 4, border: '1.5px solid currentColor' }} />
           )}
         </button>
       )}
@@ -572,7 +584,7 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
       {/* Expanded panel — animates open and closed */}
       {showPanel && (
         <div
-          className={isClosing ? 'island-collapse' : 'island-expand'}
+          className={isClosing ? 'notch-collapse' : 'notch-expand'}
           style={{
             width: 'min(1360px, calc(100vw - 32px))',
             borderRadius: '0 0 8px 8px',
@@ -583,7 +595,7 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
             boxShadow: '0 8px 32px -4px rgba(0,0,0,0.12), 0 2px 8px -2px rgba(0,0,0,0.08)',
           }}
         >
-          <div className={isClosing ? 'island-content-out' : 'island-content-in'}>
+          <div className={isClosing ? 'notch-content-out' : 'notch-content-in'}>
             <ExpandedPanel
               events={events}
               onClose={closeIsland}
@@ -591,6 +603,8 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
               onWork={onWork}
               onSettings={onSettings}
               onMarkRead={handleMarkRead}
+              onMedicationReview={onMedicationReview}
+              onFileReview={onFileReview}
             />
           </div>
         </div>

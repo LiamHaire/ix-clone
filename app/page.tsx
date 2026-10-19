@@ -34,7 +34,7 @@ import { PatientTaskList } from "@/components/chat/patient-task-list";
 import { AdditionalPanel } from "@/components/chat/additional-panel";
 import { SettingsPanel } from "@/components/settings/settings-panel";
 import { NavRail } from "@/components/nav-rail";
-import { NavIsland } from "@/components/nav-island/nav-island";
+import { NavNotch } from "@/components/nav-island/nav-island";
 import { SheetHeader } from "@/components/ui/sheet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Warning } from "@phosphor-icons/react";
@@ -116,7 +116,7 @@ export default function Home() {
   const [overlayShadow, setOverlayShadow] = useState(true);
 
   const [showAlert, setShowAlert] = useState(false);
-  const [navMode, setNavMode] = useState<'navrail' | 'island'>('navrail');
+  const [navMode, setNavMode] = useState<'navrail' | 'notch'>('navrail');
   const [isWorkspace, setIsWorkspace] = useState(false);
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
@@ -293,7 +293,7 @@ export default function Home() {
     if (!text || appState === "animating") return;
     setValue("");
 
-    if (text.toLowerCase() === "show island") { setNavMode('island'); return; }
+    if (text.toLowerCase() === "show notch") { setNavMode('notch'); return; }
     if (text.toLowerCase() === "show navrail") { setNavMode('navrail'); return; }
     if (text.toLowerCase() === "new notification") { window.dispatchEvent(new CustomEvent('ix:new-notification')); return; }
     if (text.toLowerCase() === "show meeting") { window.dispatchEvent(new CustomEvent('ix:appointment-reminder')); return; }
@@ -475,11 +475,27 @@ export default function Home() {
   return (
     <div className="h-full overflow-hidden bg-background flex flex-1 min-w-0">
       {navMode === 'navrail' && <NavRail />}
-      {navMode === 'island' && (
-        <NavIsland
+      {navMode === 'notch' && (
+        <NavNotch
           onSessionHistory={() => window.dispatchEvent(new CustomEvent('ix:open-session-history'))}
           onWork={() => window.dispatchEvent(new CustomEvent('ix:open-work'))}
           onSettings={() => window.dispatchEvent(new CustomEvent('ix:open-settings'))}
+          onMedicationReview={() => {
+            setAppState('chat');
+            setChatContentOpacity(1);
+            setChatTitle('Annual medication review');
+            setWorkspaceMode('patient-summary');
+            setIsWorkspace(true);
+            setIsAdditional(false);
+            setIsThinking(true);
+            setTimeout(() => {
+              setIsThinking(false);
+              setMessages([
+                { role: 'assistant', content: 'Opening the medication review form for Margaret Ellison.', showMedicationReviewForm: true },
+              ]);
+            }, 1200);
+          }}
+          onFileReview={() => handleSubmit('Help me perform a file review', 'inline')}
         />
       )}
       <div className="relative flex flex-col flex-1 min-w-0 h-full overflow-hidden" style={{ minHeight: 0 }}>
@@ -571,11 +587,11 @@ export default function Home() {
         >
           {/* ── Workspace panel ── */}
           <div
-            className={`h-full overflow-hidden ${navMode === 'island' ? 'border-l' : 'border-r'} border-border`}
+            className={`h-full overflow-hidden ${navMode === 'notch' ? 'border-l' : 'border-r'} border-border`}
             style={{
               flex: isWorkspace ? "2 1 0" : "0 0 0",
               minWidth: 0,
-              order: navMode === 'island' ? 1 : 0,
+              order: navMode === 'notch' ? 1 : 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -595,7 +611,7 @@ export default function Home() {
               />
             )}
             {isWorkspace && workspaceMode === 'medication-review' && (
-              <div className={`h-full flex flex-col bg-popover ${navMode === 'island' ? 'border-l' : 'border-r'} border-border`}>
+              <div className={`h-full flex flex-col bg-popover ${navMode === 'notch' ? 'border-l' : 'border-r'} border-border`}>
                 <SheetHeader className="px-4 pt-4 pb-3 flex-row items-start justify-between gap-2 shrink-0 border-b border-border">
                   <div className="flex flex-col gap-0.5">
                     <p className="font-heading text-base font-medium text-foreground leading-none">Medication review</p>
@@ -656,7 +672,7 @@ export default function Home() {
             style={{
               flex: isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: 0,
-              order: navMode === 'island' ? 0 : 1,
+              order: navMode === 'notch' ? 0 : 1,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -667,7 +683,7 @@ export default function Home() {
                 <p className="font-heading text-base font-medium text-foreground leading-none truncate">{sentenceCase(chatTitle)}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                {navMode === 'island' && (
+                {navMode === 'notch' && (
                   <Tooltip>
                     <TooltipTrigger
                       aria-label="New session"
@@ -954,11 +970,11 @@ export default function Home() {
 
           {/* ── Additional panel (left in navrail, right in island) ── */}
           <div
-            className={`h-full overflow-hidden ${navMode === 'island' ? 'border-l' : 'border-r'} border-border`}
+            className={`h-full overflow-hidden ${navMode === 'notch' ? 'border-l' : 'border-r'} border-border`}
             style={{
               flex: isAdditional ? "1 0 0" : "0 0 0",
               minWidth: 0,
-              order: navMode === 'island' ? 1 : 0,
+              order: navMode === 'notch' ? 1 : 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
