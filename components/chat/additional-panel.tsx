@@ -59,7 +59,7 @@ export function AdditionalPanel({ title, onClose, onSend, variant = 'default' }:
                 <p>Hi Arthur,</p>
                 <p>As part of the latest file review, we identified that a conflict check needs to be completed for this matter.</p>
                 <p>Please complete the conflict check and update the file with the outcome at your earliest convenience. If any potential conflict is identified, please follow the appropriate escalation process before progressing the matter further.</p>
-                <p>Thanks<br />Jonathan</p>
+                <p>Thanks<br />Liam</p>
               </div>
             </div>
           ) : (

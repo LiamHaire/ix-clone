@@ -1,4 +1,4 @@
-﻿---
+---
 typography:
   display:
     font: "Geist"
@@ -284,8 +284,8 @@ components:
 
 # IX Design System — Cool Graphite
 
-**Version:** 1.1  
-**Date:** 08/10/2026
+**Version:** 1.2
+**Date:** 19/10/2026
 
 IXDS is the component and token library for IQ. It builds on the shadcn b0 preset (radix-nova style) with Tailwind CSS v4, React, and Radix UI primitives. The base theme is "Cool Graphite" — blue-shifted graphite neutrals with a confident orange accent, OKLCH perceptual colour throughout.
 
@@ -365,8 +365,123 @@ Components must always use Tailwind utility classes that resolve to CSS custom p
 
 | Theme                   | Class            | Character                                                  |
 | ----------------------- | ---------------- | ---------------------------------------------------------- |
-| **Cool Graphite Light** | _(none / :root)_ | Blue-shifted graphite neutrals, warm surfaces              |
-| **Cool Graphite Dark**  | `.dark`          | Deep graphite, lighter elevated surfaces, inset highlights |
+| **Cool Graphite Light** | _(none / :root)_ | Warm graphite neutrals (hue ~71–82), orange accent         |
+| **Cool Graphite Dark**  | `.dark`          | Blue-shifted graphite (hue 258), zero-chroma primary       |
+
+### Canonical token values
+
+**Cool Graphite Light (`:root`)**
+
+```css
+--background:              oklch(0.9888 0.0045 78.31);
+--foreground:              oklch(0.2095 0.0163 71.06);
+--card:                    oklch(0.9988 0.0045 78.31);
+--card-foreground:         oklch(0.2095 0.0163 71.06);
+--popover:                 oklch(0.9888 0.0045 78.3);
+--popover-foreground:      oklch(0.2095 0.0163 71.06);
+--primary:                 oklch(0.357 0.0285 71.02);
+--primary-foreground:      oklch(0.9888 0.0045 78.3);
+--secondary:               oklch(0.9576 0.0086 67.72);
+--secondary-foreground:    oklch(0.2095 0.0163 71.06);
+--muted:                   oklch(0.9576 0.0086 67.72);
+--muted-foreground:        oklch(0.5341 0.0297 76.55);
+--accent:                  oklch(0.9576 0.0086 67.72);
+--accent-foreground:       oklch(0.2095 0.0163 71.06);
+--destructive:             oklch(0.5771 0.2152 27.33);
+--destructive-foreground:  oklch(0.99 0.01 27);
+--success:                 oklch(0.5273 0.1371 150.07);
+--warning:                 oklch(0.5538 0.1207 66.44);
+--info:                    oklch(0.4882 0.2172 264.38);
+--border:                  oklch(0.9203 0.0132 82.4);
+--border-subtle:           oklch(0.9576 0.0086 67.72);
+--input:                   oklch(0.9203 0.0132 82.4);
+--ring:                    oklch(0.357 0.0285 71.02);
+--surface-raised:          oklch(0.99 0.0045 78.31);
+--surface-raised-foreground: oklch(0.2095 0.0163 71.06);
+--chart-1:                 oklch(0.6461 0.1943 41.12);
+--chart-2:                 oklch(0.6002 0.1038 184.7);
+--chart-3:                 oklch(0.3982 0.0664 227.39);
+--chart-4:                 oklch(0.8369 0.1644 84.43);
+--chart-5:                 oklch(0.7686 0.1647 70.08);
+--file-pdf:                oklch(0.54 0.21 27);
+--file-document:           oklch(0.54 0.2 263);
+--file-spreadsheet:        oklch(0.56 0.16 152);
+--file-image:              oklch(0.55 0.22 350);
+--file-slide:              oklch(0.62 0.19 44);
+--file-code:               oklch(0.52 0.21 278);
+--file-archive:            oklch(0.6 0.17 82);
+--file-video:              oklch(0.56 0.19 131);
+--file-audio:              oklch(0.54 0.21 302);
+--file-email:              oklch(0.56 0.17 191);
+--radius:                  0.625rem;
+--sidebar:                 oklch(0.9703 0.0062 75.41);
+--sidebar-foreground:      oklch(0.4395 0.0163 71.06);
+--sidebar-primary:         oklch(0.357 0.0285 71.02);
+--sidebar-primary-foreground: oklch(0.9888 0.0045 78.3);
+--sidebar-accent:          oklch(0.945 0.0132 82.4);
+--sidebar-accent-foreground: oklch(0.2095 0.0163 71.06);
+--sidebar-border:          oklch(0.9203 0.0132 82.4);
+--sidebar-ring:            oklch(0.357 0.0285 71.02);
+--shadow-sm: 0 1px 2px oklch(0.25 0.03 255 / 0.06), 0 1px 1px oklch(0.25 0.03 255 / 0.04);
+--shadow-md: 0 4px 12px -2px oklch(0.25 0.03 255 / 0.08), 0 2px 6px -2px oklch(0.25 0.03 255 / 0.06);
+--shadow-lg: 0 14px 32px -8px oklch(0.25 0.05 255 / 0.14), 0 4px 10px -4px oklch(0.25 0.05 255 / 0.08);
+```
+
+**Cool Graphite Dark (`.dark`)**
+
+```css
+--background:              oklch(0.17 0.012 258);
+--foreground:              oklch(0.98 0.003 250);
+--card:                    oklch(0.215 0.014 258);
+--card-foreground:         oklch(0.98 0.003 250);
+--popover:                 oklch(0.235 0.014 258);
+--popover-foreground:      oklch(0.98 0.003 250);
+--primary:                 oklch(0.9219 0 0);
+--primary-foreground:      oklch(0.2046 0 0);
+--secondary:               oklch(0.27 0.012 258);
+--secondary-foreground:    oklch(0.98 0.003 250);
+--muted:                   oklch(0.27 0.012 258);
+--muted-foreground:        oklch(0.7 0.012 255);
+--accent:                  oklch(0.27 0.012 258);
+--accent-foreground:       oklch(0.98 0.003 250);
+--destructive:             oklch(0.58 0.2 25);
+--destructive-foreground:  oklch(0.985 0.01 25);
+--success:                 oklch(0.62 0.15 150);
+--warning:                 oklch(0.8 0.13 80);
+--info:                    oklch(0.72 0.12 225);
+--border:                  oklch(1 0 0 / 0.09);
+--border-subtle:           oklch(1 0 0 / 0.05);
+--input:                   oklch(1 0 0 / 0.12);
+--ring:                    oklch(0.9219 0 0);
+--surface-raised:          oklch(0.255 0.015 258);
+--surface-raised-foreground: oklch(0.98 0.003 250);
+--chart-1:                 oklch(0.66 0.2 46);
+--chart-2:                 oklch(0.72 0.12 225);
+--chart-3:                 oklch(0.62 0.15 150);
+--chart-4:                 oklch(0.55 0.22 295);
+--chart-5:                 oklch(0.8 0.13 80);
+--file-pdf:                oklch(0.73 0.14 24);
+--file-document:           oklch(0.73 0.13 226);
+--file-spreadsheet:        oklch(0.77 0.14 155);
+--file-image:              oklch(0.77 0.14 351);
+--file-slide:              oklch(0.8 0.13 72);
+--file-code:               oklch(0.75 0.15 292);
+--file-archive:            oklch(0.79 0.12 80);
+--file-video:              oklch(0.78 0.13 131);
+--file-audio:              oklch(0.76 0.15 302);
+--file-email:              oklch(0.77 0.13 191);
+--sidebar:                 oklch(0.215 0.014 258);
+--sidebar-foreground:      oklch(0.72 0.01 255);
+--sidebar-primary:         oklch(0.9219 0 0);
+--sidebar-primary-foreground: oklch(0.2046 0 0);
+--sidebar-accent:          oklch(0.295 0 0);
+--sidebar-accent-foreground: oklch(0.98 0.003 250);
+--sidebar-border:          oklch(1 0 0 / 0.09);
+--sidebar-ring:            oklch(0.9219 0 0);
+--shadow-sm: 0 1px 2px oklch(0 0 0 / 0.5);
+--shadow-md: 0 4px 14px -4px oklch(0 0 0 / 0.55), 0 1px 2px oklch(0 0 0 / 0.4);
+--shadow-lg: 0 14px 36px -10px oklch(0 0 0 / 0.66), inset 0 1px 0 oklch(1 0 0 / 0.05);
+```
 
 ### Accent colours
 
@@ -432,42 +547,6 @@ All layout dimensions are multiples of the 4px base grid. Never use arbitrary pi
 | 2xl   | 48px  | `p-12`, `gap-12` |
 | 3xl   | 64px  | `p-16`, `gap-16` |
 
-### Breakpoints and containers
-
-The project uses Tailwind CSS v4 defaults. No `--breakpoint-*` or `--container-*` values are overridden in the theme.
-
-#### Viewport breakpoints (Tailwind v4 defaults)
-
-| Name | Min width | Tailwind prefix |
-| ---- | --------- | --------------- |
-| sm   | 40rem (640px)  | `sm:`  |
-| md   | 48rem (768px)  | `md:`  |
-| lg   | 64rem (1024px) | `lg:`  |
-| xl   | 80rem (1280px) | `xl:`  |
-| 2xl  | 96rem (1536px) | `2xl:` |
-
-Use viewport breakpoints only for device-level decisions (navigation changes, touch targets). Layout collapse inside blocks is driven by container queries, not viewport breakpoints.
-
-#### Container query sizes (Tailwind v4 defaults, via `@tailwindcss/container-queries`)
-
-| Name | Min width | Prefix |
-| ---- | --------- | ------ |
-| @xs  | 20rem (320px)  | `@xs:`  |
-| @sm  | 24rem (384px)  | `@sm:`  |
-| @md  | 28rem (448px)  | `@md:`  |
-| @lg  | 32rem (512px)  | `@lg:`  |
-| @xl  | 36rem (576px)  | `@xl:`  |
-| @2xl | 42rem (672px)  | `@2xl:` |
-| @3xl | 48rem (768px)  | `@3xl:` |
-| @4xl | 56rem (896px)  | `@4xl:` |
-| @5xl | 64rem (1024px) | `@5xl:` |
-| @6xl | 72rem (1152px) | `@6xl:` |
-| @7xl | 80rem (1280px) | `@7xl:` |
-
-#### Page widths
-
-No page or content max-width convention exists in the project at this time.
-
 ---
 
 ## Icons
@@ -500,6 +579,8 @@ Components with explicit size variants scale their icons with the control:
 - Always use a size token — never raw pixel values (`size-[18px]`) or generic Tailwind sizes (`size-4`) for icons.
 - Do not set an explicit size class when the component's CSS already handles it via `[&_svg:not([class*='size-'])]:size-icon` — only set it when placing an icon directly in markup outside a component context.
 - Alert icons use `size-icon` with `self-start translate-y-0.5` to align with the title baseline.
+- Decorative icons — those beside visible text, an `sr-only` label, or an `aria-label` on the parent control — carry `aria-hidden="true"` and `focusable="false"`. Phosphor does not add them. Skip the pair when an ancestor is already `aria-hidden`.
+- An icon that conveys meaning on its own (a status with no adjacent text, such as `Spinner`) is not decorative: leave it exposed and give it a `role` and `aria-label`. An icon-only button is named on the button, not the icon.
 
 ---
 
@@ -583,11 +664,9 @@ States: normal, hover, active, disabled (`opacity-50`, no pointer events), focus
 
 ### Input / Textarea
 
-- Default height: 32px (`h-8`), matching the default button. Input-like triggers (Select, InputGroup, CommandInput) share this height.
-- Radius: `rounded-lg` (10px), matching the installed component. ⚠ **Radius flag:** the front matter states `rounded.lg` but the Shapes table lists inputs under `rounded-md`. The installed component renders `rounded-lg`. DESIGN.md has been made consistent with the installed component; the Shapes table entry for inputs should be reviewed.
+- Height: 32px (`h-8`).
 - Label is always required (visible or via `aria-label`).
 - `aria-invalid="true"` activates error state styling automatically.
-- Textarea has no fixed height — it grows with content (`field-sizing-content`, `min-h-16`).
 
 #### Field width
 
@@ -615,31 +694,9 @@ Apply `max-w-*` to the `Field` wrapper, not the `Input` directly. The constraint
 
 For a standalone `InputGroup` without a `Field` wrapper, apply width directly to `InputGroup` (`<InputGroup className="w-64">`). Inside a `Field`, apply width to the `Field` — `Field`'s `*:w-full` fills the group to match automatically. Do not apply a fixed width to `InputGroup` when it is inside a `Field`; the `Field` rule will override it.
 
-### Form layout
+### Select
 
-#### Field gap and row container
-
-`FieldGroup` is the row container for form sections. It is already a `@container/field-group` context. Use `FieldGroup` without a gap override — its default `gap-5` (20px) is the field gap. Apply the gap once on `FieldGroup` — never add margin to individual fields. Spacing inside a field (label to input, help text, error) is inherited from the shadcn Field components.
-
-Note: `gap-5` (20px) sits between the `md` (16px) and `lg` (24px) spacing tokens and is not a named token in the DESIGN.md scale. It is the shadcn `FieldGroup` component default and is used as-is.
-
-Each form section (a `FieldSet` containing a `FieldGroup`) is a block in its own right. Composite forms assemble multiple section blocks.
-
-#### Form split container size
-
-The form split size is `@2xl` (42rem / 672px). Below this container width all fields collapse to a single column in source order. `FieldGroup` responds to its own container width — no additional wrapper is needed. Viewport breakpoints do not drive the collapse.
-
-#### Group spacing token
-
-The spacing between field groups, and between children of a composite form, uses `gap-5` (20px) — matching the `FieldGroup` field gap so vertical rhythm is consistent throughout.
-
-#### Label style
-
-`FieldLabel` renders `text-sm` (14px) with `font-medium` (weight 500). This corresponds to the `small` type scale size with an increased weight. The label token is `small` at weight 500.
-
-#### Touch condition and touch sizes
-
-On touch devices (coarse pointer input), form controls use the `lg` size variant and the body text size (16px). The touch condition is `@media (pointer: coarse)`, applied via Tailwind's arbitrary variant syntax: `[@media(pointer:coarse)]:size-lg`. The body text size prevents iOS Safari from zooming into focused inputs. All input components (`Input`, `Textarea`, `SelectTrigger`) now support `size="lg"` (`h-10`, `text-base`).
+`SelectTrigger` is content-sized by default (`w-fit`), unlike `Input`. Inside a `Field` it fills the field, so set width on the `Field` as for `Input`. Outside a `Field`, add `w-full` or a fixed width to the trigger when you need one.
 
 ### Dialog
 
@@ -656,6 +713,15 @@ On touch devices (coarse pointer input), form controls use the `lg` size variant
 ### Badge
 
 Six variants: `default`, `secondary`, `destructive`, `outline`, `ghost`, `link`.
+
+`destructive` uses full-strength `text-destructive` on `bg-destructive/10`, identically in light and dark mode. Do not raise the dark-mode background to 20%. Reuse the existing `--destructive` token; never introduce a new colour for a badge.
+
+Choosing a variant:
+
+- `default` — primary label or count. `secondary` — neutral metadata. `outline` — low-emphasis tag. `ghost` and `link` — inline, interactive labels.
+- `destructive` — errors, failed or blocked states.
+- Success, warning, and info states have no dedicated variant. Pass the status tokens through `className`, using the same recipe as `destructive`: `bg-success/10 text-success`, `bg-warning/10 text-warning`, `bg-info/10 text-info`. Same 10% background in light and dark mode.
+- Colour never carries meaning alone. The badge text must say the state.
 
 ### Tooltip
 
@@ -709,6 +775,7 @@ Key patterns:
 - Never hardcode hex, rgb, or oklch values in component files.
 - Never use Tailwind grey classes (`gray-100`, `slate-500`).
 - Never use `bg-background` as a card or panel surface.
+- Status badges and chips (destructive, success, warning, info) use the full-strength semantic colour for text and that colour at 10% opacity for the background, unchanged between light and dark mode.
 
 **Typography**
 

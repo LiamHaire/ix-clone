@@ -297,6 +297,9 @@ export default function Home() {
     if (text.toLowerCase() === "show navrail") { setNavMode('navrail'); return; }
     if (text.toLowerCase() === "new notification") { window.dispatchEvent(new CustomEvent('ix:new-notification')); return; }
     if (text.toLowerCase() === "show meeting") { window.dispatchEvent(new CustomEvent('ix:appointment-reminder')); return; }
+    if (text.toLowerCase() === "show report") { window.dispatchEvent(new CustomEvent('ix:report-complete')); return; }
+    if (text.toLowerCase() === "dark") { document.documentElement.classList.add('dark'); return; }
+    if (text.toLowerCase() === "light") { document.documentElement.classList.remove('dark'); return; }
 
     const isFileReview = text.toLowerCase().includes("file review");
     const isFileReviewYes = text === "__file_review_yes__";
@@ -520,11 +523,11 @@ export default function Home() {
               className="font-sans text-[30px] font-semibold text-foreground mb-6 tracking-tight"
               style={{ fontVariationSettings: "'wght' 600" }}
             >
-              {greeting}, Jonathan
+              {greeting}, Liam
             </h1>
             <div className="relative isolate w-full">
-              <img src="/glow.svg" aria-hidden="true" className="absolute pointer-events-none select-none"
-                style={{ width: "1097px", maxWidth: "none", height: "400px", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: -1 }} />
+              <div aria-hidden="true" className="absolute pointer-events-none select-none glow-radial"
+                style={{ width: "1600px", maxWidth: "none", height: "700px", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: -1 }} />
               <div className="w-full rounded-[26px] border border-border bg-surface-raised shadow-sm">
                 {inputInner}
               </div>
@@ -549,7 +552,7 @@ export default function Home() {
                 transition: "opacity 0.35s ease",
               }}
             >
-              {greeting}, Jonathan
+              {greeting}, Liam
             </h1>
             <div style={{ width: "100%", maxWidth: 720, minHeight: 128 }} aria-hidden />
           </div>

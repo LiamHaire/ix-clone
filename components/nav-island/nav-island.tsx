@@ -20,6 +20,8 @@ import {
   Info,
   User,
   SignOut,
+  FileText,
+  CheckCircle,
 } from '@phosphor-icons/react';
 import {
   DropdownMenu,
@@ -49,10 +51,10 @@ interface NavIslandProps {
 // ── Event icon map ────────────────────────────────────────────────────────────
 
 function EventIcon({ type, size = 20 }: { type: IslandEvent['type']; size?: number }) {
-  if (type === 'appointment') return <CalendarBlank size={size} weight="duotone" />;
-  if (type === 'task') return <ListChecks size={size} weight="duotone" />;
-  if (type === 'alert') return <Warning size={size} weight="duotone" />;
-  return <Bell size={size} weight="duotone" />;
+  if (type === 'appointment') return <CalendarBlank size={size} weight="regular" />;
+  if (type === 'task') return <ListChecks size={size} weight="regular" />;
+  if (type === 'alert') return <Warning size={size} weight="regular" />;
+  return <Bell size={size} weight="regular" />;
 }
 
 
@@ -131,16 +133,16 @@ function ExpandedPanel({
         <div className="flex items-center gap-1 shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger
-              aria-label="Jonathan Smith"
+              aria-label="Liam Haire"
               className="flex items-center justify-center size-8 rounded-full bg-muted border border-border text-[11px] font-semibold text-muted-foreground hover:bg-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
             >
-              JS
+              LH
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="start" sideOffset={8} className="w-48">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="font-normal">
-                  <p className="text-sm font-medium text-foreground">Jonathan Smith</p>
-                  <p className="text-xs text-muted-foreground">j.smith@chambers.co.uk</p>
+                  <p className="text-sm font-medium text-foreground">Liam Haire</p>
+                  <p className="text-xs text-muted-foreground">l.haire@oneadvanced.com</p>
                 </DropdownMenuLabel>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
@@ -245,11 +247,7 @@ function ExpandedPanel({
         <div className="flex-1 min-w-0 flex flex-col rounded-xl border border-border bg-background overflow-hidden">
           <div className="flex items-center justify-between px-3 pt-3 pb-2 border-b border-border">
             <p className="text-[11px] font-semibold text-muted-foreground">Notifications</p>
-            {unread.length > 0 && (
-              <span className="flex items-center justify-center size-4 rounded-full bg-destructive text-[9px] font-bold text-white leading-none">
-                {unread.length}
-              </span>
-            )}
+            <button type="button" className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">View all</button>
           </div>
           <div className="flex flex-col flex-1">
             {(search ? filtered : unread.length > 0 ? unread : events.slice(0, 3)).map((event, i, arr) => (
@@ -383,6 +381,9 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
   const [hasNotification, setHasNotification] = useState(false);
   const [appointmentAnimKey, setAppointmentAnimKey] = useState(0);
   const [hasAppointment, setHasAppointment] = useState(false);
+  // 'idle' | 'shake' | 'check' | 'done'
+  const [reportPhase, setReportPhase] = useState<'idle' | 'shake' | 'check' | 'done'>('idle');
+  const [reportAnimKey, setReportAnimKey] = useState(0);
   const eventTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -392,13 +393,26 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
   useEffect(() => {
     const handler = () => {
       if (islandState === 'expanded') return;
-      setHasNotification(false);
       setHasAppointment(true);
-
       setAppointmentAnimKey((k) => k + 1);
     };
     window.addEventListener('ix:appointment-reminder', handler);
     return () => window.removeEventListener('ix:appointment-reminder', handler);
+  }, [islandState]);
+
+  // Listen for report-complete events
+  useEffect(() => {
+    const handler = () => {
+      if (islandState === 'expanded') return;
+      setReportPhase('shake');
+      setReportAnimKey((k) => k + 1);
+      // After shake (900ms) → show check
+      setTimeout(() => setReportPhase('check'), 900);
+      // After check (900ms) → back to report icon with badge
+      setTimeout(() => setReportPhase('done'), 1800);
+    };
+    window.addEventListener('ix:report-complete', handler);
+    return () => window.removeEventListener('ix:report-complete', handler);
   }, [islandState]);
 
   // Listen for new notification events
@@ -500,16 +514,39 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
         <button
           type="button"
           aria-label={unreadCount > 0 ? `Open navigation (${unreadCount} unread)` : 'Open navigation'}
-          onClick={() => { setHasNotification(false); setHasAppointment(false); handlePillClick(); }}
-          className="relative flex items-center justify-center gap-2 bg-secondary text-foreground border border-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-accent active:opacity-80 overflow-hidden"
-          style={{ width: 80, height: 32, borderRadius: '0 0 4px 4px', borderTop: 'none' }}
+          onClick={() => { setHasNotification(false); setHasAppointment(false); setReportPhase('idle'); handlePillClick(); }}
+          className="relative flex items-center justify-center gap-2 bg-secondary text-foreground border border-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-accent active:opacity-80 overflow-hidden transition-all duration-300"
+          style={{ width: hasNotification && hasAppointment ? 112 : 80, height: 32, borderRadius: '0 0 4px 4px', borderTop: 'none' }}
         >
-          {(hasNotification || hasAppointment) ? (
+          {reportPhase !== 'idle' ? (
+            <span key={reportAnimKey} className="relative inline-flex items-center justify-center shrink-0">
+              {reportPhase === 'shake' && (
+                <span className="island-notify-shake inline-flex text-foreground">
+                  <FileText size={20} weight="regular" />
+                </span>
+              )}
+              {reportPhase === 'check' && (
+                <span className="island-icon-fade-in inline-flex" style={{ color: 'var(--success)' }}>
+                  <CheckCircle size={20} weight="regular" />
+                </span>
+              )}
+              {reportPhase === 'done' && (
+                <>
+                  <span className="island-icon-fade-in inline-flex text-foreground">
+                    <FileText size={20} weight="regular" />
+                  </span>
+                  <span className="island-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full text-[7px] font-bold text-white leading-none" style={{ background: 'var(--success)' }}>
+                    ✓
+                  </span>
+                </>
+              )}
+            </span>
+          ) : (hasNotification || hasAppointment) ? (
             <span className="flex items-center gap-2">
               {hasNotification && (
-                <span key={notifyAnimKey} className="relative inline-flex items-center justify-center shrink-0">
-                  <span className="island-notify-shake inline-flex">
-                    <BellRinging size={20} weight="duotone" />
+                <span className="relative inline-flex items-center justify-center shrink-0">
+                  <span key={notifyAnimKey} className="island-notify-shake inline-flex">
+                    <BellRinging size={20} weight="regular" />
                   </span>
                   <span className="island-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full bg-destructive text-[7px] font-bold text-white leading-none">
                     1
@@ -517,9 +554,9 @@ export function NavIsland({ onSessionHistory, onWork, onSettings }: NavIslandPro
                 </span>
               )}
               {hasAppointment && (
-                <span key={appointmentAnimKey} className="relative inline-flex items-center justify-center shrink-0">
-                  <span className="island-notify-shake inline-flex">
-                    <CalendarBlank size={20} weight="duotone" />
+                <span className="relative inline-flex items-center justify-center shrink-0">
+                  <span key={appointmentAnimKey} className="island-notify-shake inline-flex">
+                    <CalendarBlank size={20} weight="regular" />
                   </span>
                 </span>
               )}

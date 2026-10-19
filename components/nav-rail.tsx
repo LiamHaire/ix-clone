@@ -150,7 +150,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
         {/* Avatar */}
         <DropdownMenu open={avatarOpen} onOpenChange={setAvatarOpen}>
           <DropdownMenuTrigger
-            aria-label="Jonathan Smith"
+            aria-label="Liam Haire"
             className={cn(
               "flex items-center justify-center rounded-full text-xs font-semibold mt-1",
               "border border-sidebar-border text-sidebar-accent-foreground",
@@ -161,13 +161,13 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
             )}
             style={{ width: 36, height: 36 }}
           >
-            JS
+            LH
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="end" sideOffset={8} className="w-48">
             <DropdownMenuGroup>
               <DropdownMenuLabel className="font-normal">
-                <p className="text-sm font-medium text-foreground">Jonathan Smith</p>
-                <p className="text-xs text-muted-foreground">j.smith@chambers.co.uk</p>
+                <p className="text-sm font-medium text-foreground">Liam Haire</p>
+                <p className="text-xs text-muted-foreground">l.haire@oneadvanced.com</p>
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

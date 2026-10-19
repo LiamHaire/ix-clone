@@ -24,9 +24,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="h-screen p-[4px] bg-background">
+      <body className="h-screen bg-background">
         <TooltipProvider>
-          <div className="relative flex h-full rounded-[8px] border border-border overflow-hidden">
+          <div className="relative flex h-full overflow-hidden">
             {children}
           </div>
         </TooltipProvider>
