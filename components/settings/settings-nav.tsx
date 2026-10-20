@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 interface SettingsNavProps {
   activeView: string;
   onViewChange: (id: string) => void;
+  className?: string;
 }
 
 interface NavItem {
@@ -50,9 +51,9 @@ const GROUPS: NavGroup[] = [
   },
 ];
 
-export function SettingsNav({ activeView, onViewChange }: SettingsNavProps) {
+export function SettingsNav({ activeView, onViewChange, className }: SettingsNavProps) {
   return (
-    <nav className="flex flex-col h-full overflow-y-auto py-4 pl-2 pr-4 gap-4 w-56 shrink-0">
+    <nav className={cn("flex flex-col h-full overflow-y-auto py-4 pl-2 pr-4 gap-4 w-56 shrink-0", className)}>
       {GROUPS.map((group, gi) => (
         <div key={gi}>
           {gi > 0 && <Separator className="mb-4" />}

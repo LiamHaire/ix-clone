@@ -19,7 +19,7 @@ export interface Lane {
 export const TASK_DATA: Lane[] = [
   {
     id: "due",
-    label: "Due",
+    label: "Due today",
     tasks: [
       {
         id: "t1",
@@ -42,7 +42,7 @@ export const TASK_DATA: Lane[] = [
   },
   {
     id: "inprogress",
-    label: "In Progress",
+    label: "In progress",
     tasks: [
       {
         id: "t3",

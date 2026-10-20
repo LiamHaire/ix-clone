@@ -451,11 +451,7 @@ export function NavNotch({ onSessionHistory, onWork, onSettings, onMedicationRev
   const isExpanded = notchState === 'expanded';
 
   const closeIsland = useCallback(() => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setNotchState('idle');
-      setIsClosing(false);
-    }, 240); // matches notch-collapse duration
+    setNotchState('idle');
   }, []);
 
   // Show an event notification temporarily
@@ -502,7 +498,274 @@ export function NavNotch({ onSessionHistory, onWork, onSettings, onMedicationRev
 
   if (!mounted) return null;
 
+  const pillWidth = hasNotification && hasAppointment ? 112 : 80;
+  const PANEL_WIDTH = Math.min(1360, window.innerWidth - 32);
+  const PANEL_HEIGHT = 420; // fixed expanded height
+  const PILL_HEIGHT = 32;
+
+  const width  = isExpanded ? PANEL_WIDTH  : pillWidth;
+  const height = isExpanded ? PANEL_HEIGHT : PILL_HEIGHT;
+  const radius = isExpanded ? '0 0 8px 8px' : '0 0 4px 4px';
+
+  const expandT  = `var(--ease-spring-grow) var(--dur-spring-grow)`;
+  const collapseT = `var(--ease-shrink) var(--dur-shrink)`;
+  const t = isExpanded ? expandT : collapseT;
+
+  const scrim = isExpanded
+    ? createPortal(
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 98,
+            background: 'rgba(0,0,0,0.45)',
+            animation: `notch-scrim-in 280ms var(--ease-out-cubic) forwards`,
+          }}
+        />,
+        document.body,
+      )
+    : null;
+
+  const island = createPortal(
+    <div
+      style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 99, pointerEvents: 'none' }}
+    >
+      <div
+        ref={containerRef}
+        aria-expanded={isExpanded}
+        style={{
+          width,
+          height,
+          borderRadius: radius,
+          overflow: 'hidden',
+          pointerEvents: 'auto',
+          background: 'var(--nav-rail-bg, var(--secondary))',
+          border: '1px solid var(--border)',
+          borderTop: 'none',
+          boxShadow: isExpanded
+            ? '0 8px 32px -4px rgba(0,0,0,0.12), 0 2px 8px -2px rgba(0,0,0,0.08)'
+            : 'none',
+          transition: [
+            `width ${t}`,
+            `height ${t}`,
+            `border-radius ${t}`,
+            `box-shadow var(--dur-base) var(--ease-out-cubic)`,
+          ].join(', '),
+        }}
+      >
+        <TooltipProvider delay={300}>
+          {/* Pill contents — visible when collapsed */}
+          <button
+            type="button"
+            aria-label={unreadCount > 0 ? `Open navigation (${unreadCount} unread)` : 'Open navigation'}
+            onClick={() => { setHasNotification(false); setHasAppointment(false); setReportPhase('idle'); handlePillClick(); }}
+            className="absolute inset-0 flex items-center justify-center gap-2 text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset hover:bg-accent active:opacity-80"
+            style={{
+              opacity: isExpanded ? 0 : 1,
+              pointerEvents: isExpanded ? 'none' : 'auto',
+              transition: `opacity var(--dur-fast) var(--ease-out-cubic)`,
+            }}
+          >
+            {reportPhase !== 'idle' ? (
+              <span key={reportAnimKey} className="relative inline-flex items-center justify-center shrink-0">
+                {reportPhase === 'shake' && (
+                  <span className="notch-notify-shake inline-flex text-foreground">
+                    <FileText size={20} weight="regular" />
+                  </span>
+                )}
+                {reportPhase === 'check' && (
+                  <span className="notch-icon-fade-in inline-flex" style={{ color: 'var(--success)' }}>
+                    <CheckCircle size={20} weight="regular" />
+                  </span>
+                )}
+                {reportPhase === 'done' && (
+                  <>
+                    <span className="notch-icon-fade-in inline-flex text-foreground">
+                      <FileText size={20} weight="regular" />
+                    </span>
+                    <span className="notch-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full text-[7px] font-bold text-white leading-none" style={{ background: 'var(--success)' }}>
+                      ✓
+                    </span>
+                  </>
+                )}
+              </span>
+            ) : (hasNotification || hasAppointment) ? (
+              <span className="flex items-center gap-2">
+                {hasNotification && (
+                  <span className="relative inline-flex items-center justify-center shrink-0">
+                    <span key={notifyAnimKey} className="notch-notify-shake inline-flex">
+                      <BellRinging size={20} weight="regular" />
+                    </span>
+                    <span className="notch-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full bg-destructive text-[7px] font-bold text-white leading-none">
+                      1
+                    </span>
+                  </span>
+                )}
+                {hasAppointment && (
+                  <span className="relative inline-flex items-center justify-center shrink-0">
+                    <span key={appointmentAnimKey} className="notch-notify-shake inline-flex">
+                      <CalendarBlank size={20} weight="regular" />
+                    </span>
+                  </span>
+                )}
+              </span>
+            ) : notchState === 'event' && activeEvent ? (
+              <EventIcon type={activeEvent.type} size={20} />
+            ) : (
+              <span className="block rounded-full" style={{ width: 24, height: 4, border: '1.5px solid currentColor' }} />
+            )}
+          </button>
+
+          {/* Expanded panel content */}
+          <div
+            style={{
+              opacity: isExpanded ? 1 : 0,
+              transform: isExpanded ? 'translateY(0)' : 'translateY(-6px)',
+              pointerEvents: isExpanded ? 'auto' : 'none',
+              transition: isExpanded
+                ? `opacity var(--dur-base) var(--ease-out-cubic) 80ms, transform var(--dur-base) var(--ease-out-cubic) 80ms`
+                : `opacity calc(var(--dur-shrink) * 0.4) var(--ease-in-cubic), transform calc(var(--dur-shrink) * 0.4) var(--ease-in-cubic)`,
+              height: '100%',
+            }}
+          >
+            <ExpandedPanel
+              events={events}
+              onClose={closeIsland}
+              onSessionHistory={onSessionHistory}
+              onWork={onWork}
+              onSettings={onSettings}
+              onMarkRead={handleMarkRead}
+              onMedicationReview={onMedicationReview}
+              onFileReview={onFileReview}
+            />
+          </div>
+        </TooltipProvider>
+      </div>
+    </div>,
+    document.body,
+  );
+
+  return <>{scrim}{island}</>;
+}
+
+
+// ── NavNotch2 — floating pill variant ────────────────────────────────────────
+
+export function NavNotch2({ onSessionHistory, onWork, onSettings, onMedicationReview, onFileReview }: NavNotchProps) {
+  const [notchState, setNotchState] = useState<NotchState>('idle');
+  const [isClosing, setIsClosing] = useState(false);
+  const [contentInteractive, setContentInteractive] = useState(false);
+  const [events, setEvents] = useState<IslandEvent[]>(MOCK_EVENTS);
+  const [activeEvent, setActiveEvent] = useState<IslandEvent | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [notifyAnimKey, setNotifyAnimKey] = useState(0);
+  const [hasNotification, setHasNotification] = useState(false);
+  const [appointmentAnimKey, setAppointmentAnimKey] = useState(0);
+  const [hasAppointment, setHasAppointment] = useState(false);
+  const [reportPhase, setReportPhase] = useState<'idle' | 'shake' | 'check' | 'done'>('idle');
+  const [reportAnimKey, setReportAnimKey] = useState(0);
+  const eventTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    const handler = () => {
+      if (notchState === 'expanded') return;
+      setHasAppointment(true);
+      setAppointmentAnimKey((k) => k + 1);
+    };
+    window.addEventListener('ix:appointment-reminder', handler);
+    return () => window.removeEventListener('ix:appointment-reminder', handler);
+  }, [notchState]);
+
+  useEffect(() => {
+    const handler = () => {
+      if (notchState === 'expanded') return;
+      setReportPhase('shake');
+      setReportAnimKey((k) => k + 1);
+      setTimeout(() => setReportPhase('check'), 900);
+      setTimeout(() => setReportPhase('done'), 1800);
+    };
+    window.addEventListener('ix:report-complete', handler);
+    return () => window.removeEventListener('ix:report-complete', handler);
+  }, [notchState]);
+
+  useEffect(() => {
+    const handler = () => {
+      if (notchState === 'expanded') return;
+      setHasNotification(true);
+      setNotifyAnimKey((k) => k + 1);
+      const newEvent: IslandEvent = {
+        id: String(Date.now()),
+        type: 'notification',
+        title: 'New notification',
+        preview: 'You have a new notification requiring attention.',
+        timestamp: new Date(),
+        read: false,
+      };
+      setEvents((prev) => [newEvent, ...prev]);
+    };
+    window.addEventListener('ix:new-notification', handler);
+    return () => window.removeEventListener('ix:new-notification', handler);
+  }, [notchState]);
+
+  const unreadCount = events.filter((e) => !e.read).length;
+  const isExpanded = notchState === 'expanded';
+
+  const closeIsland = useCallback(() => {
+    setIsClosing(true);
+    setContentInteractive(false);
+    setTimeout(() => {
+      setNotchState('idle');
+      setIsClosing(false);
+    }, 240);
+  }, []);
+
+  const showEvent = useCallback((event: IslandEvent) => {
+    if (notchState === 'expanded') return;
+    setActiveEvent(event);
+    setNotchState('event');
+    if (eventTimerRef.current) clearTimeout(eventTimerRef.current);
+    eventTimerRef.current = setTimeout(() => {
+      setNotchState('idle');
+      setActiveEvent(null);
+    }, 4000);
+  }, [notchState]);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') closeIsland(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isExpanded, closeIsland]);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) closeIsland();
+    };
+    const t = setTimeout(() => document.addEventListener('mousedown', handler), 10);
+    return () => { clearTimeout(t); document.removeEventListener('mousedown', handler); };
+  }, [isExpanded, closeIsland]);
+
+  const handlePillClick = () => {
+    if (eventTimerRef.current) clearTimeout(eventTimerRef.current);
+    if (isExpanded) { closeIsland(); return; }
+    setContentInteractive(false);
+    setNotchState('expanded');
+    setActiveEvent(null);
+  };
+
+  const handleMarkRead = (id: string) => {
+    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, read: true } : e)));
+  };
+
+  if (!mounted) return null;
+
   const showPanel = isExpanded || isClosing;
+
+  // Floating pill: fully rounded, all borders visible, 8px from top edge
+  const pillWidth = hasNotification && hasAppointment ? 120 : 88;
 
   const scrim = showPanel
     ? createPortal(
@@ -518,97 +781,102 @@ export function NavNotch({ onSessionHistory, onWork, onSettings, onMedicationRev
   const island = createPortal(
     <div
       ref={containerRef}
-      style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}
+      style={{ position: 'fixed', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}
     >
       <TooltipProvider delay={300}>
-      {/* Collapsed notch — hidden while panel is open/closing */}
-      {!showPanel && (
-        <button
-          type="button"
-          aria-label={unreadCount > 0 ? `Open navigation (${unreadCount} unread)` : 'Open navigation'}
-          onClick={() => { setHasNotification(false); setHasAppointment(false); setReportPhase('idle'); handlePillClick(); }}
-          className="relative flex items-center justify-center gap-2 bg-secondary text-sidebar-foreground border border-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-accent active:opacity-80 overflow-hidden transition-all duration-300"
-          style={{ width: hasNotification && hasAppointment ? 112 : 80, height: 32, borderRadius: '0 0 4px 4px', borderTop: 'none' }}
-        >
-          {reportPhase !== 'idle' ? (
-            <span key={reportAnimKey} className="relative inline-flex items-center justify-center shrink-0">
-              {reportPhase === 'shake' && (
-                <span className="notch-notify-shake inline-flex text-foreground">
-                  <FileText size={20} weight="regular" />
-                </span>
-              )}
-              {reportPhase === 'check' && (
-                <span className="notch-icon-fade-in inline-flex" style={{ color: 'var(--success)' }}>
-                  <CheckCircle size={20} weight="regular" />
-                </span>
-              )}
-              {reportPhase === 'done' && (
-                <>
-                  <span className="notch-icon-fade-in inline-flex text-foreground">
+        {!showPanel && (
+          <button
+            type="button"
+            aria-label={unreadCount > 0 ? `Open navigation (${unreadCount} unread)` : 'Open navigation'}
+            onClick={() => { setHasNotification(false); setHasAppointment(false); setReportPhase('idle'); handlePillClick(); }}
+            className="relative flex items-center justify-center gap-2 bg-secondary text-sidebar-foreground border border-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-accent active:opacity-80 overflow-hidden transition-all duration-300"
+            style={{ width: pillWidth, height: 36, borderRadius: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.10)' }}
+          >
+            {reportPhase !== 'idle' ? (
+              <span key={reportAnimKey} className="relative inline-flex items-center justify-center shrink-0">
+                {reportPhase === 'shake' && (
+                  <span className="notch-notify-shake inline-flex text-foreground">
                     <FileText size={20} weight="regular" />
                   </span>
-                  <span className="notch-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full text-[7px] font-bold text-white leading-none" style={{ background: 'var(--success)' }}>
-                    ✓
+                )}
+                {reportPhase === 'check' && (
+                  <span className="notch-icon-fade-in inline-flex" style={{ color: 'var(--success)' }}>
+                    <CheckCircle size={20} weight="regular" />
                   </span>
-                </>
-              )}
-            </span>
-          ) : (hasNotification || hasAppointment) ? (
-            <span className="flex items-center gap-2">
-              {hasNotification && (
-                <span className="relative inline-flex items-center justify-center shrink-0">
-                  <span key={notifyAnimKey} className="notch-notify-shake inline-flex">
-                    <BellRinging size={20} weight="regular" />
+                )}
+                {reportPhase === 'done' && (
+                  <>
+                    <span className="notch-icon-fade-in inline-flex text-foreground">
+                      <FileText size={20} weight="regular" />
+                    </span>
+                    <span className="notch-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full text-[7px] font-bold text-white leading-none" style={{ background: 'var(--success)' }}>
+                      ✓
+                    </span>
+                  </>
+                )}
+              </span>
+            ) : (hasNotification || hasAppointment) ? (
+              <span className="flex items-center gap-2">
+                {hasNotification && (
+                  <span className="relative inline-flex items-center justify-center shrink-0">
+                    <span key={notifyAnimKey} className="notch-notify-shake inline-flex">
+                      <BellRinging size={20} weight="regular" />
+                    </span>
+                    <span className="notch-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full bg-destructive text-[7px] font-bold text-white leading-none">
+                      1
+                    </span>
                   </span>
-                  <span className="notch-badge-pop absolute -bottom-1 -right-1.5 flex items-center justify-center size-3 rounded-full bg-destructive text-[7px] font-bold text-white leading-none">
-                    1
+                )}
+                {hasAppointment && (
+                  <span className="relative inline-flex items-center justify-center shrink-0">
+                    <span key={appointmentAnimKey} className="notch-notify-shake inline-flex">
+                      <CalendarBlank size={20} weight="regular" />
+                    </span>
                   </span>
-                </span>
-              )}
-              {hasAppointment && (
-                <span className="relative inline-flex items-center justify-center shrink-0">
-                  <span key={appointmentAnimKey} className="notch-notify-shake inline-flex">
-                    <CalendarBlank size={20} weight="regular" />
-                  </span>
-                </span>
-              )}
-            </span>
-          ) : notchState === 'event' && activeEvent ? (
-            <EventIcon type={activeEvent.type} size={20} />
-          ) : (
-            <span className="block rounded-full" style={{ width: 24, height: 4, border: '1.5px solid currentColor' }} />
-          )}
-        </button>
-      )}
+                )}
+              </span>
+            ) : notchState === 'event' && activeEvent ? (
+              <EventIcon type={activeEvent.type} size={20} />
+            ) : (
+              // Floating pill idle state: three dots instead of a bar
+              <span className="flex items-center gap-[5px]">
+                <span className="block rounded-full bg-current opacity-50" style={{ width: 5, height: 5 }} />
+                <span className="block rounded-full bg-current" style={{ width: 5, height: 5 }} />
+                <span className="block rounded-full bg-current opacity-50" style={{ width: 5, height: 5 }} />
+              </span>
+            )}
+          </button>
+        )}
 
-      {/* Expanded panel — animates open and closed */}
-      {showPanel && (
-        <div
-          className={isClosing ? 'notch-collapse' : 'notch-expand'}
-          style={{
-            width: 'min(1360px, calc(100vw - 32px))',
-            borderRadius: '0 0 8px 8px',
-            overflow: 'hidden',
-            border: '1px solid var(--border)',
-            borderTop: 'none',
-            background: 'var(--nav-rail-bg)',
-            boxShadow: '0 8px 32px -4px rgba(0,0,0,0.12), 0 2px 8px -2px rgba(0,0,0,0.08)',
-          }}
-        >
-          <div className={isClosing ? 'notch-content-out' : 'notch-content-in'}>
-            <ExpandedPanel
-              events={events}
-              onClose={closeIsland}
-              onSessionHistory={onSessionHistory}
-              onWork={onWork}
-              onSettings={onSettings}
-              onMarkRead={handleMarkRead}
-              onMedicationReview={onMedicationReview}
-              onFileReview={onFileReview}
-            />
+        {showPanel && (
+          <div
+            className={isClosing ? 'notch-collapse' : 'notch-expand'}
+            onAnimationEnd={(e) => { if (e.animationName === 'notch-expand') setContentInteractive(true); }}
+            style={{
+              width: 'min(1360px, calc(100vw - 32px))',
+              borderRadius: 12,
+              overflow: 'hidden',
+              border: '1px solid var(--border)',
+              background: 'var(--nav-rail-bg)',
+              boxShadow: '0 8px 32px -4px rgba(0,0,0,0.12), 0 2px 8px -2px rgba(0,0,0,0.08)',
+              marginTop: 4,
+              pointerEvents: contentInteractive ? 'auto' : 'none',
+            }}
+          >
+            <div className={isClosing ? 'notch-content-out' : 'notch-content-in'}>
+              <ExpandedPanel
+                events={events}
+                onClose={closeIsland}
+                onSessionHistory={onSessionHistory}
+                onWork={onWork}
+                onSettings={onSettings}
+                onMarkRead={handleMarkRead}
+                onMedicationReview={onMedicationReview}
+                onFileReview={onFileReview}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </TooltipProvider>
     </div>,
     document.body,
