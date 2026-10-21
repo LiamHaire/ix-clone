@@ -73,7 +73,7 @@ function RecentSessionsView({ onViewAll }: { onViewAll: () => void }) {
 
 function SessionRow({ session }: { session: Session }) {
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-background hover:bg-accent transition-colors cursor-default group">
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-raised hover:bg-accent transition-colors cursor-default group">
       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{session.title}</p>
         <p className="text-xs text-muted-foreground truncate">
@@ -115,7 +115,7 @@ function NotificationsView({ onViewAll }: { onViewAll: () => void }) {
 
 function NotificationRow({ item }: { item: IslandEvent }) {
   return (
-    <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-background hover:bg-accent transition-colors cursor-default group">
+    <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-surface-raised hover:bg-accent transition-colors cursor-default group">
       <div className="relative mt-0.5 shrink-0">
         <Bell size={16} weight="duotone" className="text-muted-foreground" />
         {!item.read && (
@@ -164,7 +164,7 @@ function AppsView() {
           <button
             key={label}
             type="button"
-            className="flex flex-col items-center justify-center gap-2 py-3 px-2 rounded-xl border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-accent transition-colors text-xs font-medium"
+            className="flex flex-col items-center justify-center gap-2 py-3 px-2 rounded-xl border border-border bg-surface-raised text-muted-foreground hover:text-foreground hover:bg-accent transition-colors text-xs font-medium"
           >
             <Icon size={20} weight="duotone" />
             {label}
@@ -189,7 +189,7 @@ function TasksView({ onViewAll }: { onViewAll: () => void }) {
     <div className="flex flex-col" style={{ minHeight: 240 - 44 }}>
     <div className="grid grid-cols-2 gap-2 px-4 pt-3">
       {lanes.map((lane) => (
-        <div key={lane.id} className="flex flex-col gap-1 rounded-xl border border-border bg-background overflow-hidden">
+        <div key={lane.id} className="flex flex-col gap-1 rounded-xl border border-border bg-surface-raised overflow-hidden">
           <div className="px-3 py-2 border-b border-border">
             <p className="text-[11px] font-semibold text-muted-foreground">{lane.label}</p>
           </div>
@@ -230,7 +230,7 @@ function TaskRow({ task }: { task: Task }) {
 function ProfileView() {
   return (
     <div className="px-4 pt-4 pb-4">
-      <div className="rounded-xl border border-border bg-background overflow-hidden">
+      <div className="rounded-xl border border-border bg-surface-raised overflow-hidden">
         {/* Card header strip */}
         <div className="h-2 w-full" style={{ background: 'linear-gradient(90deg, var(--foreground) 0%, color-mix(in oklch, var(--foreground) 60%, transparent) 100%)' }} />
 
