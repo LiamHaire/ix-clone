@@ -15,7 +15,7 @@ interface WorkPanelProps {
 
 export function WorkPanel({ onClose }: WorkPanelProps) {
   const [activeView, setActiveView] = useState<string>("my-tasks");
-  const [layoutMode, setLayoutMode] = useState<'columns' | 'table'>('columns');
+  const [layoutMode, setLayoutMode] = useState<'columns' | 'table'>('table');
   const [search, setSearch] = useState("");
   const [priorities, setPriorities] = useState<Set<string>>(new Set(["high", "medium", "low"]));
   const [priorityOpen, setPriorityOpen] = useState(false);
