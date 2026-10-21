@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Check, ListChecks, Columns, Table as TableIcon, ClockCounterClockwise, ArrowFatUp, WarningCircle } from "@phosphor-icons/react";
+import { X, Check, ListChecks, Columns, Table as TableIcon, ClockCounterClockwise, ArrowFatUp, WarningCircle, Plus, Funnel } from "@phosphor-icons/react";
 import { useRef, useEffect, useMemo } from "react";
 import { WorkNav } from "./work-nav";
 import { TaskBoard, TaskTable } from "./task-board";
@@ -22,6 +22,23 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
   const [sortBy, setSortBy] = useState("Due date");
   const [priorities, setPriorities] = useState<Set<string>>(new Set(["high", "medium", "low"]));
   const [priorityOpen, setPriorityOpen] = useState(false);
+
+  const CATEGORIES = [
+    "Admin", "Annual prescribing", "Book appointment", "Clinical",
+    "Contact patient", "Diabetes review", "Documents", "Follow up",
+    "Home visit", "Immunisation", "Mail", "Medication review",
+    "Mental health review", "Other",
+  ];
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+
+  function toggleCategory(cat: string) {
+    setSelectedCategories(prev => {
+      const next = new Set(prev);
+      next.has(cat) ? next.delete(cat) : next.add(cat);
+      return next;
+    });
+  }
+  const allCategoriesSelected = selectedCategories.size === 0;
   const priorityRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,13 +83,16 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
           <ListChecks size={16} weight="duotone" className="text-muted-foreground shrink-0" />
           <p className="font-heading text-base font-medium text-foreground leading-none">Work</p>
         </div>
-        <button
-          onClick={onClose}
-          className="flex items-center justify-center size-8 rounded-full text-sidebar-foreground hover:text-foreground hover:bg-accent transition-colors"
-          aria-label="Close"
-        >
-          <X size={16} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            aria-label="New task"
+          >
+            <Plus size={13} weight="bold" />
+            New Task
+          </button>
+          {/* TODO: reinstate close button — temporarily hidden 2026-10-21 */}
+        </div>
       </SheetHeader>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -94,7 +114,7 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
               ].map(({ label, value, icon }) => (
                 <div key={label} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-4 py-3">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-[22px] font-bold text-foreground leading-none tabular-nums">{value}</span>
+                    <span className="text-[18px] font-bold text-foreground leading-none tabular-nums">{value}</span>
                     <span className="text-sm text-muted-foreground truncate">{label}</span>
                   </div>
                   <div className="shrink-0">{icon}</div>
@@ -105,19 +125,108 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
 
           {/* Toolbar */}
           {showTaskView && (
-            <div ref={priorityRef} className="relative shrink-0">
-              <div className="flex items-center gap-2 pr-4 pt-4 pb-2.5 pl-0">
+            <div className="flex items-center gap-2 pr-4 pt-4 pb-2.5 pl-0 shrink-0">
               <TableToolbar
                 searchValue={search}
                 onSearchChange={setSearch}
-                searchPlaceholder="Filter by title, ref…"
+                searchPlaceholder="Search by title, ref…"
                 sortOptions={["Due date", "Status", "Priority", "Assignee"]}
                 sortValue={sortBy}
                 onSortChange={setSortBy}
-                onFilter={() => setPriorityOpen(o => !o)}
-                filterActive={!allSelected}
                 className="flex-1 p-0 border-none"
               />
+
+              {/* Filter button — popover anchors to this div */}
+              <div ref={priorityRef} className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setPriorityOpen(o => !o)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 h-8 rounded-md border border-border text-xs font-medium transition-colors",
+                    priorityOpen || !allSelected
+                      ? "border-foreground text-foreground bg-accent"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  )}
+                >
+                  <Funnel size={13} />
+                  Filter
+                </button>
+
+                {priorityOpen && (
+                  <div className="absolute top-full right-0 mt-1 z-50 flex flex-col rounded-lg border border-border bg-popover shadow-md overflow-hidden">
+                    {/* Columns row */}
+                    <div className="flex">
+                      {/* Priority column */}
+                      <div className="w-36 py-1 border-r border-border shrink-0">
+                        <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Priority</p>
+                        <div className="w-full h-px bg-border mb-1" />
+                        {(["high", "medium", "low"] as const).map(p => (
+                          <button
+                            key={p}
+                            onClick={() => togglePriority(p)}
+                            className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-foreground hover:bg-accent transition-colors"
+                          >
+                            <span className={cn(
+                              "flex items-center justify-center size-4 rounded border transition-colors shrink-0",
+                              priorities.has(p) ? "bg-foreground border-foreground" : "border-border"
+                            )}>
+                              {priorities.has(p) && <Check size={10} className="text-background" weight="bold" />}
+                            </span>
+                            {p.charAt(0).toUpperCase() + p.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Category column */}
+                      <div className="w-48 py-1 flex flex-col">
+                        <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</p>
+                        <div className="w-full h-px bg-border mb-1" />
+                        <button
+                          onClick={() => setSelectedCategories(new Set())}
+                          className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-foreground hover:bg-accent transition-colors shrink-0"
+                        >
+                          <span className={cn(
+                            "flex items-center justify-center size-4 rounded border transition-colors shrink-0",
+                            allCategoriesSelected ? "bg-foreground border-foreground" : "border-border"
+                          )}>
+                            {allCategoriesSelected && <Check size={10} className="text-background" weight="bold" />}
+                          </span>
+                          All
+                        </button>
+                        <div className="overflow-y-auto" style={{ maxHeight: `${7 * 32}px` }}>
+                          {CATEGORIES.map(cat => (
+                            <button
+                              key={cat}
+                              onClick={() => toggleCategory(cat)}
+                              className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-foreground hover:bg-accent transition-colors"
+                            >
+                              <span className={cn(
+                                "flex items-center justify-center size-4 rounded border transition-colors shrink-0",
+                                selectedCategories.has(cat) ? "bg-foreground border-foreground" : "border-border"
+                              )}>
+                                {selectedCategories.has(cat) && <Check size={10} className="text-background" weight="bold" />}
+                              </span>
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="border-t border-border px-3 py-2 flex justify-end">
+                      <button
+                        onClick={() => { setPriorities(new Set(["high", "medium", "low"])); setSelectedCategories(new Set()); }}
+                        className="px-2.5 py-1 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        Clear all
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Layout toggles */}
               <div className="flex items-center rounded-md border border-border overflow-hidden shrink-0">
                 <button
                   type="button"
@@ -136,28 +245,6 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
                   <TableIcon size={14} />
                 </button>
               </div>
-              </div>
-              {priorityOpen && (
-                <div className="absolute top-full right-4 mt-1 z-50 w-40 rounded-lg border border-border bg-popover shadow-md py-1">
-                  <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Priority</p>
-                  <div className="w-full h-px bg-border mb-1" />
-                  {(["high", "medium", "low"] as const).map(p => (
-                    <button
-                      key={p}
-                      onClick={() => togglePriority(p)}
-                      className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-foreground hover:bg-accent transition-colors"
-                    >
-                      <span className={cn(
-                        "flex items-center justify-center size-4 rounded border transition-colors",
-                        priorities.has(p) ? "bg-foreground border-foreground" : "border-border"
-                      )}>
-                        {priorities.has(p) && <Check size={10} className="text-background" weight="bold" />}
-                      </span>
-                      {p.charAt(0).toUpperCase() + p.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           )}
 

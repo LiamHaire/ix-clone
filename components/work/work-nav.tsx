@@ -11,6 +11,9 @@ import {
   Funnel,
   CaretRight,
   CaretDown,
+  PaperPlaneRight,
+  Tray,
+  Megaphone,
 } from "@phosphor-icons/react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -56,31 +59,48 @@ const NAV: NavSection[] = [
   {
     title: "Tasks",
     entries: [
-      { kind: "item", id: "my-tasks", label: "My tasks", icon: ListChecks },
-      { kind: "item", id: "assigned",  label: "Assigned to me", icon: Users    },
-      { kind: "item", id: "by-matter", label: "By matter",      icon: Briefcase },
-      { kind: "item", id: "by-tag",    label: "By tag",         icon: Tag       },
+      { kind: "item", id: "my-tasks",  label: "My tasks",      icon: ListChecks },
+      { kind: "item", id: "assigned",  label: "Assigned to me", icon: Users     },
+      {
+        kind: "branch",
+        id: "sent-tasks",
+        label: "Sent",
+        icon: PaperPlaneRight,
+        children: [
+          { kind: "leaf", id: "sent-completed", label: "Completed" },
+          { kind: "leaf", id: "sent-rejected",  label: "Rejected"  },
+          { kind: "leaf", id: "sent-deleted",   label: "Deleted"   },
+        ],
+      },
     ],
   },
   {
-    title: "Workflows",
+    title: "Announcements",
     entries: [
-      {
-        kind: "branch",
-        id: "active-workflows",
-        label: "Active",
-        icon: Funnel,
-        children: [
-          { kind: "leaf", id: "wf-inprogress", label: "In progress"    },
-          { kind: "leaf", id: "wf-awaiting",   label: "Awaiting input" },
-          { kind: "leaf", id: "wf-overdue",    label: "Overdue"        },
-        ],
-      },
-      { kind: "item", id: "wf-templates", label: "Templates", icon: FileText  },
-      { kind: "item", id: "wf-matter",    label: "By matter", icon: Briefcase },
-      { kind: "item", id: "wf-reporting", label: "Reporting", icon: ChartBar  },
+      { kind: "item", id: "announcements-inbox", label: "Inbox", icon: Tray             },
+      { kind: "item", id: "announcements-sent",  label: "Sent",  icon: PaperPlaneRight  },
     ],
   },
+  // TODO: reinstate Workflows section — temporarily hidden 2026-10-21
+  // {
+  //   title: "Workflows",
+  //   entries: [
+  //     {
+  //       kind: "branch",
+  //       id: "active-workflows",
+  //       label: "Active",
+  //       icon: Funnel,
+  //       children: [
+  //         { kind: "leaf", id: "wf-inprogress", label: "In progress"    },
+  //         { kind: "leaf", id: "wf-awaiting",   label: "Awaiting input" },
+  //         { kind: "leaf", id: "wf-overdue",    label: "Overdue"        },
+  //       ],
+  //     },
+  //     { kind: "item", id: "wf-templates", label: "Templates", icon: FileText  },
+  //     { kind: "item", id: "wf-matter",    label: "By matter", icon: Briefcase },
+  //     { kind: "item", id: "wf-reporting", label: "Reporting", icon: ChartBar  },
+  //   ],
+  // },
 ];
 
 // ── Components ────────────────────────────────────────────────────────────────
