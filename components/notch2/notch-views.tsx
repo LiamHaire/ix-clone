@@ -1,6 +1,10 @@
 'use client';
 
-import { Bell, ClockCounterClockwise, CalendarBlank, ChartBar, Heartbeat, Monitor, Microphone, Books, FileText, Envelope, Phone, Users, ClipboardText, Money, Clock, FolderOpen, UserCircle, Buildings, IdentificationBadge, ShieldCheck } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { Bell, ClockCounterClockwise, CalendarBlank, ChartBar, Heartbeat, Monitor, Microphone, Books, FileText, Envelope, Phone, Users, ClipboardText, Money, Clock, FolderOpen, UserCircle, Buildings, IdentificationBadge, ShieldCheck, Columns, Table as TableIcon, Funnel, MagnifyingGlass } from '@phosphor-icons/react';
+import { useReactTable, getCoreRowModel, flexRender, type ColumnDef } from '@tanstack/react-table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import { MOCK_EVENTS, formatRelative, type IslandEvent } from '@/components/nav-island/island-mock-events';
 import { MOCK_SESSIONS, type Session } from '@/components/chat/session-history-list';
 import { TASK_DATA, type Task } from '@/components/work/task-data';
@@ -183,27 +187,155 @@ const PRIORITY_DOT: Record<Task['priority'], string> = {
   low:    'bg-muted-foreground/40',
 };
 
+const TASK_COLUMNS: ColumnDef<Task, unknown>[] = [
+  {
+    accessorKey: 'priority',
+    header: '',
+    size: 24,
+    cell: ({ row }) => (
+      <span className={`block size-2 rounded-full mx-auto ${PRIORITY_DOT[row.original.priority]}`} />
+    ),
+  },
+  {
+    accessorKey: 'title',
+    header: 'Title',
+    cell: ({ row }) => (
+      <span className="text-[12px] font-medium text-foreground truncate block max-w-[260px]">{row.original.title}</span>
+    ),
+  },
+  {
+    accessorKey: 'ref',
+    header: 'Ref',
+    size: 80,
+    cell: ({ row }) => (
+      <span className="text-[11px] text-muted-foreground">{row.original.ref}</span>
+    ),
+  },
+  {
+    accessorKey: 'assignee',
+    header: '',
+    size: 32,
+    cell: ({ row }) => row.original.assignee ? (
+      <span className="flex items-center justify-center size-6 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground border border-border">
+        {row.original.assignee}
+      </span>
+    ) : null,
+  },
+];
+
 function TasksView({ onViewAll }: { onViewAll: () => void }) {
+  const [viewMode, setViewMode] = useState<'columns' | 'table'>('columns');
+  const [search, setSearch] = useState('');
   const lanes = TASK_DATA.filter((l) => l.id === 'due' || l.id === 'inprogress');
+  const allTasks = lanes.flatMap((l) => l.tasks);
+  const filteredTasks = search
+    ? allTasks.filter((t) =>
+        t.title.toLowerCase().includes(search.toLowerCase()) ||
+        t.ref.toLowerCase().includes(search.toLowerCase())
+      )
+    : allTasks;
+
+  const table = useReactTable({
+    data: filteredTasks,
+    columns: TASK_COLUMNS,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
     <div className="flex flex-col" style={{ minHeight: 240 - 44 }}>
-    <div className="grid grid-cols-2 gap-2 px-4 pt-3">
-      {lanes.map((lane) => (
-        <div key={lane.id} className="flex flex-col gap-1 rounded-xl border border-border notch-item-bg overflow-hidden">
-          <div className="px-3 py-2 border-b border-border">
-            <p className="text-[11px] font-semibold text-muted-foreground">{lane.label}</p>
-          </div>
-          <div className="flex flex-col p-1">
-            {lane.tasks.length === 0 ? (
-              <p className="px-3 py-3 text-xs text-muted-foreground">No tasks</p>
-            ) : (
-              lane.tasks.map((task) => <TaskRow key={task.id} task={task} />)
-            )}
+      {/* Toolbar */}
+      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border">
+        <div className="relative flex-1">
+          <MagnifyingGlass size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Filter tasks…"
+            className="pl-6 h-7 text-[12px] border-border bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-ring"
+          />
+        </div>
+        <button type="button" className="flex items-center justify-center size-7 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0">
+          <Funnel size={13} />
+        </button>
+        <div className="flex items-center rounded-md border border-border overflow-hidden shrink-0">
+          <button
+            type="button"
+            onClick={() => setViewMode('columns')}
+            className={`flex items-center justify-center size-7 transition-colors ${viewMode === 'columns' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}
+          >
+            <Columns size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('table')}
+            className={`flex items-center justify-center size-7 transition-colors ${viewMode === 'table' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}
+          >
+            <TableIcon size={13} />
+          </button>
+        </div>
+      </div>
+
+      {/* Column view */}
+      {viewMode === 'columns' && (
+        <div className="grid grid-cols-2 gap-2 px-4 pt-3">
+          {lanes.map((lane) => (
+            <div key={lane.id} className="flex flex-col gap-1 rounded-xl border border-border notch-item-bg overflow-hidden">
+              <div className="px-3 py-2 border-b border-border">
+                <p className="text-[11px] font-semibold text-muted-foreground">{lane.label}</p>
+              </div>
+              <div className="flex flex-col p-1">
+                {lane.tasks.length === 0 ? (
+                  <p className="px-3 py-3 text-xs text-muted-foreground">No tasks</p>
+                ) : (
+                  lane.tasks.map((task) => <TaskRow key={task.id} task={task} />)
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Table view */}
+      {viewMode === 'table' && (
+        <div className="px-3 pt-2">
+          <div className="rounded-xl border border-border notch-item-bg overflow-hidden">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((hg) => (
+                  <TableRow key={hg.id} className="border-b border-border hover:bg-transparent">
+                    {hg.headers.map((header) => (
+                      <TableHead key={header.id} className="h-7 px-3 text-[11px] font-semibold text-muted-foreground">
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={TASK_COLUMNS.length} className="py-6 text-center text-xs text-muted-foreground">
+                      No tasks match your filter.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id} className="border-b border-border last:border-0 hover:bg-accent transition-colors cursor-default">
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="py-2 px-3">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         </div>
-      ))}
-    </div>
-    <ViewAllButton onClick={onViewAll} />
+      )}
+
+      <ViewAllButton onClick={onViewAll} />
     </div>
   );
 }
