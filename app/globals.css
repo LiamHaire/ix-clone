@@ -355,6 +355,15 @@
   background: radial-gradient(ellipse 40% 45% at 50% 50%, oklch(55% 0.18 268 / 0.15) 0%, oklch(55% 0.18 268 / 0) 100%);
 }
 
+/* ── Notch bloom gradient ── */
+.notch-bloom {
+  background: radial-gradient(ellipse 80% 60% at 50% 100%, oklch(72% 0.18 45 / 0.12) 0%, oklch(72% 0.18 45 / 0) 100%);
+  pointer-events: none;
+}
+.dark .notch-bloom {
+  background: radial-gradient(ellipse 80% 60% at 50% 100%, oklch(55% 0.18 268 / 0.12) 0%, oklch(55% 0.18 268 / 0) 100%);
+}
+
 /* ── Notch notification animations ── */
 @keyframes notch-notify-shake {
   0%   { opacity: 0; transform: rotate(-16deg); }
