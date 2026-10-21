@@ -403,7 +403,7 @@ export function NotchShell(_props: NotchShellProps) {
             </div>
 
             <div
-              className="relative notch-bloom"
+              className="relative"
               key={activeView ?? 'default'}
               style={{ animation: `notch2-expand-content ${CSS.durBase} ${CSS.easeOutCubic} both` }}
             >
