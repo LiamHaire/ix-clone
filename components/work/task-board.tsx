@@ -104,6 +104,12 @@ export function TaskBoard({ search, priorities }: TaskBoardProps) {
 
 const COLUMNS: ColumnDef<Task, unknown>[] = [
   {
+    accessorKey: 'ref',
+    header: 'Ref',
+    size: 90,
+    cell: ({ row }) => <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">{row.original.ref}</span>,
+  },
+  {
     accessorKey: 'title',
     header: 'Title',
     cell: ({ row }) => (
@@ -114,12 +120,6 @@ const COLUMNS: ColumnDef<Task, unknown>[] = [
         )}
       </div>
     ),
-  },
-  {
-    accessorKey: 'ref',
-    header: 'Ref',
-    size: 90,
-    cell: ({ row }) => <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">{row.original.ref}</span>,
   },
   {
     id: 'lane',
@@ -185,8 +185,8 @@ export function TaskTable({ search, priorities }: TaskBoardProps) {
       <div className="rounded-xl border border-border overflow-hidden">
         <Table className="table-fixed w-full">
           <colgroup>
-            <col />
             <col style={{ width: 90 }} />
+            <col />
             <col style={{ width: 110 }} />
             <col style={{ width: 80 }} />
             <col style={{ width: 130 }} />
