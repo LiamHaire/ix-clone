@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, ClockCounterClockwise, CalendarBlank, ChartBar, Heartbeat, Monitor, Microphone, Books, FileText, Envelope, Phone, Users, ClipboardText, Money, Clock, FolderOpen } from '@phosphor-icons/react';
+import { Bell, ClockCounterClockwise, CalendarBlank, ChartBar, Heartbeat, Monitor, Microphone, Books, FileText, Envelope, Phone, Users, ClipboardText, Money, Clock, FolderOpen, UserCircle, Buildings, IdentificationBadge, ShieldCheck } from '@phosphor-icons/react';
 import { MOCK_EVENTS, formatRelative, type IslandEvent } from '@/components/nav-island/island-mock-events';
 import { MOCK_SESSIONS, type Session } from '@/components/chat/session-history-list';
 import { TASK_DATA, type Task } from '@/components/work/task-data';
@@ -224,6 +224,66 @@ function TaskRow({ task }: { task: Task }) {
   );
 }
 
+// ── Profile view ─────────────────────────────────────────────────────────────
+
+function ProfileView() {
+  return (
+    <div className="px-4 pt-4 pb-4">
+      <div className="rounded-xl border border-border bg-background overflow-hidden">
+        {/* Card header strip */}
+        <div className="h-2 w-full" style={{ background: 'linear-gradient(90deg, var(--foreground) 0%, color-mix(in oklch, var(--foreground) 60%, transparent) 100%)' }} />
+
+        <div className="flex gap-4 p-4">
+          {/* Avatar column */}
+          <div className="flex flex-col items-center gap-2 shrink-0">
+            <div className="flex items-center justify-center size-16 rounded-xl bg-muted border border-border">
+              <UserCircle size={40} weight="duotone" className="text-muted-foreground" />
+            </div>
+            <span className="flex items-center justify-center size-6 rounded-full bg-muted border border-border text-[10px] font-bold text-foreground">LH</span>
+          </div>
+
+          {/* Details column */}
+          <div className="flex flex-col gap-2.5 flex-1 min-w-0">
+            <div>
+              <p className="text-[15px] font-semibold text-foreground leading-tight">Liam Haire</p>
+              <p className="text-[12px] text-muted-foreground">Senior Product Designer</p>
+            </div>
+
+            <div className="h-px bg-border" />
+
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <Buildings size={13} weight="duotone" className="text-muted-foreground shrink-0" />
+                <span className="text-[12px] text-foreground truncate">One Advanced</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <IdentificationBadge size={13} weight="duotone" className="text-muted-foreground shrink-0" />
+                <span className="text-[12px] text-foreground truncate">IQ Platform · Product</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Envelope size={13} weight="duotone" className="text-muted-foreground shrink-0" />
+                <span className="text-[12px] text-muted-foreground truncate">l.haire@oneadvanced.com</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={13} weight="duotone" className="text-muted-foreground shrink-0" />
+                <span className="text-[12px] text-muted-foreground">Admin · All modules</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-border bg-muted/30">
+          <span className="text-[11px] text-muted-foreground">ID: IQ-LH-00142</span>
+          <button type="button" className="text-[12px] font-medium text-muted-foreground hover:text-destructive transition-colors">
+            Sign out
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Heights ───────────────────────────────────────────────────────────────────
 
 export const VIEW_HEIGHTS: Record<NavId | 'default', number> = {
@@ -234,7 +294,6 @@ export const VIEW_HEIGHTS: Record<NavId | 'default', number> = {
   apps:          336,
   record:        176,
   settings:      300,
-  profile:       240,
 };
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -253,7 +312,6 @@ export function NotchView({ id, onViewAllSessions, onViewAllTasks, onViewAllNoti
     case 'notifications': return <NotificationsView onViewAll={onViewAllNotifications} />;
     case 'apps':          return <AppsView />;
     case 'settings':      return <Placeholder title="Settings" />;
-    case 'profile':       return <Placeholder title="Profile" />;
     default:              return null;
   }
 }

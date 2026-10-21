@@ -16,8 +16,22 @@ export function NotchSettingsView({ onClose }: NotchSettingsViewProps) {
       {/* Two-column layout — fills remaining height, both columns scroll independently */}
       <div className="flex min-h-0" style={{ flex: '1 1 0', overflow: 'hidden', height: 0 }}>
         {/* Left nav */}
-        <div className="shrink-0 border-r border-border overflow-y-auto overflow-x-hidden" style={{ width: 200, minWidth: 0 }}>
-          <SettingsNav activeView={activeView} onViewChange={setActiveView} className="w-full" />
+        <div className="shrink-0 border-r border-border overflow-x-hidden flex flex-col" style={{ width: 200, minWidth: 0 }}>
+          <div className="flex-1 overflow-y-auto">
+            <SettingsNav activeView={activeView} onViewChange={setActiveView} className="w-full" />
+          </div>
+          <div className="px-3 py-3 border-t border-border shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                window.dispatchEvent(new CustomEvent('ix:open-settings'));
+              }}
+              className="w-full flex items-center justify-center h-8 rounded-lg border border-border text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              Go to Settings
+            </button>
+          </div>
         </div>
 
         {/* Right content */}

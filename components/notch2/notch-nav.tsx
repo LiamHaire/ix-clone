@@ -8,14 +8,24 @@ import {
   Microphone,
   Gear,
   Plus,
+  User,
+  SignOut,
 } from '@phosphor-icons/react';
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { CSS } from '@/lib/motion';
 
 // ── NAV_ITEMS config ── add/remove items here only ───────────────────────────
 
-export type NavId = 'recent' | 'tasks' | 'notifications' | 'apps' | 'record' | 'settings' | 'profile';
+export type NavId = 'recent' | 'tasks' | 'notifications' | 'apps' | 'record' | 'settings';
 
 export interface NavItem {
   id: NavId;
@@ -79,7 +89,7 @@ export function NotchHeader({ activeId, onSelect, isRecording = false, onUpload 
             </TooltipPrimitive.Trigger>
           </NotchTooltip>
         )}
-        <AvatarButton active={activeId === 'profile'} onSelect={onSelect} />
+        <AvatarButton />
       </div>
     </div>
   );
@@ -129,24 +139,42 @@ function NavButton({ item, active, onSelect, recording = false }: { item: NavIte
   );
 }
 
-function AvatarButton({ active, onSelect }: { active: boolean; onSelect: (id: NavId) => void }) {
+function AvatarButton() {
   return (
-    <NotchTooltip label="Liam Haire">
-      <TooltipPrimitive.Trigger
+    <DropdownMenu>
+      <DropdownMenuTrigger
         aria-label="Liam Haire"
-        aria-pressed={active}
-        onClick={() => onSelect('profile')}
         className={cn(
           'flex items-center justify-center size-8 rounded-full text-[11px] font-semibold ml-0.5',
           'border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          active
-            ? 'bg-accent text-foreground'
-            : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground',
+          'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground',
         )}
         style={{ transition: `background-color ${CSS.durFast} ${CSS.easeOutCubic}, color ${CSS.durFast} ${CSS.easeOutCubic}` }}
       >
         LH
-      </TooltipPrimitive.Trigger>
-    </NotchTooltip>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="bottom" align="end" sideOffset={8} className="w-52">
+        <div className="px-2 py-1.5 font-normal">
+          <p className="text-sm font-medium text-foreground">Liam Haire</p>
+          <p className="text-xs text-muted-foreground">l.haire@oneadvanced.com</p>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem className="gap-2">
+            <User size={14} className="text-muted-foreground" />
+            Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem className="gap-2" onClick={() => window.dispatchEvent(new CustomEvent('ix:open-settings'))}>
+            <Gear size={14} className="text-muted-foreground" />
+            Settings
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive">
+          <SignOut size={14} />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

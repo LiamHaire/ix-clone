@@ -52,13 +52,12 @@ export function transition(
       return { ...state, notch: 'compact', dropPhase: 'idle', errorMessage: null };
 
     case 'SHOW_DROP':
-      return { ...state, dropPhase: 'dragging' };
+      return { ...state, dropPhase: 'idle' };
 
     case 'DRAG_ENTER':
       return { ...state, notch: 'expanded', dropPhase: 'dragging' };
 
     case 'DRAG_LEAVE':
-      // Keep expanded — drag is still live, just left the element
       return { ...state, dropPhase: dropPhase === 'dragging' ? 'dragging' : dropPhase };
 
     case 'DROP':

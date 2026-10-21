@@ -590,7 +590,7 @@ export default function Home() {
         >
           {/* ── Workspace panel ── */}
           <div
-            className={`h-full overflow-hidden ${(navMode === 'notch' || navMode === 'notch2') ? 'border-l' : 'border-r'} border-border`}
+            className="h-full overflow-hidden border-r border-border"
             style={{
               flex: isWorkspace ? "2 1 0" : "0 0 0",
               minWidth: 0,
@@ -675,7 +675,7 @@ export default function Home() {
             style={{
               flex: isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: 0,
-              order: (navMode === 'notch' || navMode === 'notch2') ? 0 : 1,
+              order: 1,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -973,11 +973,11 @@ export default function Home() {
 
           {/* ── Additional panel (left in navrail, right in island) ── */}
           <div
-            className={`h-full overflow-hidden ${(navMode === 'notch' || navMode === 'notch2') ? 'border-l' : 'border-r'} border-border`}
+            className="h-full overflow-hidden border-r border-border"
             style={{
               flex: isAdditional ? "1 0 0" : "0 0 0",
               minWidth: 0,
-              order: (navMode === 'notch' || navMode === 'notch2') ? 1 : 0,
+              order: 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { UploadSimple, X, File as FileIcon } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { CSS } from '@/lib/motion';
@@ -40,16 +40,24 @@ interface DropZoneProps {
   onFileSelected: (files: FileList) => void;
 }
 
-export function DropZone({ isDragging, onBrowse, inputRef, onFileSelected }: DropZoneProps) {
+export function DropZone({ isDragging: isDraggingProp, onBrowse, inputRef, onFileSelected }: DropZoneProps) {
+  const depthRef = useRef(0);
+  const [isDragging, setIsDragging] = useState(isDraggingProp);
+
+  useEffect(() => { setIsDragging(isDraggingProp); }, [isDraggingProp]);
+
   return (
     <div
       className={cn(
         'flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed select-none transition-colors',
       )}
+      onDragEnter={() => { depthRef.current++; setIsDragging(true); }}
+      onDragLeave={() => { depthRef.current--; if (depthRef.current <= 0) { depthRef.current = 0; setIsDragging(false); } }}
+      onDragOver={(e) => e.preventDefault()}
       style={{
         minHeight: 160,
-        borderColor: 'var(--muted-foreground)',
-        background: isDragging ? 'var(--accent)' : 'transparent',
+        borderColor: 'var(--border)',
+        background: isDragging ? 'var(--accent)' : 'color-mix(in oklch, var(--accent) 20%, transparent)',
         transition: `border-color ${CSS.durBase} ${CSS.easeOutCubic}, background ${CSS.durBase} ${CSS.easeOutCubic}`,
         animation: 'none',
       }}
@@ -60,7 +68,7 @@ export function DropZone({ isDragging, onBrowse, inputRef, onFileSelected }: Dro
         style={{ color: 'var(--muted-foreground)' }}
       />
       <p className="text-sm text-foreground font-medium">
-        {isDragging ? 'Release to add to Knowledge Base' : 'Drag and drop to add to Knowledge Base'}
+        Drop here to add to Knowledge Base
       </p>
       <button
         type="button"
@@ -93,7 +101,7 @@ interface UploadingViewProps {
 export function UploadingView({ fileName, progress }: UploadingViewProps) {
   const pct = Math.round(progress * 100);
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-3 px-6">
+    <div className="flex flex-col items-center justify-center flex-1 gap-3 px-6 py-8">
       <FileIcon size={28} weight="duotone" className="text-muted-foreground" />
       <p className="text-sm font-medium text-foreground truncate max-w-full">{fileName}</p>
       <div className="w-full h-1.5 rounded-full bg-border overflow-hidden">
@@ -115,7 +123,7 @@ export function UploadingView({ fileName, progress }: UploadingViewProps) {
 
 export function SuccessView() {
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-2">
+    <div className="flex flex-col items-center justify-center flex-1 gap-2 py-8">
       <span
         className="flex items-center justify-center size-10 rounded-full"
         style={{
