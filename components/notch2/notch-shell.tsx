@@ -46,9 +46,7 @@ export function NotchShell(_props: NotchShellProps) {
   const [appointmentAnimKey, setAppointmentAnimKey] = useState(0);
   const [reportPhase, setReportPhase]         = useState<'idle' | 'shake' | 'check' | 'done'>('idle');
   const [reportAnimKey, setReportAnimKey]     = useState(0);
-  const [measuredH, setMeasuredH]           = useState(DEFAULT_CONTENT_H);
   const containerRef     = useRef<HTMLDivElement>(null);
-  const contentRef       = useRef<HTMLDivElement>(null);
   const fileInputRef     = useRef<HTMLInputElement>(null);
   const dragDepthRef     = useRef(0);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -223,18 +221,6 @@ export function NotchShell(_props: NotchShellProps) {
     return () => clearTimeout(t);
   }, [dropPhase, droppedFile, send]);
 
-  // ── Measure real content height for smooth height animation ─────────────
-  useEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => {
-      setMeasuredH(el.offsetHeight);
-    });
-    ro.observe(el);
-    setMeasuredH(el.offsetHeight);
-    return () => ro.disconnect();
-  }, [isExpanded]);
-
   // ── Nav handler — single source of truth ─────────────────────────────────
   const handleNavSelect = useCallback((id: NavId) => {
     if (id === 'record') {
@@ -281,9 +267,8 @@ export function NotchShell(_props: NotchShellProps) {
 
   const alertCount = (hasNotification ? 1 : 0) + (hasAppointment ? 1 : 0) + (reportPhase !== 'idle' ? 1 : 0);
   const collapsedWidth = alertCount > 0 ? PILL_WIDTH + (alertCount - 1) * 28 : PILL_WIDTH;
-  const panelH = HEADER_H + measuredH;
   const width  = isExpanded ? (activeView === 'settings' ? SETTINGS_PANEL_WIDTH : PANEL_WIDTH) : collapsedWidth;
-  const height = isExpanded ? panelH : PILL_HEIGHT;
+  const height = isExpanded ? 'auto' : PILL_HEIGHT;
   const radius = isExpanded ? PANEL_RADIUS : PILL_RADIUS;
 
   const expandEasing   = `${CSS.easeSpringGrow} ${CSS.durSpringGrow}`;
@@ -318,6 +303,8 @@ export function NotchShell(_props: NotchShellProps) {
           borderRadius: radius,
           overflow: 'hidden',
           pointerEvents: 'auto',
+          minHeight: isExpanded ? 240 : undefined,
+          maxHeight: isExpanded ? 'calc(100vh - 120px)' : undefined,
           background: 'var(--surface-raised)',
           borderTop: 'none',
           borderRight: `1px solid ${isRecording && !isExpanded ? 'var(--destructive)' : 'var(--border)'}`,
@@ -326,7 +313,6 @@ export function NotchShell(_props: NotchShellProps) {
           boxShadow: isExpanded ? 'var(--shadow-md)' : 'var(--shadow-sm)',
           transition: [
             `width ${sizeEasing}`,
-            `height ${sizeEasing}`,
             `border-radius ${sizeEasing}`,
             `border-color ${CSS.durBase} ${CSS.easeOutCubic}`,
             `box-shadow ${CSS.durBase} ${CSS.easeOutCubic}`,
@@ -404,10 +390,11 @@ export function NotchShell(_props: NotchShellProps) {
         {/* ── Expanded panel ── */}
         {isExpanded && (
           <div
-            className="flex flex-col"
+            className="relative flex flex-col"
             style={{ maxHeight: 'calc(100vh - 120px)', overflow: 'hidden' }}
           >
-            <div style={{ pointerEvents: headerReady ? 'auto' : 'none' }}>
+            <div aria-hidden="true" className="notch-bloom absolute inset-0 z-0" />
+            <div className="relative z-10" style={{ pointerEvents: headerReady ? 'auto' : 'none' }}>
               <NotchHeader
                 activeId={headerActiveId}
                 onSelect={handleNavSelect}
@@ -417,8 +404,7 @@ export function NotchShell(_props: NotchShellProps) {
             </div>
 
             <div
-              ref={contentRef}
-              className="relative"
+              className="relative z-10"
               key={activeView ?? 'default'}
               style={{ animation: `notch2-expand-content ${CSS.durBase} ${CSS.easeOutCubic} both` }}
             >
