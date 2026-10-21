@@ -73,7 +73,7 @@ function RecentSessionsView({ onViewAll }: { onViewAll: () => void }) {
 
 function SessionRow({ session }: { session: Session }) {
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition-colors cursor-default group">
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-background hover:bg-accent transition-colors cursor-default group">
       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{session.title}</p>
         <p className="text-xs text-muted-foreground truncate">
@@ -115,7 +115,7 @@ function NotificationsView({ onViewAll }: { onViewAll: () => void }) {
 
 function NotificationRow({ item }: { item: IslandEvent }) {
   return (
-    <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition-colors cursor-default group">
+    <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-background hover:bg-accent transition-colors cursor-default group">
       <div className="relative mt-0.5 shrink-0">
         <Bell size={16} weight="duotone" className="text-muted-foreground" />
         {!item.read && (
