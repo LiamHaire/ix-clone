@@ -63,7 +63,7 @@ function RecentSessionsView({ onViewAll }: { onViewAll: () => void }) {
   }
   return (
     <div className="flex flex-col" style={{ minHeight: 240 - 44 }}>
-      <div className="flex-1 flex flex-col px-2 pt-2">
+      <div className="flex-1 flex flex-col gap-1 px-2 pt-2">
         {sessions.map((s) => <SessionRow key={s.id} session={s} />)}
       </div>
       <ViewAllButton onClick={onViewAll} />
@@ -103,7 +103,7 @@ function NotificationsView({ onViewAll }: { onViewAll: () => void }) {
 
   return (
     <div className="flex flex-col" style={{ minHeight: 240 - 44 }}>
-      <div className="flex-1 flex flex-col px-2 pt-2">
+      <div className="flex-1 flex flex-col gap-1 px-2 pt-2">
         {NOTIFICATIONS.map((n) => (
           <NotificationRow key={n.id} item={n} />
         ))}
