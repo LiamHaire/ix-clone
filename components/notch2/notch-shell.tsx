@@ -390,11 +390,10 @@ export function NotchShell(_props: NotchShellProps) {
         {/* ── Expanded panel ── */}
         {isExpanded && (
           <div
-            className="relative flex flex-col"
+            className="flex flex-col"
             style={{ maxHeight: 'calc(100vh - 120px)', overflow: 'hidden' }}
           >
-            <div aria-hidden="true" className="notch-bloom absolute inset-0 z-0" />
-            <div className="relative z-10" style={{ pointerEvents: headerReady ? 'auto' : 'none' }}>
+            <div style={{ pointerEvents: headerReady ? 'auto' : 'none' }}>
               <NotchHeader
                 activeId={headerActiveId}
                 onSelect={handleNavSelect}
@@ -404,7 +403,7 @@ export function NotchShell(_props: NotchShellProps) {
             </div>
 
             <div
-              className="relative z-10"
+              className="relative notch-bloom"
               key={activeView ?? 'default'}
               style={{ animation: `notch2-expand-content ${CSS.durBase} ${CSS.easeOutCubic} both` }}
             >
