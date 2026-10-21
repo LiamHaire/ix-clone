@@ -1,5 +1,10 @@
 export type Priority = "high" | "medium" | "low";
 
+export const ASSIGNEE_NAMES: Record<string, string> = {
+  LH: "Liam Haire",
+  JS: "Jane Smith",
+};
+
 export interface Task {
   id: string;
   title: string;

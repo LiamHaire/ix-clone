@@ -6,6 +6,7 @@ import { IconPriorityMedium } from "@/components/ui/iqons/IconPriorityMedium";
 import { IconPriorityLow } from "@/components/ui/iqons/IconPriorityLow";
 import { useReactTable, getCoreRowModel, flexRender, type ColumnDef } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AssigneeAvatar } from "./assignee-avatar";
 import { cn } from "@/lib/utils";
 import { TASK_DATA, type Task, type Lane } from "./task-data";
 
@@ -43,9 +44,7 @@ function TaskCard({ task }: { task: Task }) {
         <div className="flex items-center gap-1.5">
           <PriorityIcon priority={task.priority} />
           {task.assignee ? (
-            <span className="flex items-center justify-center size-6 rounded-full bg-foreground text-background text-[10px] font-semibold">
-              {task.assignee}
-            </span>
+            <AssigneeAvatar initials={task.assignee} size="sm" />
           ) : (
             <UserCircle size={20} weight="duotone" className="text-muted-foreground" />
           )}
@@ -157,9 +156,7 @@ const COLUMNS: ColumnDef<Task, unknown>[] = [
     cell: ({ row }) => (
       <div className="flex justify-center">
         {row.original.assignee ? (
-          <span className="flex items-center justify-center size-7 rounded-full bg-foreground text-background text-[11px] font-semibold">
-            {row.original.assignee}
-          </span>
+          <AssigneeAvatar initials={row.original.assignee} size="md" />
         ) : (
           <UserCircle size={20} weight="duotone" className="text-muted-foreground" />
         )}

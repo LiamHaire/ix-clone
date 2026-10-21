@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Bell, ClockCounterClockwise, CalendarBlank, ChartBar, Heartbeat, Monitor, Microphone, Books, FileText, Envelope, Phone, Users, ClipboardText, Money, Clock, FolderOpen, UserCircle, Buildings, IdentificationBadge, ShieldCheck, Columns, Table as TableIcon, Funnel, MagnifyingGlass } from '@phosphor-icons/react';
 import { useReactTable, getCoreRowModel, flexRender, type ColumnDef } from '@tanstack/react-table';
+import { AssigneeAvatar } from '@/components/work/assignee-avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { MOCK_EVENTS, formatRelative, type IslandEvent } from '@/components/nav-island/island-mock-events';
@@ -215,11 +216,9 @@ const TASK_COLUMNS: ColumnDef<Task, unknown>[] = [
     accessorKey: 'assignee',
     header: '',
     size: 32,
-    cell: ({ row }) => row.original.assignee ? (
-      <span className="flex items-center justify-center size-6 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground border border-border">
-        {row.original.assignee}
-      </span>
-    ) : null,
+    cell: ({ row }) => row.original.assignee
+      ? <AssigneeAvatar initials={row.original.assignee} size="sm" />
+      : null,
   },
 ];
 
@@ -348,11 +347,7 @@ function TaskRow({ task }: { task: Task }) {
         <p className="text-sm font-medium text-foreground truncate">{task.title}</p>
         <p className="text-[11px] text-muted-foreground">{task.ref}</p>
       </div>
-      {task.assignee && (
-        <span className="shrink-0 flex items-center justify-center size-6 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground border border-border">
-          {task.assignee}
-        </span>
-      )}
+      {task.assignee && <AssigneeAvatar initials={task.assignee} size="sm" />}
     </div>
   );
 }
