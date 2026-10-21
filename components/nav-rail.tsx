@@ -144,7 +144,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
       {/* Bottom nav */}
       <nav className="flex flex-col items-center gap-2 px-3 mt-auto pb-2">
         <NotificationsPopover />
-        <NavItem icon={<Info size={20} weight="duotone" />} label="Info" onClick={() => window.dispatchEvent(new CustomEvent("ix:toggle-work-focus"))} />
+        <NavItem icon={<Info size={20} weight="duotone" />} label="Info" />
         <NavItem icon={<Gear size={20} weight="duotone" />} label="Settings" onClick={() => window.dispatchEvent(new CustomEvent("ix:open-settings"))} />
 
         {/* Avatar */}

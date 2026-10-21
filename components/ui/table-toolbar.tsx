@@ -51,22 +51,6 @@ export function TableToolbar({
         />
       </div>
 
-      {/* Filter button */}
-      {onFilter && (
-        <Button
-          variant="outline"
-          size="default"
-          onClick={onFilter}
-          className={cn(
-            "gap-1.5 shrink-0",
-            filterActive && "border-foreground text-foreground"
-          )}
-        >
-          <Funnel size={14} />
-          Filter
-        </Button>
-      )}
-
       {/* Sort dropdown */}
       {sortOptions && onSortChange && (
         <DropdownMenu>
@@ -91,6 +75,22 @@ export function TableToolbar({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+      )}
+
+      {/* Filter button */}
+      {onFilter && (
+        <Button
+          variant="outline"
+          size="default"
+          onClick={onFilter}
+          className={cn(
+            "gap-1.5 shrink-0",
+            filterActive && "border-foreground text-foreground"
+          )}
+        >
+          <Funnel size={14} />
+          Filter
+        </Button>
       )}
     </div>
   );

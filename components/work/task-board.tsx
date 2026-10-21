@@ -1,10 +1,10 @@
 "use client";
 
-import { CheckSquare, Plus, UserCircle, DotsThree } from "@phosphor-icons/react";
+import { useState, useEffect } from "react";
+import { CheckSquare, Plus, UserCircle, DotsThree, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { IconPriorityHigh } from "@/components/ui/iqons/IconPriorityHigh";
 import { IconPriorityMedium } from "@/components/ui/iqons/IconPriorityMedium";
 import { IconPriorityLow } from "@/components/ui/iqons/IconPriorityLow";
-import { useReactTable, getCoreRowModel, flexRender, type ColumnDef } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AssigneeAvatar } from "./assignee-avatar";
 import { cn } from "@/lib/utils";
@@ -86,9 +86,13 @@ function Swimlane({ lane, search, priorities }: { lane: Lane; search: string; pr
 
 // ── Board ─────────────────────────────────────────────────────────────────────
 
+const LANE_ORDER: Record<string, number> = { due: 0, inprogress: 1, blocked: 2 };
+const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
 interface TaskBoardProps {
   search: string;
   priorities: Set<string>;
+  sortBy?: string;
 }
 
 export function TaskBoard({ search, priorities }: TaskBoardProps) {
@@ -107,132 +111,133 @@ function formatDue(iso?: string) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const COLUMNS: ColumnDef<Task, unknown>[] = [
-  {
-    accessorKey: 'ref',
-    header: 'Ref',
-    size: 90,
-    cell: ({ row }) => <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">{row.original.ref}</span>,
-  },
-  {
-    accessorKey: 'title',
-    header: 'Title',
-    cell: ({ row }) => (
-      <div className="flex flex-col gap-0.5 min-w-0">
-        <span className="text-sm font-medium text-foreground truncate">{row.original.title}</span>
-        {row.original.notes && (
-          <span className="text-xs text-muted-foreground truncate">{row.original.notes}</span>
-        )}
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'priority',
-    header: 'Priority',
-    size: 80,
-    cell: ({ row }) => <div className="flex justify-center"><PriorityIcon priority={row.original.priority} /></div>,
-  },
-  {
-    id: 'lane',
-    header: 'Status',
-    size: 110,
-    cell: ({ row }) => {
-      const lane = TASK_DATA.find(l => l.tasks.some(t => t.id === row.original.id));
-      return <span className="text-xs text-muted-foreground whitespace-nowrap">{lane?.label ?? '—'}</span>;
-    },
-  },
-  {
-    accessorKey: 'dueDate',
-    header: 'Due date',
-    size: 120,
-    cell: ({ row }) => <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDue(row.original.dueDate)}</span>,
-  },
-  {
-    accessorKey: 'assignee',
-    header: 'Assignee',
-    size: 80,
-    cell: ({ row }) => (
-      <div className="flex justify-center">
-        {row.original.assignee
-          ? <AssigneeAvatar initials={row.original.assignee} size="md" />
-          : <UserCircle size={20} weight="duotone" className="text-muted-foreground" />}
-      </div>
-    ),
-  },
-  {
-    id: 'actions',
-    header: '',
-    size: 48,
-    cell: () => (
-      <div className="flex justify-center">
-        <button
-          type="button"
-          className="flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          onClick={e => e.stopPropagation()}
-        >
-          <DotsThree size={16} weight="bold" />
-        </button>
-      </div>
-    ),
-  },
-];
+export function TaskTable({ search, priorities, sortBy = 'Due date' }: TaskBoardProps) {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-export function TaskTable({ search, priorities }: TaskBoardProps) {
-  const allTasks = TASK_DATA.flatMap(l => l.tasks).filter(t => {
+  const allTasks = TASK_DATA.flatMap(lane =>
+    lane.tasks.map(t => ({ ...t, laneLabel: lane.label, laneId: lane.id }))
+  ).filter(t => {
     const matchSearch = !search || t.title.toLowerCase().includes(search.toLowerCase()) || t.ref.toLowerCase().includes(search.toLowerCase());
     return matchSearch && priorities.has(t.priority);
+  }).sort((a, b) => {
+    if (sortBy === 'Due date') {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return a.dueDate.localeCompare(b.dueDate);
+    }
+    if (sortBy === 'Status')   return (LANE_ORDER[a.laneId] ?? 9) - (LANE_ORDER[b.laneId] ?? 9);
+    if (sortBy === 'Priority') return (PRIORITY_ORDER[a.priority] ?? 9) - (PRIORITY_ORDER[b.priority] ?? 9);
+    if (sortBy === 'Assignee') return (a.assignee ?? '').localeCompare(b.assignee ?? '');
+    return 0;
   });
 
-  const table = useReactTable({
-    data: allTasks,
-    columns: COLUMNS,
-    getCoreRowModel: getCoreRowModel(),
-  });
+  const totalPages = Math.max(1, Math.ceil(allTasks.length / pageSize));
+
+  // Reset to page 1 when filters/sort change
+  useEffect(() => { setPage(1); }, [search, sortBy, pageSize]);
+  useEffect(() => { setPage(p => Math.min(p, totalPages)); }, [totalPages]);
+
+  const pageRows = allTasks.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="h-full overflow-y-auto pt-0 pb-4 pr-4 pl-0">
-      <div className="rounded-xl border border-border overflow-hidden">
+      <div className="rounded-lg border border-border overflow-hidden flex flex-col">
         <Table className="table-fixed w-full">
-          <colgroup>
-            <col style={{ width: 90 }} />
-            <col />
-            <col style={{ width: 80 }} />
-            <col style={{ width: 110 }} />
-            <col style={{ width: 120 }} />
-            <col style={{ width: 80 }} />
-            <col style={{ width: 48 }} />
-          </colgroup>
           <TableHeader>
-            {table.getHeaderGroups().map(hg => (
-              <TableRow key={hg.id} className="border-b border-border hover:bg-transparent bg-muted/40">
-                {hg.headers.map(header => (
-                  <TableHead key={header.id} className={`h-9 px-4 text-xs font-semibold text-muted-foreground whitespace-nowrap ${ ['priority','assignee','actions'].includes(header.column.id) ? 'text-center' : '' }`}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
+            <TableRow className="border-b border-border hover:bg-transparent bg-muted/40">
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground w-[90px]">Ref</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground w-full">Title</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground text-center w-[80px]">Priority</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground w-[110px]">Status</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground w-[120px]">Due date</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground text-center w-[80px]">Assignee</TableHead>
+              <TableHead className="h-9 w-[48px]" />
+            </TableRow>
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length === 0 ? (
+            {pageRows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={COLUMNS.length} className="py-12 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
                   No tasks match your filter.
                 </TableCell>
               </TableRow>
-            ) : (
-              table.getRowModel().rows.map(row => (
-                <TableRow key={row.id} className="border-b border-border last:border-0 hover:bg-accent transition-colors cursor-pointer">
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id} className="py-3 px-4">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
+            ) : pageRows.map(task => (
+              <TableRow key={task.id} className="border-b border-border last:border-0 hover:bg-accent transition-colors cursor-pointer">
+                <TableCell className="py-3 px-4">
+                  <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">{task.ref}</span>
+                </TableCell>
+                <TableCell className="py-3 px-4 min-w-0 max-w-0">
+                  <div className="flex flex-col gap-0.5 w-full overflow-hidden">
+                    <span className="text-sm font-medium text-foreground truncate">{task.title}</span>
+                    {task.notes && <span className="text-xs text-muted-foreground truncate">{task.notes}</span>}
+                  </div>
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <div className="flex justify-center"><PriorityIcon priority={task.priority} /></div>
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{task.laneLabel}</span>
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDue(task.dueDate)}</span>
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <div className="flex justify-center">
+                    {task.assignee
+                      ? <AssigneeAvatar initials={task.assignee} size="md" />
+                      : <UserCircle size={20} weight="duotone" className="text-muted-foreground" />}
+                  </div>
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      className="flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <DotsThree size={16} weight="bold" />
+                    </button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
+
+        {/* Pagination footer */}
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Rows per page</span>
+            <select
+              value={pageSize}
+              onChange={e => setPageSize(Number(e.target.value))}
+              className="h-7 rounded-md border border-border bg-background px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="flex items-center justify-center size-7 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-40 disabled:pointer-events-none"
+              aria-label="Previous page"
+            >
+              <CaretLeft size={13} weight="bold" />
+            </button>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="flex items-center justify-center size-7 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-40 disabled:pointer-events-none"
+              aria-label="Next page"
+            >
+              <CaretRight size={13} weight="bold" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

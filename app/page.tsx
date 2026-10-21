@@ -123,7 +123,7 @@ export default function Home() {
   const [isAdditional, setIsAdditional] = useState(false);
   const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email'>('default');
   const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work' | 'session-history' | 'settings'>('default');
-  const [workFocused, setWorkFocused] = useState(false);
+  const [workChatHidden, setWorkChatHidden] = useState(false);
   function transitionToPanel(fn: () => void, responseMessage?: string, suggestions?: string[]) {
     setIsThinking(true);
     setTimeout(() => {
@@ -264,19 +264,6 @@ export default function Home() {
     return () => window.removeEventListener("ix:open-settings", handler);
   }, [appState]);
 
-  useEffect(() => {
-    const handler = () => {
-      if (workspaceMode === 'work') setWorkFocused(f => !f);
-    };
-    window.addEventListener("ix:toggle-work-focus", handler);
-    return () => window.removeEventListener("ix:toggle-work-focus", handler);
-  }, [workspaceMode]);
-
-  // Reset focus when leaving work mode
-  useEffect(() => {
-    if (workspaceMode !== 'work') setWorkFocused(false);
-  }, [workspaceMode]);
-
   function resetToHome() {
     setMessages([]);
     setIsThinking(false);
@@ -292,6 +279,7 @@ export default function Home() {
     setClosedWorkspaceTitle(null);
     setIsAdditional(false);
     setWorkspaceMode('default');
+    setWorkChatHidden(false);
     setAdditionalMode('default');
   }
 
@@ -311,6 +299,8 @@ export default function Home() {
     if (text.toLowerCase() === "show notch") { setNavMode('notch'); return; }
     if (text.toLowerCase() === "show alt design") { setNavMode('notch2'); return; }
     if (text.toLowerCase() === "show navrail") { setNavMode('navrail'); return; }
+    if (text.toLowerCase() === "hide chat" && workspaceMode === 'work') { setWorkChatHidden(true); return; }
+    if (text.toLowerCase() === "show chat" && workspaceMode === 'work') { setWorkChatHidden(false); return; }
     if (text.toLowerCase() === "new notification") { window.dispatchEvent(new CustomEvent('ix:new-notification')); return; }
     if (text.toLowerCase() === "show meeting") { window.dispatchEvent(new CustomEvent('ix:appointment-reminder')); return; }
     if (text.toLowerCase() === "show report") { window.dispatchEvent(new CustomEvent('ix:report-complete')); return; }
@@ -606,7 +596,7 @@ export default function Home() {
           <div
             className="h-full overflow-hidden border-r border-border"
             style={{
-              flex: isWorkspace ? (workFocused && workspaceMode === 'work' ? "1 1 0" : "2 1 0") : "0 0 0",
+              flex: isWorkspace ? (workChatHidden && workspaceMode === 'work' ? "1 1 0" : "2 1 0") : "0 0 0",
               minWidth: 0,
               order: (navMode === 'notch' || navMode === 'notch2') ? 1 : 0,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
@@ -667,8 +657,8 @@ export default function Home() {
             )}
             {isWorkspace && workspaceMode === 'work' && (
               <WorkPanel
-                onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
-                focused={workFocused}
+                onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); setWorkChatHidden(false); }}
+                expanded={workChatHidden}
               />
             )}
             {isWorkspace && workspaceMode === 'session-history' && (
@@ -688,10 +678,9 @@ export default function Home() {
             ref={chatPanelRef}
             className="relative flex flex-col h-full overflow-hidden"
             style={{
-              flex: (workFocused && workspaceMode === 'work') ? "0 0 0" : isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
+              flex: (workChatHidden && workspaceMode === 'work') ? "0 0 0" : isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: 0,
               order: 1,
-              overflow: (workFocused && workspaceMode === 'work') ? "hidden" : undefined,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >

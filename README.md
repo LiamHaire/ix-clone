@@ -160,7 +160,7 @@ In notch modes the workspace panel opens on the left, chat on the right (reverse
 |---|---|
 | **Patient summary** | OneView patient record for Margaret Ellison |
 | **Medication review** | Medication review form, saves to summary card |
-| **Work** | Task and workflow management view |
+| **Work** | Task management — swimlane board + paginated sortable table, stat tiles, priority filter, sort dropdown, hide-chat mode |
 | **Session history** | Past sessions grouped and searchable |
 | **Settings** | App settings (appearance, chat, personalisation) |
 | **Additional** | Related content or draft email side panel |
@@ -194,6 +194,8 @@ In notch modes the workspace panel opens on the left, chat on the right (reverse
 | `show small data` | Inline adaptive cards in chat |
 | `show large data` | Opens workspace panel |
 | `show additional data` | Opens additional panel |
+| `hide chat` | Hides chat panel in Work view, expands work area to 1600px |
+| `show chat` | Restores chat panel in Work view |
 
 ### Demo flows
 
@@ -251,8 +253,11 @@ components/
     settings-panel.tsx              — standalone settings panel (workspace mode)
 
   work/
-    work-panel.tsx                  — work / task management panel
-    task-data.ts                    — mock task lanes (Due today, In progress, Blocked)
+    work-panel.tsx                  — work / task management panel (stat tiles, toolbar, board/table toggle, hide-chat mode)
+    work-nav.tsx                    — left nav tree (Tasks, Workflows sections)
+    task-board.tsx                  — TaskBoard (swimlane) + TaskTable (paginated, sortable, Shadcn table)
+    task-data.ts                    — 25 mock health tasks across Due today, In progress, Blocked lanes
+    assignee-avatar.tsx             — avatar with tooltip, per-user colour palette
 
   chat/                             — all chat panel components
   ui/                               — ShadCN Base UI components
