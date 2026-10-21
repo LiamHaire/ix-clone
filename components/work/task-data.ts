@@ -51,6 +51,7 @@ export const TASK_DATA: Lane[] = [
         tags: ["Clinical"],
         ref: "WRK-809",
         priority: "medium",
+        assignee: "LH",
       },
       {
         id: "t4",
