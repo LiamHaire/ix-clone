@@ -25,7 +25,8 @@ function ViewAllButton({ onClick }: { onClick: () => void }) {
       <button
         type="button"
         onClick={onClick}
-        className="w-full flex items-center justify-center h-8 rounded-lg border border-border text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        className="w-full flex items-center justify-center h-8 rounded-lg border border-border text-[13px] font-medium text-foreground hover:opacity-80 transition-opacity"
+        style={{ background: 'var(--surface-raised)' }}
       >
         View all
       </button>
