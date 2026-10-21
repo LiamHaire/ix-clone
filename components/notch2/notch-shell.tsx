@@ -267,8 +267,10 @@ export function NotchShell(_props: NotchShellProps) {
 
   const alertCount = (hasNotification ? 1 : 0) + (hasAppointment ? 1 : 0) + (reportPhase !== 'idle' ? 1 : 0);
   const collapsedWidth = alertCount > 0 ? PILL_WIDTH + (alertCount - 1) * 28 : PILL_WIDTH;
+  const contentH = contentHForView(activeView);
+  const panelH   = HEADER_H + contentH;
   const width  = isExpanded ? (activeView === 'settings' ? SETTINGS_PANEL_WIDTH : PANEL_WIDTH) : collapsedWidth;
-  const height = isExpanded ? 'auto' : PILL_HEIGHT;
+  const height = isExpanded ? panelH : PILL_HEIGHT;
   const radius = isExpanded ? PANEL_RADIUS : PILL_RADIUS;
 
   const expandEasing   = `${CSS.easeSpringGrow} ${CSS.durSpringGrow}`;
@@ -303,8 +305,6 @@ export function NotchShell(_props: NotchShellProps) {
           borderRadius: radius,
           overflow: 'hidden',
           pointerEvents: 'auto',
-          minHeight: isExpanded ? 240 : undefined,
-          maxHeight: isExpanded ? 'calc(100vh - 120px)' : undefined,
           background: 'var(--surface-raised)',
           borderTop: 'none',
           borderRight: `1px solid ${isRecording && !isExpanded ? 'var(--destructive)' : 'var(--border)'}`,
@@ -313,6 +313,7 @@ export function NotchShell(_props: NotchShellProps) {
           boxShadow: isExpanded ? 'var(--shadow-md)' : 'var(--shadow-sm)',
           transition: [
             `width ${sizeEasing}`,
+            `height ${sizeEasing}`,
             `border-radius ${sizeEasing}`,
             `border-color ${CSS.durBase} ${CSS.easeOutCubic}`,
             `box-shadow ${CSS.durBase} ${CSS.easeOutCubic}`,
