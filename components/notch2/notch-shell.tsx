@@ -46,7 +46,9 @@ export function NotchShell(_props: NotchShellProps) {
   const [appointmentAnimKey, setAppointmentAnimKey] = useState(0);
   const [reportPhase, setReportPhase]         = useState<'idle' | 'shake' | 'check' | 'done'>('idle');
   const [reportAnimKey, setReportAnimKey]     = useState(0);
+  const [measuredH, setMeasuredH]           = useState(DEFAULT_CONTENT_H);
   const containerRef     = useRef<HTMLDivElement>(null);
+  const contentRef       = useRef<HTMLDivElement>(null);
   const fileInputRef     = useRef<HTMLInputElement>(null);
   const dragDepthRef     = useRef(0);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -221,6 +223,18 @@ export function NotchShell(_props: NotchShellProps) {
     return () => clearTimeout(t);
   }, [dropPhase, droppedFile, send]);
 
+  // ── Measure real content height for smooth height animation ─────────────
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      setMeasuredH(el.offsetHeight);
+    });
+    ro.observe(el);
+    setMeasuredH(el.offsetHeight);
+    return () => ro.disconnect();
+  }, [isExpanded]);
+
   // ── Nav handler — single source of truth ─────────────────────────────────
   const handleNavSelect = useCallback((id: NavId) => {
     if (id === 'record') {
@@ -267,8 +281,7 @@ export function NotchShell(_props: NotchShellProps) {
 
   const alertCount = (hasNotification ? 1 : 0) + (hasAppointment ? 1 : 0) + (reportPhase !== 'idle' ? 1 : 0);
   const collapsedWidth = alertCount > 0 ? PILL_WIDTH + (alertCount - 1) * 28 : PILL_WIDTH;
-  const contentH = contentHForView(activeView);
-  const panelH   = HEADER_H + contentH;
+  const panelH = HEADER_H + measuredH;
   const width  = isExpanded ? (activeView === 'settings' ? SETTINGS_PANEL_WIDTH : PANEL_WIDTH) : collapsedWidth;
   const height = isExpanded ? panelH : PILL_HEIGHT;
   const radius = isExpanded ? PANEL_RADIUS : PILL_RADIUS;
@@ -404,6 +417,7 @@ export function NotchShell(_props: NotchShellProps) {
             </div>
 
             <div
+              ref={contentRef}
               className="relative"
               key={activeView ?? 'default'}
               style={{ animation: `notch2-expand-content ${CSS.durBase} ${CSS.easeOutCubic} both` }}
