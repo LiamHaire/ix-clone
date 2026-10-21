@@ -4,6 +4,8 @@ import { CheckSquare, Plus, UserCircle } from "@phosphor-icons/react";
 import { IconPriorityHigh } from "@/components/ui/iqons/IconPriorityHigh";
 import { IconPriorityMedium } from "@/components/ui/iqons/IconPriorityMedium";
 import { IconPriorityLow } from "@/components/ui/iqons/IconPriorityLow";
+import { useReactTable, getCoreRowModel, flexRender, type ColumnDef } from "@tanstack/react-table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { TASK_DATA, type Task, type Lane } from "./task-data";
 
@@ -94,6 +96,117 @@ export function TaskBoard({ search, priorities }: TaskBoardProps) {
   return (
     <div className="flex gap-3 h-full overflow-x-auto p-4">
       {TASK_DATA.map(lane => <Swimlane key={lane.id} lane={lane} search={search} priorities={priorities} />)}
+    </div>
+  );
+}
+
+// ── Table view ────────────────────────────────────────────────────────────────
+
+const COLUMNS: ColumnDef<Task, unknown>[] = [
+  {
+    accessorKey: 'priority',
+    header: 'Priority',
+    cell: ({ row }) => <PriorityIcon priority={row.original.priority} />,
+  },
+  {
+    accessorKey: 'title',
+    header: 'Title',
+    cell: ({ row }) => (
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm font-medium text-foreground">{row.original.title}</span>
+        {row.original.notes && (
+          <span className="text-xs text-muted-foreground line-clamp-1">{row.original.notes}</span>
+        )}
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'ref',
+    header: 'Ref',
+    cell: ({ row }) => <span className="text-xs font-mono text-muted-foreground">{row.original.ref}</span>,
+  },
+  {
+    id: 'lane',
+    header: 'Status',
+    cell: ({ row }) => {
+      const lane = TASK_DATA.find(l => l.tasks.some(t => t.id === row.original.id));
+      return <span className="text-xs text-muted-foreground">{lane?.label ?? '—'}</span>;
+    },
+  },
+  {
+    accessorKey: 'tags',
+    header: 'Tags',
+    cell: ({ row }) => (
+      <div className="flex flex-wrap gap-1">
+        {(row.original.tags ?? []).map(tag => (
+          <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium border border-border text-foreground">
+            {tag}
+          </span>
+        ))}
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'assignee',
+    header: 'Assignee',
+    cell: ({ row }) => row.original.assignee ? (
+      <span className="flex items-center justify-center size-7 rounded-full bg-foreground text-background text-[11px] font-semibold">
+        {row.original.assignee}
+      </span>
+    ) : (
+      <UserCircle size={20} weight="duotone" className="text-muted-foreground" />
+    ),
+  },
+];
+
+export function TaskTable({ search, priorities }: TaskBoardProps) {
+  const allTasks = TASK_DATA.flatMap(l => l.tasks).filter(t => {
+    const matchSearch = !search || t.title.toLowerCase().includes(search.toLowerCase()) || t.ref.toLowerCase().includes(search.toLowerCase());
+    return matchSearch && priorities.has(t.priority);
+  });
+
+  const table = useReactTable({
+    data: allTasks,
+    columns: COLUMNS,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  return (
+    <div className="h-full overflow-auto p-4">
+      <div className="rounded-xl border border-border overflow-hidden">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map(hg => (
+              <TableRow key={hg.id} className="border-b border-border hover:bg-transparent bg-muted/40">
+                {hg.headers.map(header => (
+                  <TableHead key={header.id} className="h-9 px-4 text-xs font-semibold text-muted-foreground">
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={COLUMNS.length} className="py-12 text-center text-sm text-muted-foreground">
+                  No tasks match your filter.
+                </TableCell>
+              </TableRow>
+            ) : (
+              table.getRowModel().rows.map(row => (
+                <TableRow key={row.id} className="border-b border-border last:border-0 hover:bg-accent transition-colors cursor-pointer">
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id} className="py-3 px-4">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

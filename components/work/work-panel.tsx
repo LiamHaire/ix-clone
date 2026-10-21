@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { X, Check, ListChecks } from "@phosphor-icons/react";
+import { X, Check, ListChecks, Columns, Table as TableIcon } from "@phosphor-icons/react";
 import { useRef, useEffect } from "react";
 import { WorkNav } from "./work-nav";
-import { TaskBoard } from "./task-board";
+import { TaskBoard, TaskTable } from "./task-board";
 import { SheetHeader } from "@/components/ui/sheet";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ interface WorkPanelProps {
 
 export function WorkPanel({ onClose }: WorkPanelProps) {
   const [activeView, setActiveView] = useState<string>("my-tasks");
+  const [layoutMode, setLayoutMode] = useState<'columns' | 'table'>('columns');
   const [search, setSearch] = useState("");
   const [priorities, setPriorities] = useState<Set<string>>(new Set(["high", "medium", "low"]));
   const [priorityOpen, setPriorityOpen] = useState(false);
@@ -71,14 +72,34 @@ export function WorkPanel({ onClose }: WorkPanelProps) {
           {/* Toolbar */}
           {showTaskView && (
             <div ref={priorityRef} className="relative shrink-0">
+              <div className="flex items-center gap-2 pr-4 pt-4 pb-2.5 pl-0">
               <TableToolbar
                 searchValue={search}
                 onSearchChange={setSearch}
                 searchPlaceholder="Filter by title, ref…"
                 onFilter={() => setPriorityOpen(o => !o)}
                 filterActive={!allSelected}
-                className="pr-4 pt-4 pb-2.5 pl-0 border-none"
+                className="flex-1 p-0 border-none"
               />
+              <div className="flex items-center rounded-md border border-border overflow-hidden shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setLayoutMode('columns')}
+                  className={cn('flex items-center justify-center size-8 transition-colors', layoutMode === 'columns' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent')}
+                  aria-label="Column view"
+                >
+                  <Columns size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLayoutMode('table')}
+                  className={cn('flex items-center justify-center size-8 transition-colors', layoutMode === 'table' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent')}
+                  aria-label="Table view"
+                >
+                  <TableIcon size={14} />
+                </button>
+              </div>
+              </div>
               {priorityOpen && (
                 <div className="absolute top-full right-4 mt-1 z-50 w-40 rounded-lg border border-border bg-popover shadow-md py-1">
                   <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Priority</p>
@@ -105,7 +126,8 @@ export function WorkPanel({ onClose }: WorkPanelProps) {
 
           {/* Content */}
           <div className="flex-1 min-h-0 overflow-hidden">
-            {showTaskView && <TaskBoard search={search} priorities={priorities} />}
+            {showTaskView && layoutMode === 'columns' && <TaskBoard search={search} priorities={priorities} />}
+            {showTaskView && layoutMode === 'table'   && <TaskTable search={search} priorities={priorities} />}
             {!showTaskView && (
               <div className="flex items-center justify-center h-full">
                 <p className="text-sm text-muted-foreground">Select a view from the left</p>
