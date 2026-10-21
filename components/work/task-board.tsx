@@ -106,16 +106,17 @@ const COLUMNS: ColumnDef<Task, unknown>[] = [
   {
     accessorKey: 'priority',
     header: 'Priority',
+    size: 80,
     cell: ({ row }) => <PriorityIcon priority={row.original.priority} />,
   },
   {
     accessorKey: 'title',
     header: 'Title',
     cell: ({ row }) => (
-      <div className="flex flex-col gap-0.5">
-        <span className="text-sm font-medium text-foreground">{row.original.title}</span>
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <span className="text-sm font-medium text-foreground truncate">{row.original.title}</span>
         {row.original.notes && (
-          <span className="text-xs text-muted-foreground line-clamp-1">{row.original.notes}</span>
+          <span className="text-xs text-muted-foreground truncate">{row.original.notes}</span>
         )}
       </div>
     ),
@@ -123,23 +124,26 @@ const COLUMNS: ColumnDef<Task, unknown>[] = [
   {
     accessorKey: 'ref',
     header: 'Ref',
-    cell: ({ row }) => <span className="text-xs font-mono text-muted-foreground">{row.original.ref}</span>,
+    size: 90,
+    cell: ({ row }) => <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">{row.original.ref}</span>,
   },
   {
     id: 'lane',
     header: 'Status',
+    size: 110,
     cell: ({ row }) => {
       const lane = TASK_DATA.find(l => l.tasks.some(t => t.id === row.original.id));
-      return <span className="text-xs text-muted-foreground">{lane?.label ?? '—'}</span>;
+      return <span className="text-xs text-muted-foreground whitespace-nowrap">{lane?.label ?? '—'}</span>;
     },
   },
   {
     accessorKey: 'tags',
     header: 'Tags',
+    size: 130,
     cell: ({ row }) => (
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-nowrap gap-1">
         {(row.original.tags ?? []).map(tag => (
-          <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium border border-border text-foreground">
+          <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium border border-border text-foreground whitespace-nowrap">
             {tag}
           </span>
         ))}
@@ -149,6 +153,7 @@ const COLUMNS: ColumnDef<Task, unknown>[] = [
   {
     accessorKey: 'assignee',
     header: 'Assignee',
+    size: 90,
     cell: ({ row }) => row.original.assignee ? (
       <span className="flex items-center justify-center size-7 rounded-full bg-foreground text-background text-[11px] font-semibold">
         {row.original.assignee}
@@ -172,14 +177,22 @@ export function TaskTable({ search, priorities }: TaskBoardProps) {
   });
 
   return (
-    <div className="h-full overflow-auto p-4">
+    <div className="h-full overflow-y-auto p-4">
       <div className="rounded-xl border border-border overflow-hidden">
-        <Table>
+        <Table className="table-fixed w-full">
+          <colgroup>
+            <col style={{ width: 80 }} />
+            <col />
+            <col style={{ width: 90 }} />
+            <col style={{ width: 110 }} />
+            <col style={{ width: 130 }} />
+            <col style={{ width: 90 }} />
+          </colgroup>
           <TableHeader>
             {table.getHeaderGroups().map(hg => (
               <TableRow key={hg.id} className="border-b border-border hover:bg-transparent bg-muted/40">
                 {hg.headers.map(header => (
-                  <TableHead key={header.id} className="h-9 px-4 text-xs font-semibold text-muted-foreground">
+                  <TableHead key={header.id} className="h-9 px-4 text-xs font-semibold text-muted-foreground whitespace-nowrap">
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
