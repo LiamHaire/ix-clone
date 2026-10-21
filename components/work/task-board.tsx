@@ -104,12 +104,6 @@ export function TaskBoard({ search, priorities }: TaskBoardProps) {
 
 const COLUMNS: ColumnDef<Task, unknown>[] = [
   {
-    accessorKey: 'priority',
-    header: 'Priority',
-    size: 80,
-    cell: ({ row }) => <PriorityIcon priority={row.original.priority} />,
-  },
-  {
     accessorKey: 'title',
     header: 'Title',
     cell: ({ row }) => (
@@ -137,6 +131,12 @@ const COLUMNS: ColumnDef<Task, unknown>[] = [
     },
   },
   {
+    accessorKey: 'priority',
+    header: 'Priority',
+    size: 80,
+    cell: ({ row }) => <div className="flex justify-center"><PriorityIcon priority={row.original.priority} /></div>,
+  },
+  {
     accessorKey: 'tags',
     header: 'Tags',
     size: 130,
@@ -154,12 +154,16 @@ const COLUMNS: ColumnDef<Task, unknown>[] = [
     accessorKey: 'assignee',
     header: 'Assignee',
     size: 90,
-    cell: ({ row }) => row.original.assignee ? (
-      <span className="flex items-center justify-center size-7 rounded-full bg-foreground text-background text-[11px] font-semibold">
-        {row.original.assignee}
-      </span>
-    ) : (
-      <UserCircle size={20} weight="duotone" className="text-muted-foreground" />
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        {row.original.assignee ? (
+          <span className="flex items-center justify-center size-7 rounded-full bg-foreground text-background text-[11px] font-semibold">
+            {row.original.assignee}
+          </span>
+        ) : (
+          <UserCircle size={20} weight="duotone" className="text-muted-foreground" />
+        )}
+      </div>
     ),
   },
 ];
@@ -181,10 +185,10 @@ export function TaskTable({ search, priorities }: TaskBoardProps) {
       <div className="rounded-xl border border-border overflow-hidden">
         <Table className="table-fixed w-full">
           <colgroup>
-            <col style={{ width: 80 }} />
             <col />
             <col style={{ width: 90 }} />
             <col style={{ width: 110 }} />
+            <col style={{ width: 80 }} />
             <col style={{ width: 130 }} />
             <col style={{ width: 90 }} />
           </colgroup>
@@ -192,7 +196,7 @@ export function TaskTable({ search, priorities }: TaskBoardProps) {
             {table.getHeaderGroups().map(hg => (
               <TableRow key={hg.id} className="border-b border-border hover:bg-transparent bg-muted/40">
                 {hg.headers.map(header => (
-                  <TableHead key={header.id} className="h-9 px-4 text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                  <TableHead key={header.id} className={`h-9 px-4 text-xs font-semibold text-muted-foreground whitespace-nowrap ${ ['priority','assignee'].includes(header.column.id) ? 'text-center' : '' }`}>
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
