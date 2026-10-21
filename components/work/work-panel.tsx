@@ -11,9 +11,10 @@ import { cn } from "@/lib/utils";
 
 interface WorkPanelProps {
   onClose: () => void;
+  focused?: boolean;
 }
 
-export function WorkPanel({ onClose }: WorkPanelProps) {
+export function WorkPanel({ onClose, focused }: WorkPanelProps) {
   const [activeView, setActiveView] = useState<string>("my-tasks");
   const [layoutMode, setLayoutMode] = useState<'columns' | 'table'>('table');
   const [search, setSearch] = useState("");
@@ -62,7 +63,7 @@ export function WorkPanel({ onClose }: WorkPanelProps) {
       </SheetHeader>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        <div className="flex flex-1 min-h-0 overflow-hidden max-w-[1200px] mx-auto w-full">
+        <div className={`flex flex-1 min-h-0 overflow-hidden mx-auto w-full ${focused ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width 500ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
         <WorkNav activeView={activeView} onViewChange={(v) => { setActiveView(v); setSearch(""); }} />
 
         {/* Vertical divider with 16px inset top and bottom */}
