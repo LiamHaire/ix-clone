@@ -177,7 +177,7 @@ export function TaskTable({ search, priorities }: TaskBoardProps) {
   });
 
   return (
-    <div className="h-full overflow-y-auto p-4">
+    <div className="h-full overflow-y-auto pt-0 pb-4 pr-4 pl-0">
       <div className="rounded-xl border border-border overflow-hidden">
         <Table className="table-fixed w-full">
           <colgroup>
