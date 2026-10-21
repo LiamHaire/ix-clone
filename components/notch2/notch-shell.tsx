@@ -393,7 +393,7 @@ export function NotchShell(_props: NotchShellProps) {
             className="relative flex flex-col"
             style={{ maxHeight: 'calc(100vh - 120px)', overflow: 'hidden' }}
           >
-            <div aria-hidden="true" className="notch-bloom absolute inset-x-0 bottom-0 h-48 z-0" />
+            <div aria-hidden="true" className="notch-bloom absolute inset-0 z-0" />
             <div className="relative z-10" style={{ pointerEvents: headerReady ? 'auto' : 'none' }}>
               <NotchHeader
                 activeId={headerActiveId}
