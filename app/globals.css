@@ -357,11 +357,11 @@
 
 /* ── Notch bloom gradient ── */
 .notch-bloom {
-  background: radial-gradient(ellipse 110% 110% at 50% 105%, oklch(72% 0.18 45 / 0.20) 17%, oklch(72% 0.18 45 / 0) 100%);
+  background: radial-gradient(ellipse 60% 110% at 50% 105%, oklch(72% 0.18 45 / 0.12) 17%, oklch(72% 0.18 45 / 0) 100%);
   pointer-events: none;
 }
 .dark .notch-bloom {
-  background: radial-gradient(ellipse 110% 110% at 50% 105%, oklch(55% 0.18 268 / 0.20) 17%, oklch(55% 0.18 268 / 0) 100%);
+  background: radial-gradient(ellipse 60% 110% at 50% 105%, oklch(55% 0.18 268 / 0.12) 17%, oklch(55% 0.18 268 / 0) 100%);
 }
 
 /* ── Notch notification animations ── */
