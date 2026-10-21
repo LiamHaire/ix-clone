@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckSquare, Plus, UserCircle } from "@phosphor-icons/react";
+import { CheckSquare, Plus, UserCircle, DotsThree } from "@phosphor-icons/react";
 import { IconPriorityHigh } from "@/components/ui/iqons/IconPriorityHigh";
 import { IconPriorityMedium } from "@/components/ui/iqons/IconPriorityMedium";
 import { IconPriorityLow } from "@/components/ui/iqons/IconPriorityLow";
@@ -101,6 +101,12 @@ export function TaskBoard({ search, priorities }: TaskBoardProps) {
 
 // ── Table view ────────────────────────────────────────────────────────────────
 
+function formatDue(iso?: string) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 const COLUMNS: ColumnDef<Task, unknown>[] = [
   {
     accessorKey: 'ref',
@@ -121,6 +127,12 @@ const COLUMNS: ColumnDef<Task, unknown>[] = [
     ),
   },
   {
+    accessorKey: 'priority',
+    header: 'Priority',
+    size: 80,
+    cell: ({ row }) => <div className="flex justify-center"><PriorityIcon priority={row.original.priority} /></div>,
+  },
+  {
     id: 'lane',
     header: 'Status',
     size: 110,
@@ -130,36 +142,36 @@ const COLUMNS: ColumnDef<Task, unknown>[] = [
     },
   },
   {
-    accessorKey: 'priority',
-    header: 'Priority',
-    size: 80,
-    cell: ({ row }) => <div className="flex justify-center"><PriorityIcon priority={row.original.priority} /></div>,
-  },
-  {
-    accessorKey: 'tags',
-    header: 'Tags',
-    size: 130,
-    cell: ({ row }) => (
-      <div className="flex flex-nowrap gap-1">
-        {(row.original.tags ?? []).map(tag => (
-          <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium border border-border text-foreground whitespace-nowrap">
-            {tag}
-          </span>
-        ))}
-      </div>
-    ),
+    accessorKey: 'dueDate',
+    header: 'Due date',
+    size: 120,
+    cell: ({ row }) => <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDue(row.original.dueDate)}</span>,
   },
   {
     accessorKey: 'assignee',
     header: 'Assignee',
-    size: 90,
+    size: 80,
     cell: ({ row }) => (
       <div className="flex justify-center">
-        {row.original.assignee ? (
-          <AssigneeAvatar initials={row.original.assignee} size="md" />
-        ) : (
-          <UserCircle size={20} weight="duotone" className="text-muted-foreground" />
-        )}
+        {row.original.assignee
+          ? <AssigneeAvatar initials={row.original.assignee} size="md" />
+          : <UserCircle size={20} weight="duotone" className="text-muted-foreground" />}
+      </div>
+    ),
+  },
+  {
+    id: 'actions',
+    header: '',
+    size: 48,
+    cell: () => (
+      <div className="flex justify-center">
+        <button
+          type="button"
+          className="flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          onClick={e => e.stopPropagation()}
+        >
+          <DotsThree size={16} weight="bold" />
+        </button>
       </div>
     ),
   },
@@ -184,16 +196,17 @@ export function TaskTable({ search, priorities }: TaskBoardProps) {
           <colgroup>
             <col style={{ width: 90 }} />
             <col />
-            <col style={{ width: 110 }} />
             <col style={{ width: 80 }} />
-            <col style={{ width: 130 }} />
-            <col style={{ width: 90 }} />
+            <col style={{ width: 110 }} />
+            <col style={{ width: 120 }} />
+            <col style={{ width: 80 }} />
+            <col style={{ width: 48 }} />
           </colgroup>
           <TableHeader>
             {table.getHeaderGroups().map(hg => (
               <TableRow key={hg.id} className="border-b border-border hover:bg-transparent bg-muted/40">
                 {hg.headers.map(header => (
-                  <TableHead key={header.id} className={`h-9 px-4 text-xs font-semibold text-muted-foreground whitespace-nowrap ${ ['priority','assignee'].includes(header.column.id) ? 'text-center' : '' }`}>
+                  <TableHead key={header.id} className={`h-9 px-4 text-xs font-semibold text-muted-foreground whitespace-nowrap ${ ['priority','assignee','actions'].includes(header.column.id) ? 'text-center' : '' }`}>
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}

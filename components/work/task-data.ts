@@ -13,6 +13,7 @@ export interface Task {
   ref: string;
   priority: Priority;
   assignee?: string;
+  dueDate?: string; // ISO date string
 }
 
 export interface Lane {
@@ -34,6 +35,7 @@ export const TASK_DATA: Lane[] = [
         ref: "WRK-1132",
         priority: "high",
         assignee: "JS",
+        dueDate: "2026-10-21",
       },
       {
         id: "t2",
@@ -42,6 +44,7 @@ export const TASK_DATA: Lane[] = [
         ref: "WRK-1190",
         priority: "high",
         assignee: "JS",
+        dueDate: "2026-10-21",
       },
     ],
   },
@@ -57,6 +60,7 @@ export const TASK_DATA: Lane[] = [
         ref: "WRK-809",
         priority: "medium",
         assignee: "LH",
+        dueDate: "2026-10-28",
       },
       {
         id: "t4",
@@ -66,6 +70,7 @@ export const TASK_DATA: Lane[] = [
         ref: "WRK-814",
         priority: "high",
         assignee: "JS",
+        dueDate: "2026-10-24",
       },
     ],
   },
