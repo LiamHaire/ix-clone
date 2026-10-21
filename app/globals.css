@@ -355,6 +355,11 @@
   background: radial-gradient(ellipse 40% 45% at 50% 50%, oklch(55% 0.18 268 / 0.15) 0%, oklch(55% 0.18 268 / 0) 100%);
 }
 
+/* ── Notch item background (bg-background at 50% opacity) ── */
+.notch-item-bg {
+  background: color-mix(in oklch, var(--background) 50%, transparent);
+}
+
 /* ── Notch bloom gradient ── */
 .notch-bloom {
   background: radial-gradient(ellipse 40% 110% at 75% 105%, oklch(72% 0.18 45 / 0.08) 17%, oklch(72% 0.18 45 / 0) 100%);
