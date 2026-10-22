@@ -49,7 +49,7 @@ export function DropZone({ isDragging: isDraggingProp, onBrowse, inputRef, onFil
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed select-none transition-colors',
+        'flex flex-col items-center justify-center rounded-xl border-2 border-dashed select-none transition-colors',
       )}
       onDragEnter={() => { depthRef.current++; setIsDragging(true); }}
       onDragLeave={() => { depthRef.current--; if (depthRef.current <= 0) { depthRef.current = 0; setIsDragging(false); } }}
@@ -65,15 +65,15 @@ export function DropZone({ isDragging: isDraggingProp, onBrowse, inputRef, onFil
       <UploadSimple
         size={48}
         weight="regular"
-        style={{ color: 'var(--muted-foreground)' }}
+        className="text-foreground mb-3"
       />
-      <p className="text-sm text-foreground font-medium">
+      <p className="text-[14px] font-medium text-foreground">
         Drop here to add to Knowledge Base
       </p>
       <button
         type="button"
         onClick={onBrowse}
-        className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+        className="text-[14px] text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded mt-0.5"
         style={{ transition: `color ${CSS.durFast} ${CSS.easeOutCubic}` }}
       >
         or click to browse

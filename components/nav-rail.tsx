@@ -72,7 +72,7 @@ function NavItem({ icon, label, active, badge, onClick }: NavItemProps) {
   );
 }
 
-export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
+export function NavRail({ onNewChat, hideBadge }: { onNewChat?: () => void; hideBadge?: boolean }) {
   const [appSwitcherOpen, setAppSwitcherOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
 
@@ -143,7 +143,7 @@ export function NavRail({ onNewChat }: { onNewChat?: () => void }) {
 
       {/* Bottom nav */}
       <nav className="flex flex-col items-center gap-2 px-3 mt-auto pb-2">
-        <NotificationsPopover />
+        <NotificationsPopover hideBadge={hideBadge} />
         <NavItem icon={<Info size={20} weight="duotone" />} label="Info" />
         <NavItem icon={<Gear size={20} weight="duotone" />} label="Settings" onClick={() => window.dispatchEvent(new CustomEvent("ix:open-settings"))} />
 
