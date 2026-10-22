@@ -14,6 +14,8 @@ export interface Task {
   priority: Priority;
   assignee?: string;
   dueDate?: string; // ISO date string
+  type: string;
+  dateReceived: string; // ISO date string
 }
 
 export interface Lane {
@@ -36,6 +38,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "JS",
         dueDate: "2026-10-21",
+        type: "Compliance",
+        dateReceived: "2026-10-16",
       },
       {
         id: "t2",
@@ -45,6 +49,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "JS",
         dueDate: "2026-10-21",
+        type: "General",
+        dateReceived: "2026-10-16",
       },
       {
         id: "t5",
@@ -55,6 +61,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "LH",
         dueDate: "2026-10-21",
+        type: "Clinical",
+        dateReceived: "2026-10-18",
       },
       {
         id: "t6",
@@ -65,6 +73,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "LH",
         dueDate: "2026-10-21",
+        type: "Clinical",
+        dateReceived: "2026-10-15",
       },
     ],
   },
@@ -81,6 +91,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "LH",
         dueDate: "2026-10-28",
+        type: "Clinical",
+        dateReceived: "2026-10-23",
       },
       {
         id: "t4",
@@ -91,6 +103,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "JS",
         dueDate: "2026-10-24",
+        type: "Legal",
+        dateReceived: "2026-10-20",
       },
       {
         id: "t7",
@@ -101,6 +115,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "LH",
         dueDate: "2026-10-25",
+        type: "Clinical",
+        dateReceived: "2026-10-22",
       },
       {
         id: "t8",
@@ -111,6 +127,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "JS",
         dueDate: "2026-10-23",
+        type: "Referral",
+        dateReceived: "2026-10-19",
       },
       {
         id: "t9",
@@ -121,6 +139,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "LH",
         dueDate: "2026-10-22",
+        type: "Pharmacy",
+        dateReceived: "2026-10-20",
       },
       {
         id: "t10",
@@ -131,6 +151,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "JS",
         dueDate: "2026-10-31",
+        type: "Clinical",
+        dateReceived: "2026-10-28",
       },
       {
         id: "t11",
@@ -141,6 +163,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "LH",
         dueDate: "2026-10-22",
+        type: "Safeguarding",
+        dateReceived: "2026-10-19",
       },
       {
         id: "t12",
@@ -151,6 +175,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "JS",
         dueDate: "2026-11-01",
+        type: "Audit",
+        dateReceived: "2026-10-28",
       },
       {
         id: "t13",
@@ -161,6 +187,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "LH",
         dueDate: "2026-10-24",
+        type: "Clinical",
+        dateReceived: "2026-10-20",
       },
       {
         id: "t14",
@@ -171,6 +199,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "JS",
         dueDate: "2026-10-24",
+        type: "Clinical",
+        dateReceived: "2026-10-18",
       },
       {
         id: "t15",
@@ -181,6 +211,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "LH",
         dueDate: "2026-10-29",
+        type: "Complaints",
+        dateReceived: "2026-10-27",
       },
       {
         id: "t16",
@@ -191,6 +223,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "JS",
         dueDate: "2026-10-26",
+        type: "Clinical",
+        dateReceived: "2026-10-19",
       },
       {
         id: "t17",
@@ -201,6 +235,8 @@ export const TASK_DATA: Lane[] = [
         priority: "low",
         assignee: "LH",
         dueDate: "2026-10-30",
+        type: "Pharmacy",
+        dateReceived: "2026-10-23",
       },
       {
         id: "t18",
@@ -211,6 +247,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "JS",
         dueDate: "2026-10-31",
+        type: "Compliance",
+        dateReceived: "2026-10-27",
       },
       {
         id: "t19",
@@ -221,6 +259,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "LH",
         dueDate: "2026-10-21",
+        type: "Referral",
+        dateReceived: "2026-10-15",
       },
       {
         id: "t20",
@@ -231,6 +271,8 @@ export const TASK_DATA: Lane[] = [
         priority: "low",
         assignee: "JS",
         dueDate: "2026-10-27",
+        type: "Admin",
+        dateReceived: "2026-10-22",
       },
     ],
   },
@@ -247,6 +289,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "LH",
         dueDate: "2026-10-28",
+        type: "Records",
+        dateReceived: "2026-10-26",
       },
       {
         id: "t22",
@@ -257,6 +301,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "JS",
         dueDate: "2026-11-04",
+        type: "IT",
+        dateReceived: "2026-11-01",
       },
       {
         id: "t23",
@@ -267,6 +313,8 @@ export const TASK_DATA: Lane[] = [
         priority: "low",
         assignee: "LH",
         dueDate: "2026-11-07",
+        type: "Clinical",
+        dateReceived: "2026-11-05",
       },
       {
         id: "t24",
@@ -277,6 +325,8 @@ export const TASK_DATA: Lane[] = [
         priority: "high",
         assignee: "JS",
         dueDate: "2026-10-25",
+        type: "IT",
+        dateReceived: "2026-10-22",
       },
       {
         id: "t25",
@@ -287,6 +337,8 @@ export const TASK_DATA: Lane[] = [
         priority: "medium",
         assignee: "LH",
         dueDate: "2026-10-29",
+        type: "Clinical",
+        dateReceived: "2026-10-27",
       },
     ],
   },

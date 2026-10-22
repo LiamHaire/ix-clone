@@ -7,6 +7,7 @@ import { WorkNav } from "./work-nav";
 import { TaskBoard, TaskTable } from "./task-board";
 import { SheetHeader } from "@/components/ui/sheet";
 import { TableToolbar } from "@/components/ui/table-toolbar";
+import { Button } from "@/components/ui/button";
 import { TASK_DATA } from "./task-data";
 import { cn } from "@/lib/utils";
 
@@ -138,19 +139,19 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
 
               {/* Filter button — popover anchors to this div */}
               <div ref={priorityRef} className="relative shrink-0">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="default"
                   onClick={() => setPriorityOpen(o => !o)}
                   className={cn(
-                    "flex items-center gap-1.5 px-2.5 h-8 rounded-md border border-border text-xs font-medium transition-colors",
-                    priorityOpen || !allSelected
-                      ? "border-foreground text-foreground bg-accent"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    "gap-1.5 shrink-0",
+                    (priorityOpen || !allSelected) && "border-foreground text-foreground"
                   )}
                 >
-                  <Funnel size={13} />
+                  <Funnel size={14} />
                   Filter
-                </button>
+                </Button>
 
                 {priorityOpen && (
                   <div className="absolute top-full right-0 mt-1 z-50 flex flex-col rounded-lg border border-border bg-popover shadow-md overflow-hidden">

@@ -147,10 +147,11 @@ export function TaskTable({ search, priorities, sortBy = 'Due date' }: TaskBoard
         <Table className="table-fixed w-full">
           <TableHeader>
             <TableRow className="border-b border-border hover:bg-transparent bg-muted/40">
-              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground w-[90px]">Ref</TableHead>
               <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground w-full">Title</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground w-[110px]">Type</TableHead>
               <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground text-center w-[80px]">Priority</TableHead>
               <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground w-[110px]">Status</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground w-[120px]">Date received</TableHead>
               <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground w-[120px]">Due date</TableHead>
               <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground text-center w-[80px]">Assignee</TableHead>
               <TableHead className="h-9 w-[48px]" />
@@ -159,15 +160,12 @@ export function TaskTable({ search, priorities, sortBy = 'Due date' }: TaskBoard
           <TableBody>
             {pageRows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
                   No tasks match your filter.
                 </TableCell>
               </TableRow>
             ) : pageRows.map(task => (
               <TableRow key={task.id} className="border-b border-border last:border-0 hover:bg-accent transition-colors cursor-pointer">
-                <TableCell className="py-3 px-4">
-                  <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">{task.ref}</span>
-                </TableCell>
                 <TableCell className="py-3 px-4 min-w-0 max-w-0">
                   <div className="flex flex-col gap-0.5 w-full overflow-hidden">
                     <span className="text-sm font-medium text-foreground truncate">{task.title}</span>
@@ -175,10 +173,16 @@ export function TaskTable({ search, priorities, sortBy = 'Due date' }: TaskBoard
                   </div>
                 </TableCell>
                 <TableCell className="py-3 px-4">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{task.type}</span>
+                </TableCell>
+                <TableCell className="py-3 px-4">
                   <div className="flex justify-center"><PriorityIcon priority={task.priority} /></div>
                 </TableCell>
                 <TableCell className="py-3 px-4">
                   <span className="text-xs text-muted-foreground whitespace-nowrap">{task.laneLabel}</span>
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDue(task.dateReceived)}</span>
                 </TableCell>
                 <TableCell className="py-3 px-4">
                   <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDue(task.dueDate)}</span>
