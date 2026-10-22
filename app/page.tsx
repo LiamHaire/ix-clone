@@ -12,7 +12,7 @@ import {
   PromptInputSelectItem,
 } from "@/components/ai-elements/prompt-input";
 import { SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ArrowRight, ArrowBendDownRight, DotsThreeVertical, CaretDown, X as PhosphorX, Info, NotePencil } from "@phosphor-icons/react";
+import { Plus, ArrowRight, ArrowBendDownRight, CaretDown, X as PhosphorX, Info, NotePencil, CaretLineRight, Chat as ChatIcon } from "@phosphor-icons/react";
 import { AnimatedPlaceholder } from "@/components/animated-placeholder";
 import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ProgressCard } from "@/components/chat/progress-card";
@@ -36,6 +36,7 @@ import { SettingsPanel } from "@/components/settings/settings-panel";
 import { NavRail } from "@/components/nav-rail";
 import { NavNotch } from "@/components/nav-island/nav-island";
 import { NavNotch2 } from "@/components/notch2";
+import { NavNotch3 } from "@/components/notch3";
 import { SheetHeader } from "@/components/ui/sheet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Warning } from "@phosphor-icons/react";
@@ -47,6 +48,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Item, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
 import { Button } from "@/components/ui/button";
 import { ArrowSquareOut } from "@phosphor-icons/react";
+import { CSS } from "@/lib/motion";
 import {
   shouldShowCards,
   getRecommendedCardCount,
@@ -117,13 +119,14 @@ export default function Home() {
   const [overlayShadow, setOverlayShadow] = useState(true);
 
   const [showAlert, setShowAlert] = useState(false);
-  const [navMode, setNavMode] = useState<'navrail' | 'notch' | 'notch2'>('navrail');
+  const [navMode, setNavMode] = useState<'navrail' | 'notch' | 'notch2' | 'notch3'>('navrail');
   const [isWorkspace, setIsWorkspace] = useState(false);
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
   const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email'>('default');
   const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work' | 'session-history' | 'settings'>('default');
   const [workChatHidden, setWorkChatHidden] = useState(false);
+  const [chatCollapsed, setChatCollapsed] = useState(false);
   function transitionToPanel(fn: () => void, responseMessage?: string, suggestions?: string[]) {
     setIsThinking(true);
     setTimeout(() => {
@@ -146,6 +149,7 @@ export default function Home() {
 
   useEffect(() => {
     if (isWorkspace) chatScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    else setChatCollapsed(false);
   }, [isWorkspace]);
 
   useEffect(() => {
@@ -298,11 +302,13 @@ export default function Home() {
 
     if (text.toLowerCase() === "show notch") { setNavMode('notch'); return; }
     if (text.toLowerCase() === "show alt design") { setNavMode('notch2'); return; }
+    if (text.toLowerCase() === "show notch 3") { setNavMode('notch3'); return; }
     if (text.toLowerCase() === "show navrail") { setNavMode('navrail'); return; }
     if (text.toLowerCase() === "hide chat" && workspaceMode === 'work') { setWorkChatHidden(true); return; }
     if (text.toLowerCase() === "show chat" && workspaceMode === 'work') { setWorkChatHidden(false); return; }
     if (text.toLowerCase() === "new notification") { window.dispatchEvent(new CustomEvent('ix:new-notification')); return; }
     if (text.toLowerCase() === "show meeting") { window.dispatchEvent(new CustomEvent('ix:appointment-reminder')); return; }
+    if (text.toLowerCase() === "task alert") { window.dispatchEvent(new CustomEvent('ix:task-alert')); return; }
     if (text.toLowerCase() === "show report") { window.dispatchEvent(new CustomEvent('ix:report-complete')); return; }
     if (text.toLowerCase() === "dark") { document.documentElement.classList.add('dark'); return; }
     if (text.toLowerCase() === "light") { document.documentElement.classList.remove('dark'); return; }
@@ -480,7 +486,7 @@ export default function Home() {
 
   return (
     <div className="h-full overflow-hidden bg-background flex flex-1 min-w-0">
-      {navMode === 'navrail' && <NavRail />}
+      {(navMode === 'navrail' || navMode === 'notch3') && <NavRail hideBadge={navMode === 'notch3'} />}
       {navMode === 'notch' && (
         <NavNotch
           onSessionHistory={() => window.dispatchEvent(new CustomEvent('ix:open-session-history'))}
@@ -505,6 +511,7 @@ export default function Home() {
         />
       )}
       {navMode === 'notch2' && <NavNotch2 />}
+      {navMode === 'notch3' && <NavNotch3 />}
       <div className="relative flex flex-col flex-1 min-w-0 h-full overflow-hidden" style={{ minHeight: 0 }}>
       {/* Alert banner */}
       {showAlert && (
@@ -598,13 +605,14 @@ export default function Home() {
             style={{
               flex: isWorkspace ? (workChatHidden && workspaceMode === 'work' ? "1 1 0" : "2 1 0") : "0 0 0",
               minWidth: 0,
-              order: (navMode === 'notch' || navMode === 'notch2') ? 1 : 0,
+              order: (navMode === 'notch' || navMode === 'notch2') ? 1 : 0,  // notch3 keeps navrail layout
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
             {isWorkspace && workspaceMode === 'patient-summary' && (
               <PatientSummaryPanel
                 onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+                expanded={chatCollapsed}
                 onTasksClick={() => {
                   setIsThinking(true);
                   setTimeout(() => {
@@ -653,38 +661,64 @@ export default function Home() {
                   setClosedWorkspaceTitle("Today's Appointments");
                   setIsWorkspace(false);
                 }}
+                expanded={chatCollapsed}
               />
             )}
             {isWorkspace && workspaceMode === 'work' && (
               <WorkPanel
                 onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); setWorkChatHidden(false); }}
-                expanded={workChatHidden}
+                expanded={workChatHidden || chatCollapsed}
               />
             )}
             {isWorkspace && workspaceMode === 'session-history' && (
               <SessionHistoryPanel
                 onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+                expanded={chatCollapsed}
               />
             )}
             {isWorkspace && workspaceMode === 'settings' && (
               <SettingsPanel
                 onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+                expanded={chatCollapsed}
               />
             )}
           </div>
 
-          {/* ── Chat panel — full, or 1/3 (workspace), or 2/3 (additional) ── */}
+          {/* ── Chat panel — full, 1/3 (workspace), 2/3 (additional), or collapsed to a narrow strip ── */}
           <div
             ref={chatPanelRef}
             className="relative flex flex-col h-full overflow-hidden"
             style={{
-              flex: (workChatHidden && workspaceMode === 'work') ? "0 0 0" : isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
-              minWidth: 0,
+              flex: (workChatHidden && workspaceMode === 'work') ? "0 0 0" : (isWorkspace && chatCollapsed) ? "0 0 56px" : isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
+              minWidth: (isWorkspace && chatCollapsed) ? 56 : 0,
               order: 1,
               transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
-  
+            {/* ── Collapsed strip — shown instead of the chat body when collapsed ── */}
+            {isWorkspace && chatCollapsed && (
+              <div className="absolute inset-0 flex flex-col items-center pt-4">
+                <Tooltip>
+                  <TooltipTrigger
+                    aria-label="Expand chat"
+                    onClick={() => setChatCollapsed(false)}
+                    className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+                  >
+                    <ChatIcon size={16} />
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Expand chat</TooltipContent>
+                </Tooltip>
+              </div>
+            )}
+
+            <div
+              className="flex flex-col h-full min-w-0"
+              style={{
+                opacity: (isWorkspace && chatCollapsed) ? 0 : 1,
+                visibility: (isWorkspace && chatCollapsed) ? "hidden" : "visible",
+                transition: `opacity ${CSS.durBase} ${CSS.easeOutCubic}`,
+              }}
+            >
             {/* Header */}
             <SheetHeader className="flex-shrink-0 px-4 pt-4 pb-3 flex-row items-center justify-between gap-2 border-b border-border">
               <div className="flex flex-col gap-0.5 min-w-0">
@@ -704,12 +738,18 @@ export default function Home() {
                   </Tooltip>
                 )}
                 <IndexPopover index={MOCK_SESSIONS[0].index} />
-                <button
-                  aria-label="More options"
-                  className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
-                >
-                  <DotsThreeVertical size={18} weight="bold" />
-                </button>
+                {isWorkspace && (
+                  <Tooltip>
+                    <TooltipTrigger
+                      aria-label="Collapse chat"
+                      onClick={() => setChatCollapsed(true)}
+                      className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+                    >
+                      <CaretLineRight size={18} />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Collapse chat</TooltipContent>
+                  </Tooltip>
+                )}
               </div>
             </SheetHeader>
 
@@ -974,6 +1014,7 @@ export default function Home() {
             <p className="flex-shrink-0 text-center text-[11px] leading-none pb-6 text-muted-foreground/55">
               IQ can make mistakes. <span className="underline underline-offset-2">Read our AI usage policy.</span>
             </p>
+            </div>
           </div>
 
           {/* ── Additional panel (left in navrail, right in island) ── */}

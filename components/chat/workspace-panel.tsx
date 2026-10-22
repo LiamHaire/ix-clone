@@ -8,11 +8,12 @@ import { SheetHeader } from '@/components/ui/sheet';
 interface WorkspacePanelProps {
   title: string;
   onClose: () => void;
+  expanded?: boolean;
 }
 
 const fill = 'bg-muted rounded';
 
-export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
+export function WorkspacePanel({ title, onClose, expanded }: WorkspacePanelProps) {
   return (
     <div className="h-full flex flex-col bg-popover">
 
@@ -45,7 +46,7 @@ export function WorkspacePanel({ title, onClose }: WorkspacePanelProps) {
       {/* Content in a stroked rounded container, pb-6 to match 24px base margin */}
       <div className="flex-1 min-h-0 px-5 pt-4 pb-6 overflow-hidden flex flex-col">
         <div className="flex-1 min-h-0 overflow-y-auto rounded-xl border border-border px-4 py-5">
-          <div className="max-w-[1200px] mx-auto space-y-8">
+          <div className={`mx-auto space-y-8 ${expanded ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width 500ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
 
           {/* Stats row */}
           <div className="grid grid-cols-4 gap-8">

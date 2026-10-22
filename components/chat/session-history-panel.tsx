@@ -11,9 +11,10 @@ const SORT_OPTIONS = ["Most recent", "Oldest first", "A–Z"];
 
 interface SessionHistoryPanelProps {
   onClose: () => void;
+  expanded?: boolean;
 }
 
-export function SessionHistoryPanel({ onClose }: SessionHistoryPanelProps) {
+export function SessionHistoryPanel({ onClose, expanded }: SessionHistoryPanelProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("Most recent");
   const [preview, setPreview] = useState<IndexEntry | null>(null);
@@ -81,7 +82,7 @@ export function SessionHistoryPanel({ onClose }: SessionHistoryPanelProps) {
       {/* Content */}
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-4 pb-6">
         {preview ? (
-          <div className="max-w-[1200px] mx-auto">
+          <div className={`mx-auto ${expanded ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width 500ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
             <div className="flex items-center gap-2 mb-4">
               <preview.icon size={18} weight="duotone" className="text-muted-foreground shrink-0" />
               <div>
@@ -94,7 +95,7 @@ export function SessionHistoryPanel({ onClose }: SessionHistoryPanelProps) {
             </div>
           </div>
         ) : (
-          <div className="max-w-[1200px] mx-auto flex flex-col rounded-xl overflow-hidden">
+          <div className={`mx-auto flex flex-col rounded-xl overflow-hidden ${expanded ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width 500ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
             <TableToolbar
               searchValue={search}
               onSearchChange={setSearch}

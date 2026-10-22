@@ -406,6 +406,66 @@
 }
 .notch-icon-fade-in { animation: notch-icon-fade-in 200ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
+/* ── Notch 3 bell animation ── */
+@keyframes n3-bell-pop {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { opacity: 1; transform: scale(1.18); }
+  80%  { transform: scale(0.94); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes n3-bell-ring {
+  0%   { transform: scale(1) rotate(0deg); }
+  12%  { transform: scale(1) rotate(-18deg); }
+  28%  { transform: scale(1) rotate(15deg); }
+  44%  { transform: scale(1) rotate(-11deg); }
+  58%  { transform: scale(1) rotate(7deg); }
+  72%  { transform: scale(1) rotate(-4deg); }
+  84%  { transform: scale(1) rotate(2deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.n3-bell-pop  { animation: n3-bell-pop  260ms var(--ease-back-out) both; }
+.n3-bell-ring { animation: n3-bell-ring 520ms var(--ease-in-out-cubic) 220ms both; }
+
+/* ── Notch 3 calendar drop animation ── */
+@keyframes n3-calendar-drop {
+  0%   { opacity: 0; transform: translateY(-14px) scale(0.7) rotate(-18deg); }
+  45%  { opacity: 1; transform: translateY(3px)   scale(1.06) rotate(4deg);  }
+  65%  { transform: translateY(-2px) scale(0.96) rotate(-1.5deg); }
+  80%  { transform: translateY(1px)  scale(1.02) rotate(0.5deg);  }
+  100% { opacity: 1; transform: translateY(0)    scale(1)    rotate(0deg);   }
+}
+.n3-calendar-drop { animation: n3-calendar-drop 560ms var(--ease-out-cubic) both; }
+
+/* ── Notch 3 task stamp + jitter animation ── */
+@keyframes n3-task-stamp {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.82); }
+  55%  { opacity: 1; transform: translateY(-3px) scale(1.06); }
+  78%  { transform: translateY(1px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+.n3-task-stamp { animation: n3-task-stamp 420ms var(--ease-back-out) both; }
+
+/* ── Notch 3 bell sound-wave lines ── */
+@keyframes n3-sound-line-left {
+  0%   { opacity: 0; transform: translateX(3px) scaleX(0.6); }
+  35%  { opacity: 1; transform: translateX(0) scaleX(1); }
+  75%  { opacity: 1; transform: translateX(0) scaleX(1); }
+  100% { opacity: 0; transform: translateX(-2px) scaleX(1); }
+}
+@keyframes n3-sound-line-right {
+  0%   { opacity: 0; transform: translateX(-3px) scaleX(0.6); }
+  35%  { opacity: 1; transform: translateX(0) scaleX(1); }
+  75%  { opacity: 1; transform: translateX(0) scaleX(1); }
+  100% { opacity: 0; transform: translateX(2px) scaleX(1); }
+}
+.n3-sound-line-left  { animation: n3-sound-line-left  640ms var(--ease-out-cubic) 160ms both; }
+.n3-sound-line-right { animation: n3-sound-line-right 640ms var(--ease-out-cubic) 160ms both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .n3-sound-line-left, .n3-sound-line-right { animation: notch-icon-fade-in 200ms var(--ease-back-out) both; }
+  .n3-bell-pop, .n3-bell-ring, .n3-calendar-drop, .n3-task-stamp { animation: notch-icon-fade-in 200ms var(--ease-back-out) both; }
+}
+
 /* ── Notch animations ── */
 @keyframes notch-expand {
   0%   { clip-path: inset(0 calc(50% - 40px) calc(100% - 32px) calc(50% - 40px) round 0 0 4px 4px); opacity: 0.6; }

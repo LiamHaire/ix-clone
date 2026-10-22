@@ -19,9 +19,10 @@ type PanelView = 'summary' | 'medications';
 interface PatientSummaryPanelProps {
   onClose: () => void;
   onTasksClick?: () => void;
+  expanded?: boolean;
 }
 
-export function PatientSummaryPanel({ onClose, onTasksClick }: PatientSummaryPanelProps) {
+export function PatientSummaryPanel({ onClose, onTasksClick, expanded }: PatientSummaryPanelProps) {
   const patient = ACTIVE_PATIENT;
   const { demographics } = patient;
   const [view, setView] = useState<PanelView>('summary');
@@ -74,7 +75,7 @@ export function PatientSummaryPanel({ onClose, onTasksClick }: PatientSummaryPan
 
       {/* Scrollable content */}
       <div className="flex-1 min-h-0 overflow-y-auto px-5 [scrollbar-gutter:stable]">
-        <div className="max-w-[1200px] mx-auto pt-4 pb-0">
+        <div className={`mx-auto pt-4 pb-0 ${expanded ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width 500ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
         {/* Banner — always visible */}
         <PatientBanner patient={patient} onTasksClick={onTasksClick} />
 
