@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Bell, CheckCircle, CalendarBlank, ListChecks, ChatCircle, ArrowLeft, PaperPlaneRight, Paperclip } from '@phosphor-icons/react';
+import { Bell, CheckCircle, CalendarBlank, ListChecks, ChatCircle, ArrowLeft, PaperPlaneRight, Plus } from '@phosphor-icons/react';
 import type { NavId3 } from './notch3-nav';
 import { TASK_DATA, ASSIGNEE_NAMES, type Task } from '@/components/work/task-data';
 import { Button } from '@/components/ui/button';
@@ -261,9 +261,10 @@ function ChatDetail({ chatId, onBack }: { chatId: string; onBack: () => void }) 
       {/* Send input row */}
       <div className="flex items-center gap-2" style={{ height: INPUT_ROW_H, marginTop: GAP_MD }}>
         <button
-          className="flex items-center justify-center size-8 rounded-lg border border-border bg-background/60 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+          className="flex items-center justify-center rounded-lg border border-border bg-background/60 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+          style={{ height: INPUT_ROW_H, width: INPUT_ROW_H }}
         >
-          <Paperclip size={15} weight="regular" />
+          <Plus size={15} weight="regular" />
         </button>
         <div className="flex-1 flex items-center rounded-lg border border-border bg-background/60 px-3 h-full">
           <input
@@ -278,7 +279,8 @@ function ChatDetail({ chatId, onBack }: { chatId: string; onBack: () => void }) 
         <button
           onClick={sendMessage}
           disabled={!input.trim()}
-          className="flex items-center justify-center size-8 rounded-lg border border-border bg-background/60 text-primary disabled:text-muted-foreground hover:bg-accent transition-colors shrink-0"
+          className="flex items-center justify-center rounded-lg border border-border bg-background/60 text-primary disabled:text-muted-foreground hover:bg-accent transition-colors shrink-0"
+          style={{ height: INPUT_ROW_H, width: INPUT_ROW_H }}
         >
           <PaperPlaneRight size={15} weight="fill" />
         </button>

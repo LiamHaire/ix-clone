@@ -87,7 +87,7 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
         </div>
         <div className="flex items-center gap-2">
           <button
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 h-8 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             aria-label="New task"
           >
             <Plus size={13} weight="bold" />

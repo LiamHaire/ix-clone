@@ -29,7 +29,7 @@ type ActiveView3 = NavId3 | 'drop';
 
 export function Notch3Shell() {
   const [mounted, setMounted]               = useState(false);
-  const [activeView, setActiveView]         = useState<ActiveView3>('notifications');
+  const [activeView, setActiveView]         = useState<ActiveView3>('tasks');
   const [isRecording, setIsRecording]       = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [headerReady, setHeaderReady]       = useState(false);
@@ -65,7 +65,7 @@ export function Notch3Shell() {
   // Block tooltips during spring-grow; reset default view on close
   useEffect(() => {
     if (!isExpanded) {
-      setActiveView('notifications');
+      setActiveView('tasks');
       setActiveChatId(null);
       setHeaderReady(false);
       if (headerReadyTimer.current) clearTimeout(headerReadyTimer.current);

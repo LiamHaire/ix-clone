@@ -475,6 +475,19 @@
   .n3-bell-pop, .n3-bell-ring, .n3-calendar-drop, .n3-task-stamp, .n3-chat-stamp { animation: notch-icon-fade-in 200ms var(--ease-back-out) both; }
 }
 
+/* ── Chat FAB pulse ring ── */
+@keyframes fab-ring-pulse {
+  0%   { transform: scale(0.85); opacity: 0;   }
+  15%  { opacity: 0.6; }
+  100% { transform: scale(1.65); opacity: 0;   }
+}
+.fab-ring-trigger {
+  opacity: 0;
+}
+.group:hover .fab-ring-trigger {
+  animation: fab-ring-pulse 900ms var(--ease-out-cubic) 1;
+}
+
 /* ── Notch animations ── */
 @keyframes notch-expand {
   0%   { clip-path: inset(0 calc(50% - 40px) calc(100% - 32px) calc(50% - 40px) round 0 0 4px 4px); opacity: 0.6; }

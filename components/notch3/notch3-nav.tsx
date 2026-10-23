@@ -35,10 +35,10 @@ export interface NavItem3 {
 }
 
 export const NAV_ITEMS_3: NavItem3[] = [
+  { id: 'tasks',         label: "Today's Tasks",          icon: ListChecks,    position: 'left'  },
   { id: 'notifications', label: 'Notifications',         icon: Bell,          position: 'left'  },
   { id: 'chat',          label: 'Chat',                   icon: ChatCircle,    position: 'left'  },
   { id: 'calendar',      label: 'Calendar events',        icon: CalendarBlank, position: 'left'  },
-  { id: 'tasks',         label: "Today's Tasks",          icon: ListChecks,    position: 'left'  },
   { id: 'record',        label: 'Start Scribe',           icon: Microphone,    position: 'right' },
   { id: 'knowledge',     label: 'Add to Knowledge base',  icon: Plus,          position: 'right' },
 ];
