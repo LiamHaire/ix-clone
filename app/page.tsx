@@ -154,8 +154,8 @@ export default function Home() {
 
   useEffect(() => {
     const handler = () => resetToHome();
-    window.addEventListener("ix:new-chat", handler);
-    return () => window.removeEventListener("ix:new-chat", handler);
+    window.addEventListener("ix:new-session", handler);
+    return () => window.removeEventListener("ix:new-session", handler);
   }, []);
 
   useEffect(() => {
@@ -310,6 +310,7 @@ export default function Home() {
     if (text.toLowerCase() === "show meeting") { window.dispatchEvent(new CustomEvent('ix:appointment-reminder')); return; }
     if (text.toLowerCase() === "task alert") { window.dispatchEvent(new CustomEvent('ix:task-alert')); return; }
     if (text.toLowerCase() === "show report") { window.dispatchEvent(new CustomEvent('ix:report-complete')); return; }
+    if (text.toLowerCase() === "new message") { window.dispatchEvent(new Event('ix:new-chat')); return; }
     if (text.toLowerCase() === "dark") { document.documentElement.classList.add('dark'); return; }
     if (text.toLowerCase() === "light") { document.documentElement.classList.remove('dark'); return; }
 
@@ -729,7 +730,7 @@ export default function Home() {
                   <Tooltip>
                     <TooltipTrigger
                       aria-label="New session"
-                      onClick={() => window.dispatchEvent(new CustomEvent('ix:new-chat'))}
+                      onClick={() => window.dispatchEvent(new CustomEvent('ix:new-session'))}
                       className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
                     >
                       <NotePencil size={18} weight="duotone" />

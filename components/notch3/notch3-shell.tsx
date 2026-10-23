@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { StopCircle, Bell, CalendarBlank, ListChecks } from '@phosphor-icons/react';
+import { StopCircle, Bell, CalendarBlank, ChatCircle } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { useNotchMachine } from '@/components/notch2/notch-hook';
 import { DropZone, UploadingView, SuccessView, ErrorView, validateFile } from '@/components/notch2/notch-drop';
 import { Notch3Header, type NavId3 } from './notch3-nav';
-import { Notch3View, VIEW_HEIGHTS_3 } from './notch3-views';
+import { Notch3View, VIEW_HEIGHTS_3, tasksContentHeight, chatContentHeight } from './notch3-views';
 import { CSS, SPRING_GROW_DURATION_MS } from '@/lib/motion';
 
 // ── Geometry ──────────────────────────────────────────────────────────────────
@@ -22,7 +22,7 @@ const CONTENT_GAP_PX    = 16;
 const PANEL_PADDING_PX  = 16;
 const DEFAULT_CONTENT_H = 320;
 const DROP_CONTENT_H    = 160;
-const ALERT_CARD_H      = 64;
+const ALERT_CARD_H      = 115; // ROW_H (67) + OUTER_GAP (16) + FOOTER_BTN_H (32)
 const SUCCESS_LINGER_MS = 1200;
 
 type ActiveView3 = NavId3 | 'drop';
@@ -37,8 +37,9 @@ export function Notch3Shell() {
   const [notifyKey, setNotifyKey]           = useState(0);
   const [hasCalendarEvent, setHasCalendarEvent] = useState(false);
   const [calendarKey, setCalendarKey]           = useState(0);
-  const [hasTaskAlert, setHasTaskAlert]         = useState(false);
-  const [taskKey, setTaskKey]                   = useState(0);
+  const [hasNewChat, setHasNewChat]             = useState(false);
+  const [chatKey, setChatKey]                   = useState(0);
+  const [activeChatId, setActiveChatId]         = useState<string | null>(null);
   const [droppedFile, setDroppedFile]       = useState<File | null>(null);
 
   const containerRef     = useRef<HTMLDivElement>(null);
@@ -65,6 +66,7 @@ export function Notch3Shell() {
   useEffect(() => {
     if (!isExpanded) {
       setActiveView('notifications');
+      setActiveChatId(null);
       setHeaderReady(false);
       if (headerReadyTimer.current) clearTimeout(headerReadyTimer.current);
     } else {
@@ -96,22 +98,22 @@ export function Notch3Shell() {
     return () => window.removeEventListener('ix:appointment-reminder', handler);
   }, [isExpanded]);
 
-  // Task alert
+  // New chat event
   useEffect(() => {
     const handler = () => {
       if (isExpanded) return;
-      setHasTaskAlert(true);
-      setTaskKey(k => k + 1);
+      setHasNewChat(true);
+      setChatKey(k => k + 1);
     };
-    window.addEventListener('ix:task-alert', handler);
-    return () => window.removeEventListener('ix:task-alert', handler);
+    window.addEventListener('ix:new-chat', handler);
+    return () => window.removeEventListener('ix:new-chat', handler);
   }, [isExpanded]);
 
   // Clear all alerts when the panel closes
   useEffect(() => {
     if (!isExpanded) {
       setHasNotification(false);
-      setHasTaskAlert(false);
+      setHasNewChat(false);
       setHasCalendarEvent(false);
     }
   }, [isExpanded]);
@@ -241,9 +243,12 @@ export function Notch3Shell() {
   const contentH = activeView === 'drop'
     ? DROP_CONTENT_H
     : (activeView === 'notifications' && hasNotification) ||
-      (activeView === 'tasks'         && hasTaskAlert)    ||
       (activeView === 'calendar'      && hasCalendarEvent)
     ? ALERT_CARD_H
+    : activeView === 'tasks'
+    ? tasksContentHeight()
+    : activeView === 'chat'
+    ? chatContentHeight(hasNewChat, activeChatId)
     : (VIEW_HEIGHTS_3[activeView as NavId3] ?? DEFAULT_CONTENT_H);
   const panelH = HEADER_H + DIVIDER_GAP_PX + 1 + CONTENT_GAP_PX + contentH + PANEL_PADDING_PX;
 
@@ -307,45 +312,40 @@ export function Notch3Shell() {
             type="button"
             aria-label="Open panel"
             onClick={() => {
-              // Open directly into the alerted view, left-to-right priority
-              // matching the icon order: notifications, calendar, tasks.
+              // Priority: notifications → chat → calendar
               if (hasNotification) setActiveView('notifications');
+              else if (hasNewChat) setActiveView('chat');
               else if (hasCalendarEvent) setActiveView('calendar');
-              else if (hasTaskAlert) setActiveView('tasks');
               send({ type: 'OPEN' });
             }}
             className="flex items-center justify-center w-full h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset text-foreground"
             style={{ background: 'transparent' }}
           >
-            {(hasNotification || hasTaskAlert || hasCalendarEvent) ? (
+            {(hasNotification || hasNewChat || hasCalendarEvent) ? (
               <span className="flex items-center gap-2.5">
                 {hasNotification && (
                   <span key={notifyKey} className="relative inline-flex items-center justify-center">
                     <svg aria-hidden="true" viewBox="0 0 12 16" width="12" height="16" className="n3-sound-line-left absolute right-full mr-0.5 text-muted-foreground" fill="none">
-                      {/* small arc, closest to the bell */}
                       <path d="M10.5 5C9.6 6 9.2 6.9 9.2 8C9.2 9.1 9.6 10 10.5 11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                      {/* large arc, furthest from the bell */}
                       <path d="M6.5 1.5C4.3 3.8 3.2 5.8 3.2 8C3.2 10.2 4.3 12.2 6.5 14.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                     </svg>
                     <span className="n3-bell-pop n3-bell-ring inline-flex text-foreground">
                       <Bell size={20} weight="regular" />
                     </span>
                     <svg aria-hidden="true" viewBox="0 0 12 16" width="12" height="16" className="n3-sound-line-right absolute left-full ml-0.5 text-muted-foreground" fill="none">
-                      {/* small arc, closest to the bell */}
                       <path d="M1.5 5C2.4 6 2.8 6.9 2.8 8C2.8 9.1 2.4 10 1.5 11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                      {/* large arc, furthest from the bell */}
                       <path d="M5.5 1.5C7.7 3.8 8.8 5.8 8.8 8C8.8 10.2 7.7 12.2 5.5 14.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                     </svg>
+                  </span>
+                )}
+                {hasNewChat && (
+                  <span key={chatKey} className="n3-chat-stamp inline-flex text-foreground" aria-label="New chat">
+                    <ChatCircle size={20} weight="regular" />
                   </span>
                 )}
                 {hasCalendarEvent && (
                   <span key={calendarKey} className="n3-calendar-drop inline-flex text-foreground">
                     <CalendarBlank size={20} weight="regular" />
-                  </span>
-                )}
-                {hasTaskAlert && (
-                  <span key={taskKey} className="n3-task-stamp inline-flex text-foreground">
-                    <ListChecks size={20} weight="regular" />
                   </span>
                 )}
               </span>
@@ -402,6 +402,7 @@ export function Notch3Shell() {
                 marginLeft: PANEL_PADDING_PX,
                 marginRight: PANEL_PADDING_PX,
                 height: contentH,
+                overflow: 'hidden',
                 animation: `notch2-expand-content ${CSS.durBase} ${CSS.easeOutCubic} both`,
               }}
             >
@@ -422,8 +423,11 @@ export function Notch3Shell() {
                 <Notch3View
                   id={activeView as NavId3}
                   hasNotification={hasNotification}
-                  hasTaskAlert={hasTaskAlert}
+                  hasNewChat={hasNewChat}
                   hasCalendarEvent={hasCalendarEvent}
+                  activeChatId={activeChatId}
+                  onChatOpen={id => { setActiveChatId(id); setActiveView('chat'); }}
+                  onChatClose={() => setActiveChatId(null)}
                 />
               )}
             </div>

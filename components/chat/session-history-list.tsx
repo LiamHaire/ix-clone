@@ -194,7 +194,9 @@ export function SessionHistoryList({ search, onPreview }: SessionHistoryListProp
                 <ChevronUpIcon className="size-4 pointer-events-none hidden group-aria-expanded/accordion-trigger:inline" />
               </span>
               <span className="flex flex-col gap-0.5 flex-1 min-w-0">
-                <span className="text-sm font-medium text-foreground truncate">{session.title}</span>
+                <span className="text-sm font-medium text-foreground truncate">
+                  {session.title.includes(' — ') ? session.title.split(' — ').slice(1).join(' — ') : session.title}
+                </span>
                 <span className="text-xs text-muted-foreground truncate">
                   {session.subtitle}
                   <span className="mx-2">·</span>

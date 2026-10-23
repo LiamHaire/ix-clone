@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Check, ListChecks, Columns, Table as TableIcon, ClockCounterClockwise, ArrowFatUp, WarningCircle, Plus, Funnel } from "@phosphor-icons/react";
+import { X, Check, ListChecks, Columns, Table as TableIcon, ClockCounterClockwise, ArrowFatUp, WarningCircle, Plus, Funnel, MagnifyingGlass } from "@phosphor-icons/react";
 import { useRef, useEffect, useMemo } from "react";
 import { WorkNav } from "./work-nav";
 import { TaskBoard, TaskTable } from "./task-board";
@@ -31,6 +31,7 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
     "Mental health review", "Other",
   ];
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [categorySearch, setCategorySearch] = useState("");
 
   function toggleCategory(cat: string) {
     setSelectedCategories(prev => {
@@ -182,9 +183,30 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
                       <div className="w-48 py-1 flex flex-col">
                         <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</p>
                         <div className="w-full h-px bg-border mb-1" />
+                        {/* Sticky search */}
+                        <div className="px-2 pb-1 sticky top-0 bg-popover z-10">
+                          <div className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2 h-7">
+                            <MagnifyingGlass size={12} className="text-muted-foreground shrink-0" />
+                            <input
+                              type="text"
+                              placeholder="Search…"
+                              value={categorySearch}
+                              onChange={e => setCategorySearch(e.target.value)}
+                              className="flex-1 bg-transparent text-[12px] text-foreground placeholder:text-muted-foreground outline-none min-w-0"
+                            />
+                            {categorySearch && (
+                              <button onClick={() => setCategorySearch("")} className="text-muted-foreground hover:text-foreground shrink-0">
+                                <X size={10} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                         <button
                           onClick={() => setSelectedCategories(new Set())}
-                          className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-foreground hover:bg-accent transition-colors shrink-0"
+                          className={cn(
+                            "flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-foreground hover:bg-accent transition-colors shrink-0",
+                            categorySearch ? "hidden" : ""
+                          )}
                         >
                           <span className={cn(
                             "flex items-center justify-center size-4 rounded border transition-colors shrink-0",
@@ -195,7 +217,7 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
                           All
                         </button>
                         <div className="overflow-y-auto" style={{ maxHeight: `${7 * 32}px` }}>
-                          {CATEGORIES.map(cat => (
+                          {CATEGORIES.filter(cat => cat.toLowerCase().includes(categorySearch.toLowerCase())).map(cat => (
                             <button
                               key={cat}
                               onClick={() => toggleCategory(cat)}

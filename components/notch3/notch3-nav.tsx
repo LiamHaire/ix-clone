@@ -4,6 +4,7 @@ import {
   Bell,
   ListChecks,
   CalendarBlank,
+  ChatCircle,
   Microphone,
   Plus,
   User,
@@ -24,7 +25,7 @@ import { CSS } from '@/lib/motion';
 
 // ── NAV_ITEMS config ──────────────────────────────────────────────────────────
 
-export type NavId3 = 'notifications' | 'tasks' | 'calendar' | 'record' | 'knowledge';
+export type NavId3 = 'notifications' | 'chat' | 'tasks' | 'calendar' | 'record' | 'knowledge';
 
 export interface NavItem3 {
   id: NavId3;
@@ -35,6 +36,7 @@ export interface NavItem3 {
 
 export const NAV_ITEMS_3: NavItem3[] = [
   { id: 'notifications', label: 'Notifications',         icon: Bell,          position: 'left'  },
+  { id: 'chat',          label: 'Chat',                   icon: ChatCircle,    position: 'left'  },
   { id: 'calendar',      label: 'Calendar events',        icon: CalendarBlank, position: 'left'  },
   { id: 'tasks',         label: "Today's Tasks",          icon: ListChecks,    position: 'left'  },
   { id: 'record',        label: 'Start Scribe',           icon: Microphone,    position: 'right' },
