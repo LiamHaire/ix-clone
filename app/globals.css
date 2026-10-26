@@ -360,18 +360,23 @@
   background: color-mix(in oklch, var(--background) 50%, transparent);
 }
 
+/* ── Notch collapsed pill background ── */
+.notch-pill {
+  background: color-mix(in srgb, var(--input) 30%, var(--background));
+}
+
 /* ── Notch bloom gradient ── */
 .notch-bloom {
-  --notch-tile-border: oklch(72% 0.18 45 / 0.18);
+  --notch-tile-border: oklch(72% 0.18 45 / 0.10);
   background:
-    radial-gradient(ellipse 40% 110% at 75% 105%, oklch(72% 0.18 45 / 0.08) 17%, oklch(72% 0.18 45 / 0) 100%),
-    var(--surface-raised);
+    radial-gradient(ellipse 40% 110% at 75% 105%, oklch(72% 0.18 45 / 0.04) 17%, oklch(72% 0.18 45 / 0) 100%),
+    var(--background);
 }
 .dark .notch-bloom {
   --notch-tile-border: oklch(55% 0.18 268 / 0.25);
   background:
     radial-gradient(ellipse 40% 110% at 75% 105%, oklch(55% 0.18 268 / 0.08) 17%, oklch(55% 0.18 268 / 0) 100%),
-    var(--surface-raised);
+    var(--background);
 }
 
 /* ── Notch notification animations ── */

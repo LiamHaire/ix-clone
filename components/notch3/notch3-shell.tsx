@@ -291,13 +291,12 @@ export function Notch3Shell() {
       <div
         ref={containerRef}
         aria-expanded={isExpanded}
-        className={isExpanded ? 'notch-bloom' : undefined}
+        className={isExpanded ? 'notch-bloom' : 'notch-pill'}
         style={{
           position: 'relative',
           width, height, borderRadius: radius,
           overflow: 'hidden',
           pointerEvents: 'auto',
-          background: isExpanded ? undefined : 'var(--surface-raised)',
           borderTop: 'none',
           borderRight:  `1px solid ${borderColour}`,
           borderBottom: `1px solid ${borderColour}`,

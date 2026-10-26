@@ -1,0 +1,47 @@
+{
+  "name": "email-inbox",
+  "type": "registry:block",
+  "description": "Tabbed email inbox digest block with preview items, unread state, chips, and animated tab indicator.",
+  "dependencies": [
+    "@base-ui/react",
+    "@phosphor-icons/react",
+    "class-variance-authority"
+  ],
+  "registryDependencies": [
+    "badge",
+    "button",
+    "card"
+  ],
+  "files": [
+    {
+      "path": "components/ui/item.tsx",
+      "type": "registry:ui",
+      "description": "Base Item primitives (Item, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions, ItemHeader, ItemFooter). Dependency of PreviewItem."
+    },
+    {
+      "path": "components/ui/preview-item.tsx",
+      "type": "registry:ui",
+      "description": "Generic preview item block. Accepts icon, title, subtitle, description, timestamp, unread state, badge, tags, and chipSlot. Reusable for email, tasks, notifications."
+    },
+    {
+      "path": "components/ui/email-preview-item.tsx",
+      "type": "registry:ui",
+      "description": "Email-specific wrapper around PreviewItem. Maps sender/subject/preview/attachments to the correct slots."
+    },
+    {
+      "path": "components/ui/task-preview-item.tsx",
+      "type": "registry:ui",
+      "description": "Task-specific wrapper around PreviewItem. Uses priority icons matching the work board convention."
+    },
+    {
+      "path": "components/ui/tabbed-list.tsx",
+      "type": "registry:ui",
+      "description": "Generic Card-based tabbed list container with animated sliding tab indicator, dynamic height lock, and optional footer slot."
+    },
+    {
+      "path": "components/chat/email-inbox.tsx",
+      "type": "registry:block",
+      "description": "Composed email inbox digest. Renders EmailPreviewItem lists across High importance / Flagged / Unread tabs with a Go to Mail footer."
+    }
+  ]
+}

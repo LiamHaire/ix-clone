@@ -31,6 +31,8 @@ import { MedicationReviewForm, type MedicationReviewData } from "@/components/ch
 import { MedicationReviewSummaryCard } from "@/components/chat/medication-review-summary-card";
 import { ACTIVE_PATIENT } from "@/lib/patientData";
 import { PatientTaskList } from "@/components/chat/patient-task-list";
+import { EmailInbox } from "@/components/chat/email-inbox";
+import { TaskInbox } from "@/components/chat/task-inbox";
 import { AdditionalPanel } from "@/components/chat/additional-panel";
 import { SettingsPanel } from "@/components/settings/settings-panel";
 import { NavRail } from "@/components/nav-rail";
@@ -92,7 +94,7 @@ function generateTitle(prompt: string): string {
 }
 
 type RadioOption = { value: string; label: string };
-type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; showPatientTasks?: boolean; showMedicationReviewForm?: boolean; medicationReviewData?: MedicationReviewData; suggestions?: string[]; appointment?: AppointmentContext; followUpText?: string; sessionResult?: Session };
+type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; showPatientTasks?: boolean; showMedicationReviewForm?: boolean; medicationReviewData?: MedicationReviewData; suggestions?: string[]; appointment?: AppointmentContext; followUpText?: string; sessionResult?: Session; showEmailInbox?: boolean; showTaskInbox?: boolean };
 // home → animating → chat
 // overlay is always in DOM; only its opacity + bottom change
 type AppState = "home" | "animating" | "chat";
@@ -319,6 +321,8 @@ export default function Home() {
     const isDraftEmailYes = text === "__draft_email_yes__";
     const isNextAppointment = text.toLowerCase().includes("next appointment");
     const isChangeAddress = text.toLowerCase().includes("change address");
+    const isEmailInbox = text.toLowerCase().includes("show email inbox");
+    const isTaskInbox  = text.toLowerCase().includes("show task inbox");
     const appt = isNextAppointment ? pickRandomAppointment() : undefined;
     const resolvedExplicitLayout = layout ?? detectLayout(text) ?? "inline";
 
@@ -355,12 +359,14 @@ export default function Home() {
         setIsThinking(false);
         setMessages((prev) => [...prev, {
           role: "assistant",
-          content: isNextAppointment && appt ? `Your next appointment is in ${appt.minutesUntil} minutes at ${appt.time} with ${appt.patientName}.` : isDraftEmailYes ? "Your draft email is ready for review." : isFileReviewYes ? "Okay, I've reviewed the following file and it scores 95% because there's a conflict check that hasn't been done." : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
-          cards,
-          radioOptions,
-          radioLabel,
-          showFileReviewCard,
-          showEmailReadyItem: isDraftEmailYes,
+          content: isEmailInbox ? "Here's your inbox digest — I've surfaced the high importance items first." : isTaskInbox ? "Here are your tasks — I've surfaced what needs attention today." : isNextAppointment && appt ? `Your next appointment is in ${appt.minutesUntil} minutes at ${appt.time} with ${appt.patientName}.` : isDraftEmailYes ? "Your draft email is ready for review." : isFileReviewYes ? "Okay, I've reviewed the following file and it scores 95% because there's a conflict check that hasn't been done." : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
+          showEmailInbox: isEmailInbox,
+          showTaskInbox: isTaskInbox,
+          cards: (isEmailInbox || isTaskInbox) ? undefined : cards,
+          radioOptions: (isEmailInbox || isTaskInbox) ? undefined : radioOptions,
+          radioLabel: (isEmailInbox || isTaskInbox) ? undefined : radioLabel,
+          showFileReviewCard: (isEmailInbox || isTaskInbox) ? false : showFileReviewCard,
+          showEmailReadyItem: (isEmailInbox || isTaskInbox) ? false : isDraftEmailYes,
           appointment: appt,
           followUpText: appt?.followUpText,
           suggestions: undefined,
@@ -378,10 +384,12 @@ export default function Home() {
       setIsThinking(false);
       setMessages((prev) => [...prev, {
         role: "assistant",
-        content: isNextAppointment && appt ? `Your next appointment is in ${appt.minutesUntil} minutes at ${appt.time} with ${appt.patientName}.` : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
-        cards,
-        radioOptions,
-        radioLabel,
+        content: isEmailInbox ? "Here's your inbox digest — I've surfaced the high importance items first." : isTaskInbox ? "Here are your tasks — I've surfaced what needs attention today." : isNextAppointment && appt ? `Your next appointment is in ${appt.minutesUntil} minutes at ${appt.time} with ${appt.patientName}.` : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
+        showEmailInbox: isEmailInbox,
+        showTaskInbox: isTaskInbox,
+        cards: (isEmailInbox || isTaskInbox) ? undefined : cards,
+        radioOptions: (isEmailInbox || isTaskInbox) ? undefined : radioOptions,
+        radioLabel: (isEmailInbox || isTaskInbox) ? undefined : radioLabel,
         appointment: appt,
         followUpText: appt?.followUpText,
         suggestions: undefined,
@@ -755,8 +763,8 @@ export default function Home() {
             </SheetHeader>
 
             {/* Messages */}
-            <div ref={chatScrollRef} className="flex-1 overflow-y-auto">
-              <div className="mx-auto w-full max-w-[720px] px-4 pt-6 pb-4 flex flex-col gap-8">
+            <div ref={chatScrollRef} className="flex-1 overflow-y-auto flex justify-center px-4" style={{ scrollbarGutter: 'stable both-edges' }}>
+              <div className="w-full max-w-[720px] pt-6 pb-4 flex flex-col gap-8 px-px">
                 {messages.map((msg, i) =>
                   msg.role === "user" ? (
                     <div key={i} className="flex justify-end">
@@ -874,6 +882,8 @@ export default function Home() {
                           }}
                         />
                       )}
+                      {msg.showEmailInbox && <EmailInbox />}
+                      {msg.showTaskInbox && <TaskInbox />}
                       {msg.followUpText && (
                         <p className="font-sans text-[16px] leading-7 text-foreground" style={{ fontVariationSettings: "'wght' 400" }}>{msg.followUpText}</p>
                       )}
