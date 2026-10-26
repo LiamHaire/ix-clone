@@ -7,11 +7,12 @@ import { toast } from 'sonner';
 import { useNotchMachine } from '@/components/notch2/notch-hook';
 import { DropZone, UploadingView, SuccessView, ErrorView, validateFile } from '@/components/notch2/notch-drop';
 import { Notch3Header, type NavId3 } from './notch3-nav';
-import { Notch3View, VIEW_HEIGHTS_3, tasksContentHeight, chatContentHeight } from './notch3-views';
+import { Notch3View, VIEW_HEIGHTS_3, tasksContentHeight, chatContentHeight, type QuickActionId } from './notch3-views';
 import { CSS, SPRING_GROW_DURATION_MS } from '@/lib/motion';
 
 // ── Geometry ──────────────────────────────────────────────────────────────────
-const PILL_WIDTH        = 180;
+const PILL_WIDTH          = 180;
+const RECORDING_PILL_WIDTH = 320;
 const PILL_HEIGHT       = 36;
 const PILL_RADIUS       = '0 0 12px 12px';
 const PANEL_WIDTH       = 680;
@@ -29,7 +30,7 @@ type ActiveView3 = NavId3 | 'drop';
 
 export function Notch3Shell() {
   const [mounted, setMounted]               = useState(false);
-  const [activeView, setActiveView]         = useState<ActiveView3>('tasks');
+  const [activeView, setActiveView]         = useState<ActiveView3>('quickactions');
   const [isRecording, setIsRecording]       = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [headerReady, setHeaderReady]       = useState(false);
@@ -65,7 +66,7 @@ export function Notch3Shell() {
   // Block tooltips during spring-grow; reset default view on close
   useEffect(() => {
     if (!isExpanded) {
-      setActiveView('tasks');
+      setActiveView('quickactions');
       setActiveChatId(null);
       setHeaderReady(false);
       if (headerReadyTimer.current) clearTimeout(headerReadyTimer.current);
@@ -213,6 +214,11 @@ export function Notch3Shell() {
 
   // ── Nav handler ───────────────────────────────────────────────────────────
   const handleNavSelect = useCallback((id: NavId3) => {
+    setActiveView(id);
+    if (dropPhase !== 'idle') send({ type: 'CANCEL_DROP' });
+  }, [dropPhase, send]);
+
+  const handleQuickAction = useCallback((id: QuickActionId) => {
     if (id === 'record') {
       if (isRecording) {
         if (recordingTimer.current) clearInterval(recordingTimer.current);
@@ -233,9 +239,8 @@ export function Notch3Shell() {
       send({ type: 'SHOW_DROP' });
       return;
     }
-    setActiveView(id);
-    if (dropPhase !== 'idle') send({ type: 'CANCEL_DROP' });
-  }, [isRecording, dropPhase, send]);
+    toast.info(`${id.charAt(0).toUpperCase() + id.slice(1)} — coming soon`);
+  }, [isRecording, send]);
 
   if (!mounted) return null;
 
@@ -252,7 +257,7 @@ export function Notch3Shell() {
     : (VIEW_HEIGHTS_3[activeView as NavId3] ?? DEFAULT_CONTENT_H);
   const panelH = HEADER_H + DIVIDER_GAP_PX + 1 + CONTENT_GAP_PX + contentH + PANEL_PADDING_PX;
 
-  const width  = isExpanded ? PANEL_WIDTH : PILL_WIDTH;
+  const width  = isExpanded ? PANEL_WIDTH : isRecording ? RECORDING_PILL_WIDTH : PILL_WIDTH;
   const height = isExpanded ? panelH      : PILL_HEIGHT;
   const radius = isExpanded ? PANEL_RADIUS : PILL_RADIUS;
 
@@ -282,16 +287,17 @@ export function Notch3Shell() {
   ) : null;
 
   const island = createPortal(
-    <div style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, pointerEvents: 'none' }}>
+    <div style={{ position: 'fixed', top: 0, left: 'calc(50% + var(--nav-rail-width) / 2)', transform: 'translateX(-50%)', zIndex: 9999, pointerEvents: 'none' }}>
       <div
         ref={containerRef}
         aria-expanded={isExpanded}
+        className={isExpanded ? 'notch-bloom' : undefined}
         style={{
           position: 'relative',
           width, height, borderRadius: radius,
           overflow: 'hidden',
           pointerEvents: 'auto',
-          background: 'var(--surface-raised)',
+          background: isExpanded ? undefined : 'var(--surface-raised)',
           borderTop: 'none',
           borderRight:  `1px solid ${borderColour}`,
           borderBottom: `1px solid ${borderColour}`,
@@ -316,6 +322,7 @@ export function Notch3Shell() {
               if (hasNotification) setActiveView('notifications');
               else if (hasNewChat) setActiveView('chat');
               else if (hasCalendarEvent) setActiveView('calendar');
+              else setActiveView('quickactions');
               send({ type: 'OPEN' });
             }}
             className="flex items-center justify-center w-full h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset text-foreground"
@@ -357,19 +364,22 @@ export function Notch3Shell() {
 
         {/* ── Recording pill ── */}
         {!isExpanded && isRecording && (
-          <div className="flex items-center justify-between w-full h-full px-3">
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-between w-full h-full px-4">
+            <div className="flex items-center gap-2 shrink-0">
               <span className="size-2 rounded-full bg-destructive animate-pulse shrink-0" />
-              <span className="text-[13px] font-medium tabular-nums text-foreground">{mm}:{ss}</span>
+              <span className="text-[13px] font-medium text-foreground">Recording in progress...</span>
             </div>
-            <button
-              type="button"
-              aria-label="Stop Scribe"
-              onClick={() => handleNavSelect('record')}
-              className="flex items-center justify-center size-6 rounded-full text-destructive hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <StopCircle size={18} weight="fill" />
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[13px] font-medium tabular-nums text-muted-foreground">{mm}:{ss}</span>
+              <button
+                type="button"
+                aria-label="Stop Scribe"
+                onClick={() => handleQuickAction('record')}
+                className="flex items-center justify-center size-6 rounded-full text-destructive hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <StopCircle size={18} weight="fill" />
+              </button>
+            </div>
           </div>
         )}
 
@@ -428,6 +438,12 @@ export function Notch3Shell() {
                   activeChatId={activeChatId}
                   onChatOpen={id => { setActiveChatId(id); setActiveView('chat'); }}
                   onChatClose={() => setActiveChatId(null)}
+                  onQuickAction={handleQuickAction}
+                  isRecording={isRecording}
+                  onNavigateWork={() => {
+                    window.dispatchEvent(new CustomEvent('ix:open-work'));
+                    send({ type: 'CLOSE' });
+                  }}
                 />
               )}
             </div>

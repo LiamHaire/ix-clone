@@ -22,7 +22,7 @@ function PriorityIcon({ priority }: { priority: Task["priority"] }) {
 
 function TaskCard({ task }: { task: Task }) {
   return (
-    <div className="rounded-lg border border-border bg-background p-3 flex flex-col gap-2.5 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+    <div className="rounded-lg border border-border bg-popover p-3 flex flex-col gap-2.5 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
       <p className="text-[14px] font-medium text-foreground leading-snug">{task.title}</p>
       {task.notes && (
         <p className="text-[14px] text-muted-foreground leading-relaxed line-clamp-3">{task.notes}</p>
@@ -142,8 +142,8 @@ export function TaskTable({ search, priorities, sortBy = 'Due date' }: TaskBoard
   const pageRows = allTasks.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="h-full overflow-y-auto pt-0 pb-4 pr-4 pl-0">
-      <div className="rounded-lg border border-border overflow-hidden flex flex-col">
+    <div className="h-full overflow-y-auto pb-4">
+      <div className="rounded-lg border border-border overflow-hidden flex flex-col bg-popover">
         <Table className="table-fixed w-full">
           <TableHeader>
             <TableRow className="border-b border-border hover:bg-transparent bg-muted/40">

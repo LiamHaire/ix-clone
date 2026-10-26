@@ -79,7 +79,7 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
   }, []);
 
   return (
-    <div className="h-full flex flex-col bg-popover">
+    <div className="h-full flex flex-col" style={{ background: 'var(--nav-rail-bg)' }}>
       <SheetHeader className="px-4 pt-4 pb-3 flex-row items-center justify-between gap-2 shrink-0 border-b border-border">
         <div className="flex items-center gap-2">
           <ListChecks size={16} weight="duotone" className="text-muted-foreground shrink-0" />
@@ -114,7 +114,7 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
                 { label: 'Priority tasks', value: stats.priority, icon: <ArrowFatUp size={18} weight="duotone" className="text-amber-500" /> },
                 { label: 'Overdue tasks',  value: stats.overdue,  icon: <WarningCircle size={18} weight="duotone" className="text-destructive" /> },
               ].map(({ label, value, icon }) => (
-                <div key={label} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-4 py-3">
+                <div key={label} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-popover px-4 py-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="text-[18px] font-bold text-foreground leading-none tabular-nums">{value}</span>
                     <span className="text-sm text-muted-foreground truncate">{label}</span>
@@ -272,7 +272,7 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
           )}
 
           {/* Content */}
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden mr-4 mb-4">
             {showTaskView && layoutMode === 'columns' && <TaskBoard search={search} priorities={priorities} />}
             {showTaskView && layoutMode === 'table'   && <TaskTable search={search} priorities={priorities} sortBy={sortBy} />}
             {!showTaskView && (

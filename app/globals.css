@@ -362,11 +362,13 @@
 
 /* ── Notch bloom gradient ── */
 .notch-bloom {
+  --notch-tile-border: oklch(72% 0.18 45 / 0.18);
   background:
     radial-gradient(ellipse 40% 110% at 75% 105%, oklch(72% 0.18 45 / 0.08) 17%, oklch(72% 0.18 45 / 0) 100%),
     var(--surface-raised);
 }
 .dark .notch-bloom {
+  --notch-tile-border: oklch(55% 0.18 268 / 0.25);
   background:
     radial-gradient(ellipse 40% 110% at 75% 105%, oklch(55% 0.18 268 / 0.08) 17%, oklch(55% 0.18 268 / 0) 100%),
     var(--surface-raised);

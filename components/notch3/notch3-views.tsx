@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Bell, CheckCircle, CalendarBlank, ListChecks, ChatCircle, ArrowLeft, PaperPlaneRight, Plus } from '@phosphor-icons/react';
+import { Bell, CheckCircle, CalendarBlank, ListChecks, ChatCircle, ArrowLeft, PaperPlaneRight, Plus, Microphone, Timer, PencilSimpleLine, ShareNetwork, MagnifyingGlass } from '@phosphor-icons/react';
+import { IconPriorityHigh } from '@/components/ui/iqons/IconPriorityHigh';
+import { IconPriorityMedium } from '@/components/ui/iqons/IconPriorityMedium';
+import { IconPriorityLow } from '@/components/ui/iqons/IconPriorityLow';
 import type { NavId3 } from './notch3-nav';
 import { TASK_DATA, ASSIGNEE_NAMES, type Task } from '@/components/work/task-data';
 import { Button } from '@/components/ui/button';
@@ -12,9 +15,10 @@ export const ROW_H           = 67;
 export const ROW_GAP         =  8;
 const SECTION_LABEL_H        = 20;
 const OUTER_GAP              = 16;
-const FOOTER_BTN_H           = 32;
-const FOOTER_TOTAL           = OUTER_GAP + FOOTER_BTN_H; // 48
-const CHAT_ROW_H             = 64;
+const FOOTER_BTN_H           = 40;
+const FOOTER_TOTAL           = OUTER_GAP + FOOTER_BTN_H; // 56
+const CHAT_ROW_H             = 44;
+const MAX_VISIBLE_CHATS      =  5;
 const MAX_VISIBLE_TASKS      =  3;
 export const EMPTY_H         = 148;
 export const CHAT_DETAIL_H   = 400;
@@ -25,13 +29,17 @@ export const TASK_ROW_GAP  = ROW_GAP;
 export const TASKS_EMPTY_H = EMPTY_H;
 export const CHAT_EMPTY_H  = EMPTY_H;
 
+const QUICK_ACTION_BTN_SIZE = 52;
+const QUICK_ACTION_LABEL_H  = 18;
+const QUICK_ACTION_GAP      = 12;
+export const QUICK_ACTIONS_H = QUICK_ACTION_BTN_SIZE + QUICK_ACTION_LABEL_H + QUICK_ACTION_GAP;
+
 export const VIEW_HEIGHTS_3: Record<NavId3, number> = {
   notifications: EMPTY_H,
   chat:          EMPTY_H,
   tasks:         EMPTY_H,
   calendar:      EMPTY_H,
-  record:        320,
-  knowledge:     320,
+  quickactions:  QUICK_ACTIONS_H,
 };
 
 // ── Height helpers ────────────────────────────────────────────────────────────
@@ -49,18 +57,18 @@ export function tasksContentHeight(): number {
 }
 
 function sectionH(n: number) {
-  return SECTION_LABEL_H + n * (CHAT_ROW_H + ROW_GAP);
+  return SECTION_LABEL_H + n * CHAT_ROW_H;
 }
 
-export function chatContentHeight(hasNewChat: boolean, activeChatId?: string | null): number {
+const CHAT_ROW_GAP = 4;  // gap-1
+const CHAT_BTN_MT  = 8;  // mt-2 before footer button
+
+export function chatContentHeight(_hasNewChat: boolean, activeChatId?: string | null): number {
   if (activeChatId) return CHAT_DETAIL_H;
-  const hasRecent = RECENT_CHATS.length > 0;
-  if (!hasNewChat && !hasRecent) return EMPTY_H;
-  let h = 0;
-  let sections = 0;
-  if (hasNewChat && NEW_MESSAGES.length > 0) { h += sectionH(NEW_MESSAGES.length); sections++; }
-  if (hasRecent) { if (sections > 0) h += OUTER_GAP; h += sectionH(RECENT_CHATS.length); }
-  return h + FOOTER_TOTAL;
+  const count = Math.min(RECENT_CHATS.length, MAX_VISIBLE_CHATS);
+  if (count === 0) return EMPTY_H;
+  // gap-1 applies between all children including the button div, so `count` gaps not `count - 1`
+  return count * CHAT_ROW_H + count * CHAT_ROW_GAP + CHAT_BTN_MT + FOOTER_BTN_H;
 }
 
 // ── Unified item component ────────────────────────────────────────────────────
@@ -70,16 +78,24 @@ interface NotchItemProps {
   initials?: string;
   title: string;
   subtitle: string;
-  trailing: string;
+  trailing?: string;
+  chip?: string;
   badge?: number;
   onClick?: () => void;
 }
 
-function NotchItem({ icon: Icon, initials, title, subtitle, trailing, badge, onClick }: NotchItemProps) {
+function PriorityIcon({ priority }: { priority?: string }) {
+  if (priority === 'high')   return <IconPriorityHigh   size={16} variant="duotone" className="text-destructive" />;
+  if (priority === 'medium') return <IconPriorityMedium size={16} variant="duotone" className="text-warning" />;
+  if (priority === 'low')    return <IconPriorityLow    size={16} variant="duotone" className="text-muted-foreground" />;
+  return null;
+}
+
+function NotchItem({ icon: Icon, initials, title, subtitle, trailing, chip, badge, onClick }: NotchItemProps) {
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-3 rounded-lg border border-border bg-background/60 px-3 py-3 cursor-pointer hover:bg-accent transition-colors"
+      className="flex items-center gap-3 rounded-lg border bg-background/60 px-3 py-3 cursor-pointer hover:bg-accent transition-colors" style={{ borderColor: 'var(--notch-tile-border, var(--border))' }}
     >
       {Icon && (
         <div className="flex items-center justify-center size-9 rounded-lg shrink-0 bg-accent">
@@ -96,7 +112,8 @@ function NotchItem({ icon: Icon, initials, title, subtitle, trailing, badge, onC
         <p className="text-[12px] text-muted-foreground truncate mt-0.5">{subtitle}</p>
       </div>
       <div className="flex flex-col items-end gap-1 shrink-0">
-        <span className="text-[11px] text-muted-foreground whitespace-nowrap">{trailing}</span>
+        {trailing && <span className="text-xs text-muted-foreground whitespace-nowrap">{trailing}</span>}
+        {chip && <PriorityIcon priority={chip.toLowerCase()} />}
         {badge ? (
           <span className="flex items-center justify-center size-4 rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
             {badge}
@@ -107,9 +124,9 @@ function NotchItem({ icon: Icon, initials, title, subtitle, trailing, badge, onC
   );
 }
 
-function NavButton({ label }: { label: string }) {
+function NavButton({ label, onClick }: { label: string; onClick?: () => void }) {
   return (
-    <Button variant="outline" size="sm" className="h-8 text-[13px] w-full bg-muted/40">
+    <Button variant="outline" size="sm" className="h-10 text-[13px] w-full bg-muted/40" onClick={onClick}>
       {label}
     </Button>
   );
@@ -132,13 +149,12 @@ function EmptyState({ icon: Icon, title, subtitle, cta }: {
 
 interface ChatMessage { id: string; source: string; preview: string; timestamp: string; unread?: number; }
 
-export const NEW_MESSAGES: ChatMessage[] = [
-  { id: 'n1', source: 'Dr. Sarah Okafor', preview: 'Please review the latest test results before the appointment tomorrow…', timestamp: 'just now', unread: 1 },
-];
-
 export const RECENT_CHATS: ChatMessage[] = [
-  { id: 'r1', source: 'Margaret Ellison', preview: 'Thank you for updating my repeat prescription, I appreciate the quick turnaround…', timestamp: '8h' },
-  { id: 'r2', source: 'A. Pendleton', preview: 'Can you confirm the Whitmore matter file review has been completed and sent…', timestamp: '11h' },
+  { id: 'n1', source: 'Dr. Sarah Okafor', preview: 'Please review the latest test results before the appointment tomorrow…', timestamp: '11h' },
+  { id: 'r1', source: 'Margaret Ellison', preview: 'Thank you for updating my repeat prescription, I appreciate the quick turnaround…', timestamp: '18h' },
+  { id: 'r2', source: 'A. Pendleton', preview: 'Can you confirm the Whitmore matter file review has been completed and sent…', timestamp: '19h' },
+  { id: 'r3', source: 'James Whitmore', preview: 'Happy to sign off on both items, let me know when the file is ready to send…', timestamp: '1d' },
+  { id: 'r4', source: 'Dr. Claire Moss', preview: 'The patient notes have been updated with the revised medication plan…', timestamp: '2d' },
 ];
 
 // ── Thread mock data ──────────────────────────────────────────────────────────
@@ -242,11 +258,17 @@ function ChatDetail({ chatId, onBack }: { chatId: string; onBack: () => void }) 
             {group.msgs.map(msg => (
               <div key={msg.id} className={`flex flex-col gap-0.5 ${msg.from === 'me' ? 'items-end' : 'items-start'}`}>
                 <div
-                  className={`max-w-[75%] px-3 py-2 text-[13px] leading-snug ${
+                  className={`max-w-[75%] px-3 py-2 text-[13px] leading-snug border text-foreground ${
                     msg.from === 'me'
-                      ? 'border border-border bg-muted/70 text-foreground rounded-2xl rounded-br-sm'
-                      : 'border border-border text-foreground rounded-2xl rounded-bl-sm'
+                      ? 'rounded-2xl rounded-br-sm'
+                      : 'rounded-2xl rounded-bl-sm'
                   }`}
+                  style={{
+                    borderColor: 'var(--notch-tile-border, var(--border))',
+                    background: msg.from === 'me'
+                      ? 'linear-gradient(color-mix(in srgb, var(--accent) 50%, transparent), color-mix(in srgb, var(--accent) 50%, transparent)), color-mix(in srgb, var(--background) 60%, transparent)'
+                      : 'color-mix(in srgb, var(--background) 60%, transparent)',
+                  }}
                 >
                   {msg.text}
                 </div>
@@ -304,6 +326,84 @@ function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
+function ChatRow({ msg, onClick }: { msg: ChatMessage; onClick?: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2.5 w-full rounded-lg border px-3 py-2 bg-background/60 hover:bg-accent transition-colors text-left"
+      style={{ height: CHAT_ROW_H, borderColor: 'var(--notch-tile-border, var(--border))' }}
+    >
+      <span className="flex items-center justify-center size-7 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground shrink-0 border border-border">
+        {getInitials(msg.source)}
+      </span>
+      <span className="flex-1 min-w-0 text-[13px] text-foreground truncate">
+        <span className="font-semibold">{msg.source}</span>
+        <span className="text-muted-foreground"> · </span>
+        <span className="text-muted-foreground">{msg.preview}</span>
+      </span>
+      <span className="flex items-center gap-1.5 shrink-0">
+        <span className="text-xs text-muted-foreground whitespace-nowrap">· {msg.timestamp}</span>
+        {msg.unread ? (
+          <span className="flex items-center justify-center size-5 rounded-full bg-primary text-[12px] font-semibold text-primary-foreground">
+            {msg.unread}
+          </span>
+        ) : null}
+      </span>
+    </button>
+  );
+}
+
+// ── Quick actions ─────────────────────────────────────────────────────────────
+
+export type QuickActionId = 'record' | 'knowledge' | 'timer' | 'message' | 'share' | 'search';
+
+const QUICK_ACTIONS: { id: QuickActionId; label: string; icon: React.ElementType }[] = [
+  { id: 'record',    label: 'Start Scribe',  icon: Microphone      },
+  { id: 'knowledge', label: 'Add',            icon: Plus            },
+  { id: 'timer',     label: 'Start timer',   icon: Timer           },
+  { id: 'message',   label: 'New message',   icon: PencilSimpleLine },
+  { id: 'share',     label: 'Share',         icon: ShareNetwork    },
+  { id: 'search',    label: 'Search',        icon: MagnifyingGlass },
+];
+
+function QuickActionsView({ onAction, isRecording }: { onAction?: (id: QuickActionId) => void; isRecording?: boolean }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-1">
+        {QUICK_ACTIONS.map(action => {
+          const Icon = action.icon;
+          const active = action.id === 'record' && isRecording;
+          return (
+            <button
+              key={action.id}
+              onClick={() => onAction?.(action.id)}
+              className="flex flex-col items-center gap-1.5 flex-1 group"
+            >
+              <span
+                className={[
+                  'flex items-center justify-center rounded-full border transition-colors',
+                  active
+                    ? 'border-destructive text-destructive bg-destructive/10'
+                    : 'text-muted-foreground group-hover:border-foreground group-hover:text-foreground group-hover:bg-accent',
+                ].join(' ')}
+                style={{ width: QUICK_ACTION_BTN_SIZE, height: QUICK_ACTION_BTN_SIZE, borderColor: active ? undefined : 'var(--notch-tile-border, var(--border))' }}
+              >
+                <Icon size={20} weight={active ? 'fill' : 'regular'} />
+                {active && (
+                  <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive animate-pulse" />
+                )}
+              </span>
+              <span className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors leading-tight text-center">
+                {active ? 'Stop Scribe' : action.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── View router ───────────────────────────────────────────────────────────────
 
 interface Notch3ViewProps {
@@ -314,10 +414,16 @@ interface Notch3ViewProps {
   activeChatId?: string | null;
   onChatOpen?: (id: string) => void;
   onChatClose?: () => void;
+  onQuickAction?: (id: QuickActionId) => void;
+  isRecording?: boolean;
+  onNavigateWork?: () => void;
 }
 
-export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, activeChatId, onChatOpen, onChatClose }: Notch3ViewProps) {
+export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, activeChatId, onChatOpen, onChatClose, onQuickAction, isRecording, onNavigateWork }: Notch3ViewProps) {
   switch (id) {
+
+    case 'quickactions':
+      return <QuickActionsView onAction={onQuickAction} isRecording={isRecording} />;
 
     case 'notifications':
       return hasNotification ? (
@@ -333,32 +439,18 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
       if (activeChatId) {
         return <ChatDetail chatId={activeChatId} onBack={() => onChatClose?.()} />;
       }
-      const hasRecent = RECENT_CHATS.length > 0;
-      if (!hasNewChat && !hasRecent) {
+      if (RECENT_CHATS.length === 0) {
         return <EmptyState icon={ChatCircle} title="No recent messages" subtitle="Nothing in the last 24 hours" cta="Go to Message centre" />;
       }
+      const displayChats = RECENT_CHATS.slice(0, MAX_VISIBLE_CHATS).map((chat, i) =>
+        i === 0 && hasNewChat ? { ...chat, unread: 1, timestamp: 'just now' } : chat
+      );
       return (
-        <div className="flex flex-col gap-4">
-          {hasNewChat && NEW_MESSAGES.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <p className="flex items-center gap-1.5 text-[11px] font-semibold text-primary uppercase tracking-wider px-1">
-                <span className="size-1.5 rounded-full bg-primary shrink-0" />
-                {NEW_MESSAGES.length} New message{NEW_MESSAGES.length !== 1 ? 's' : ''}
-              </p>
-              {NEW_MESSAGES.map(msg => (
-                <NotchItem key={msg.id} initials={getInitials(msg.source)} title={msg.source} subtitle={msg.preview} trailing={msg.timestamp} badge={msg.unread} onClick={() => onChatOpen?.(msg.id)} />
-              ))}
-            </div>
-          )}
-          {hasRecent && (
-            <div className="flex flex-col gap-2">
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Recent chats</p>
-              {RECENT_CHATS.map(msg => (
-                <NotchItem key={msg.id} initials={getInitials(msg.source)} title={msg.source} subtitle={msg.preview} trailing={msg.timestamp} onClick={() => onChatOpen?.(msg.id)} />
-              ))}
-            </div>
-          )}
-          <NavButton label="Go to Message centre" />
+        <div className="flex flex-col gap-1">
+          {displayChats.map(msg => (
+            <ChatRow key={msg.id} msg={msg} onClick={() => onChatOpen?.(msg.id)} />
+          ))}
+          <div className="mt-2"><NavButton label="Go to Message centre" /></div>
         </div>
       );
     }
@@ -377,11 +469,12 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
                 icon={ListChecks}
                 title={task.title}
                 subtitle={`${task.ref}${task.assignee ? ` · ${ASSIGNEE_NAMES[task.assignee] ?? task.assignee}` : ''}`}
-                trailing={task.priority ?? ''}
+                chip={task.priority}
+                onClick={onNavigateWork}
               />
             ))}
           </div>
-          <NavButton label="View all tasks" />
+          <NavButton label="View all tasks" onClick={onNavigateWork} />
         </div>
       );
     }

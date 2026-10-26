@@ -5,8 +5,7 @@ import {
   ListChecks,
   CalendarBlank,
   ChatCircle,
-  Microphone,
-  Plus,
+  Lightning,
   User,
   Gear,
   SignOut,
@@ -25,7 +24,7 @@ import { CSS } from '@/lib/motion';
 
 // ── NAV_ITEMS config ──────────────────────────────────────────────────────────
 
-export type NavId3 = 'notifications' | 'chat' | 'tasks' | 'calendar' | 'record' | 'knowledge';
+export type NavId3 = 'notifications' | 'chat' | 'tasks' | 'calendar' | 'quickactions';
 
 export interface NavItem3 {
   id: NavId3;
@@ -35,12 +34,11 @@ export interface NavItem3 {
 }
 
 export const NAV_ITEMS_3: NavItem3[] = [
-  { id: 'tasks',         label: "Today's Tasks",          icon: ListChecks,    position: 'left'  },
-  { id: 'notifications', label: 'Notifications',         icon: Bell,          position: 'left'  },
-  { id: 'chat',          label: 'Chat',                   icon: ChatCircle,    position: 'left'  },
-  { id: 'calendar',      label: 'Calendar events',        icon: CalendarBlank, position: 'left'  },
-  { id: 'record',        label: 'Start Scribe',           icon: Microphone,    position: 'right' },
-  { id: 'knowledge',     label: 'Add to Knowledge base',  icon: Plus,          position: 'right' },
+  { id: 'tasks',         label: "Today's Tasks",   icon: ListChecks,    position: 'left'  },
+  { id: 'notifications', label: 'Notifications',   icon: Bell,          position: 'left'  },
+  { id: 'chat',          label: 'Chat',            icon: ChatCircle,    position: 'left'  },
+  { id: 'calendar',      label: 'Calendar events', icon: CalendarBlank, position: 'left'  },
+  { id: 'quickactions',  label: 'Quick actions',   icon: Lightning,     position: 'right' },
 ];
 
 // ── Header ────────────────────────────────────────────────────────────────────
@@ -79,7 +77,7 @@ export function Notch3Header({ activeId, onSelect, isRecording = false }: Notch3
             item={item}
             active={activeId === item.id}
             onSelect={onSelect}
-            recording={item.id === 'record' && isRecording}
+            recording={isRecording}
           />
         ))}
         <AvatarBtn3 />
@@ -114,7 +112,7 @@ function NavBtn3({ item, active, onSelect, recording = false }: {
   recording?: boolean;
 }) {
   const Icon = item.icon;
-  const label = item.id === 'record' && recording ? 'Stop Scribe' : item.label;
+  const label = item.id === 'quickactions' && recording ? 'Quick actions (recording)' : item.label;
   return (
     <N3Tooltip label={label}>
       <TooltipPrimitive.Trigger
