@@ -78,7 +78,11 @@ const UNREAD = [
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function EmailInbox() {
+interface EmailInboxProps {
+  onEmailClick?: (email: { sender: string; subject: string; preview: string; timestamp: string; tags?: string[] }) => void;
+}
+
+export function EmailInbox({ onEmailClick }: EmailInboxProps) {
   const unreadTotal = UNREAD.length;
   const urgentTotal = HIGH_IMPORTANCE.filter(e => e.tags?.includes('Urgent')).length;
 
@@ -94,7 +98,7 @@ export function EmailInbox() {
           label: 'High importance',
           icon: <Warning weight="duotone" />,
           items: HIGH_IMPORTANCE.map(email => (
-            <EmailPreviewItem key={email.id} {...email} onClick={() => {}} />
+            <EmailPreviewItem key={email.id} {...email} onClick={() => onEmailClick?.(email)} />
           )),
         },
         {
@@ -102,7 +106,7 @@ export function EmailInbox() {
           label: 'Flagged',
           icon: <Flag weight="duotone" />,
           items: FLAGGED.map(email => (
-            <EmailPreviewItem key={email.id} {...email} onClick={() => {}} />
+            <EmailPreviewItem key={email.id} {...email} onClick={() => onEmailClick?.(email)} />
           )),
         },
         {
@@ -110,7 +114,7 @@ export function EmailInbox() {
           label: 'Unread',
           icon: <Envelope weight="duotone" />,
           items: UNREAD.map(email => (
-            <EmailPreviewItem key={email.id} {...email} onClick={() => {}} />
+            <EmailPreviewItem key={email.id} {...email} onClick={() => onEmailClick?.(email)} />
           )),
         },
       ]}

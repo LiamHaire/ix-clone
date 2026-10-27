@@ -7,16 +7,25 @@ import { SheetHeader, SheetFooter } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+export interface EmailDetailData {
+  sender: string;
+  subject: string;
+  preview: string;
+  timestamp: string;
+  tags?: string[];
+}
+
 interface AdditionalPanelProps {
   title: string;
   onClose: () => void;
   onSend?: () => void;
-  variant?: 'default' | 'draft-email';
+  variant?: 'default' | 'draft-email' | 'email-detail';
+  emailDetail?: EmailDetailData;
 }
 
 const fill = 'bg-muted rounded';
 
-export function AdditionalPanel({ title, onClose, onSend, variant = 'default' }: AdditionalPanelProps) {
+export function AdditionalPanel({ title, onClose, onSend, variant = 'default', emailDetail }: AdditionalPanelProps) {
   return (
     <div className="h-full flex flex-col bg-popover">
       {/* Header */}
@@ -39,7 +48,32 @@ export function AdditionalPanel({ title, onClose, onSend, variant = 'default' }:
         <div className="flex flex-col flex-1 min-h-0 w-full max-w-[720px] mx-auto">
         <div className="flex-1 min-h-0 overflow-y-auto rounded-xl border border-border px-4 py-5">
 
-          {variant === 'draft-email' ? (
+          {variant === 'email-detail' && emailDetail ? (
+            <div className="flex flex-col gap-4">
+              {/* Metadata */}
+              <div className="flex flex-col gap-2 text-[13px]">
+                {[
+                  { label: 'From', value: emailDetail.sender },
+                  { label: 'To', value: 'me@address.com' },
+                  { label: 'Subject', value: emailDetail.subject },
+                  { label: 'Date', value: emailDetail.timestamp },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex gap-3">
+                    <span className="text-muted-foreground w-14 shrink-0">{label}</span>
+                    <span className="text-foreground font-medium">{value}</span>
+                  </div>
+                ))}
+              </div>
+              <Separator />
+              {/* Body */}
+              <div className="flex flex-col gap-3 text-[14px] leading-6 text-foreground">
+                <p>Hi,</p>
+                <p>{emailDetail.preview}</p>
+                <p>Please let me know if you need anything further or if there are any questions.</p>
+                <p>Kind regards,<br />{emailDetail.sender}</p>
+              </div>
+            </div>
+          ) : variant === 'draft-email' ? (
             <div className="flex flex-col gap-4">
               {/* Recipient */}
               <div className="flex flex-col gap-1.5">
@@ -102,12 +136,19 @@ export function AdditionalPanel({ title, onClose, onSend, variant = 'default' }:
 
       {/* Footer */}
       <SheetFooter className="px-4 pb-4 pt-0 flex-row gap-2">
-        <Button variant="outline" className="flex-1 rounded-[10px]" onClick={onClose}>
-          Close
-        </Button>
-        <Button className="flex-1 rounded-[10px]" onClick={variant === 'draft-email' ? onSend : undefined}>
-          {variant === 'draft-email' ? 'Send' : 'Confirm'}
-        </Button>
+        {variant === 'email-detail' ? (
+          <>
+            <Button variant="outline" className="rounded-[10px]" onClick={onClose}>Close</Button>
+            <Button className="rounded-[10px]">Open in mail</Button>
+          </>
+        ) : (
+          <>
+            <Button variant="outline" className="flex-1 rounded-[10px]" onClick={onClose}>Close</Button>
+            <Button className="flex-1 rounded-[10px]" onClick={variant === 'draft-email' ? onSend : undefined}>
+              {variant === 'draft-email' ? 'Send' : 'Confirm'}
+            </Button>
+          </>
+        )}
       </SheetFooter>
     </div>
   );

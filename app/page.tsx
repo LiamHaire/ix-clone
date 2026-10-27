@@ -33,7 +33,8 @@ import { ACTIVE_PATIENT } from "@/lib/patientData";
 import { PatientTaskList } from "@/components/chat/patient-task-list";
 import { EmailInbox } from "@/components/chat/email-inbox";
 import { TaskInbox } from "@/components/chat/task-inbox";
-import { AdditionalPanel } from "@/components/chat/additional-panel";
+import { EmailSearchResults } from "@/components/chat/email-search-results";
+import { AdditionalPanel, type EmailDetailData } from "@/components/chat/additional-panel";
 import { SettingsPanel } from "@/components/settings/settings-panel";
 import { NavRail } from "@/components/nav-rail";
 import { NavNotch } from "@/components/nav-island/nav-island";
@@ -94,7 +95,7 @@ function generateTitle(prompt: string): string {
 }
 
 type RadioOption = { value: string; label: string };
-type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; showPatientTasks?: boolean; showMedicationReviewForm?: boolean; medicationReviewData?: MedicationReviewData; suggestions?: string[]; appointment?: AppointmentContext; followUpText?: string; sessionResult?: Session; showEmailInbox?: boolean; showTaskInbox?: boolean };
+type Message = { role: "user" | "assistant"; content: string; cards?: CardLayoutType[]; radioOptions?: RadioOption[]; radioLabel?: string; showFileReviewCard?: boolean; showEmailReadyItem?: boolean; showProgressCard?: boolean; showPatientTasks?: boolean; showMedicationReviewForm?: boolean; medicationReviewData?: MedicationReviewData; suggestions?: string[]; appointment?: AppointmentContext; followUpText?: string; sessionResult?: Session; showEmailInbox?: boolean; showTaskInbox?: boolean; showEmailSearch?: boolean; emailSearchQuery?: string };
 // home → animating → chat
 // overlay is always in DOM; only its opacity + bottom change
 type AppState = "home" | "animating" | "chat";
@@ -125,7 +126,8 @@ export default function Home() {
   const [isWorkspace, setIsWorkspace] = useState(false);
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
-  const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email'>('default');
+  const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email' | 'email-detail'>('default');
+  const [selectedEmail, setSelectedEmail] = useState<EmailDetailData | null>(null);
   const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work' | 'session-history' | 'settings'>('default');
   const [workChatHidden, setWorkChatHidden] = useState(false);
   const [chatCollapsed, setChatCollapsed] = useState(false);
@@ -321,8 +323,11 @@ export default function Home() {
     const isDraftEmailYes = text === "__draft_email_yes__";
     const isNextAppointment = text.toLowerCase().includes("next appointment");
     const isChangeAddress = text.toLowerCase().includes("change address");
-    const isEmailInbox = text.toLowerCase().includes("show email inbox");
-    const isTaskInbox  = text.toLowerCase().includes("show task inbox");
+    const isEmailInbox    = text.toLowerCase().includes("show email inbox");
+    const isTaskInbox     = text.toLowerCase().includes("show task inbox");
+    const emailSearchMatch = text.toLowerCase().match(/^search emails? for (.+)$/);
+    const isEmailSearch   = !!emailSearchMatch;
+    const emailSearchQuery = emailSearchMatch?.[1] ?? '';
     const appt = isNextAppointment ? pickRandomAppointment() : undefined;
     const resolvedExplicitLayout = layout ?? detectLayout(text) ?? "inline";
 
@@ -359,14 +364,16 @@ export default function Home() {
         setIsThinking(false);
         setMessages((prev) => [...prev, {
           role: "assistant",
-          content: isEmailInbox ? "Here's your inbox digest — I've surfaced the high importance items first." : isTaskInbox ? "Here are your tasks — I've surfaced what needs attention today." : isNextAppointment && appt ? `Your next appointment is in ${appt.minutesUntil} minutes at ${appt.time} with ${appt.patientName}.` : isDraftEmailYes ? "Your draft email is ready for review." : isFileReviewYes ? "Okay, I've reviewed the following file and it scores 95% because there's a conflict check that hasn't been done." : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
+          content: isEmailSearch ? `Found ${7} emails matching "${emailSearchQuery}".` : isEmailInbox ? "Here's your inbox digest — I've surfaced the high importance items first." : isTaskInbox ? "Here are your tasks — I've surfaced what needs attention today." : isNextAppointment && appt ? `Your next appointment is in ${appt.minutesUntil} minutes at ${appt.time} with ${appt.patientName}.` : isDraftEmailYes ? "Your draft email is ready for review." : isFileReviewYes ? "Okay, I've reviewed the following file and it scores 95% because there's a conflict check that hasn't been done." : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
           showEmailInbox: isEmailInbox,
           showTaskInbox: isTaskInbox,
-          cards: (isEmailInbox || isTaskInbox) ? undefined : cards,
-          radioOptions: (isEmailInbox || isTaskInbox) ? undefined : radioOptions,
-          radioLabel: (isEmailInbox || isTaskInbox) ? undefined : radioLabel,
-          showFileReviewCard: (isEmailInbox || isTaskInbox) ? false : showFileReviewCard,
-          showEmailReadyItem: (isEmailInbox || isTaskInbox) ? false : isDraftEmailYes,
+          showEmailSearch: isEmailSearch,
+          emailSearchQuery,
+          cards: (isEmailInbox || isTaskInbox || isEmailSearch) ? undefined : cards,
+          radioOptions: (isEmailInbox || isTaskInbox || isEmailSearch) ? undefined : radioOptions,
+          radioLabel: (isEmailInbox || isTaskInbox || isEmailSearch) ? undefined : radioLabel,
+          showFileReviewCard: (isEmailInbox || isTaskInbox || isEmailSearch) ? false : showFileReviewCard,
+          showEmailReadyItem: (isEmailInbox || isTaskInbox || isEmailSearch) ? false : isDraftEmailYes,
           appointment: appt,
           followUpText: appt?.followUpText,
           suggestions: undefined,
@@ -384,12 +391,14 @@ export default function Home() {
       setIsThinking(false);
       setMessages((prev) => [...prev, {
         role: "assistant",
-        content: isEmailInbox ? "Here's your inbox digest — I've surfaced the high importance items first." : isTaskInbox ? "Here are your tasks — I've surfaced what needs attention today." : isNextAppointment && appt ? `Your next appointment is in ${appt.minutesUntil} minutes at ${appt.time} with ${appt.patientName}.` : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
+        content: isEmailSearch ? `Found ${7} emails matching "${emailSearchQuery}".` : isEmailInbox ? "Here's your inbox digest — I've surfaced the high importance items first." : isTaskInbox ? "Here are your tasks — I've surfaced what needs attention today." : isNextAppointment && appt ? `Your next appointment is in ${appt.minutesUntil} minutes at ${appt.time} with ${appt.patientName}.` : isFileReview ? "I'd be happy to help you do a file review! To assist you best, I need a bit more information:" : cards ? "Here's what I found:" : "This is a simulated response. Real AI integration would generate a response here based on your message.",
         showEmailInbox: isEmailInbox,
         showTaskInbox: isTaskInbox,
-        cards: (isEmailInbox || isTaskInbox) ? undefined : cards,
-        radioOptions: (isEmailInbox || isTaskInbox) ? undefined : radioOptions,
-        radioLabel: (isEmailInbox || isTaskInbox) ? undefined : radioLabel,
+        showEmailSearch: isEmailSearch,
+        emailSearchQuery,
+        cards: (isEmailInbox || isTaskInbox || isEmailSearch) ? undefined : cards,
+        radioOptions: (isEmailInbox || isTaskInbox || isEmailSearch) ? undefined : radioOptions,
+        radioLabel: (isEmailInbox || isTaskInbox || isEmailSearch) ? undefined : radioLabel,
         appointment: appt,
         followUpText: appt?.followUpText,
         suggestions: undefined,
@@ -882,8 +891,9 @@ export default function Home() {
                           }}
                         />
                       )}
-                      {msg.showEmailInbox && <EmailInbox />}
+                      {msg.showEmailInbox && <EmailInbox onEmailClick={email => { setSelectedEmail(email); setAdditionalMode('email-detail'); setIsAdditional(true); setIsWorkspace(false); }} />}
                       {msg.showTaskInbox && <TaskInbox />}
+                      {msg.showEmailSearch && <EmailSearchResults query={msg.emailSearchQuery} onEmailClick={email => { setSelectedEmail(email); setAdditionalMode('email-detail'); setIsAdditional(true); setIsWorkspace(false); }} />}
                       {msg.followUpText && (
                         <p className="font-sans text-[16px] leading-7 text-foreground" style={{ fontVariationSettings: "'wght' 400" }}>{msg.followUpText}</p>
                       )}
@@ -1040,9 +1050,10 @@ export default function Home() {
           >
             {isAdditional && (
               <AdditionalPanel
-                title={additionalMode === 'draft-email' ? 'Draft email' : 'Related Content'}
+                title={additionalMode === 'draft-email' ? 'Draft email' : additionalMode === 'email-detail' ? (selectedEmail?.sender ?? 'Email') : 'Related Content'}
                 variant={additionalMode}
-                onClose={() => { setIsAdditional(false); setAdditionalMode('default'); }}
+                emailDetail={selectedEmail ?? undefined}
+                onClose={() => { setIsAdditional(false); setAdditionalMode('default'); setSelectedEmail(null); }}
                 onSend={() => {
                   setIsAdditional(false);
                   setAdditionalMode('default');
