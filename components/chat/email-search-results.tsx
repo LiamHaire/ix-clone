@@ -67,11 +67,9 @@ export function EmailSearchResults({ query = 'Smith', onEmailClick }: EmailSearc
         </CardDescription>
         <CardAction>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5 h-8 text-[13px]">
-                {sort}
-                <CaretDown size={12} />
-              </Button>
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="gap-1.5 h-8 text-[13px]" />}>
+              {sort}
+              <CaretDown size={12} />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
               {SORT_OPTIONS.map(opt => (
