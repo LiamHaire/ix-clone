@@ -4,8 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { StopCircle, Bell, CalendarBlank, ChatCircle } from '@phosphor-icons/react';
 import { toast } from 'sonner';
-import { useNotchMachine } from '@/components/notch2/notch-hook';
-import { DropZone, UploadingView, SuccessView, ErrorView, validateFile } from '@/components/notch2/notch-drop';
+import { useNotchMachine } from './notch-hook';
+import { DropZone, UploadingView, SuccessView, ErrorView, validateFile } from './notch-drop';
 import { Notch3Header, type NavId3 } from './notch3-nav';
 import { Notch3View, VIEW_HEIGHTS_3, tasksContentHeight, chatContentHeight, type QuickActionId } from './notch3-views';
 import { CSS, SPRING_GROW_DURATION_MS } from '@/lib/motion';
@@ -280,7 +280,7 @@ export function Notch3Shell() {
       style={{
         position: 'fixed', inset: 0, zIndex: 9998,
         background: 'rgba(0,0,0,0.25)',
-        animation: 'notch-scrim-in 200ms var(--ease-out-cubic) forwards',
+        animation: 'notch-scrim-in var(--dur-base) var(--ease-out-cubic) forwards',
       }}
     />,
     document.body,
@@ -412,7 +412,7 @@ export function Notch3Shell() {
                 marginRight: PANEL_PADDING_PX,
                 height: contentH,
                 overflow: 'hidden',
-                animation: `notch2-expand-content ${CSS.durBase} ${CSS.easeOutCubic} both`,
+                animation: `notch-expand-content ${CSS.durBase} ${CSS.easeOutCubic} both`,
               }}
             >
               {activeView === 'drop' ? (

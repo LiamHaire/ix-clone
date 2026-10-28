@@ -169,7 +169,8 @@ Everything else below is kept. [V]
 - A pure module, no DOM. Inputs: cursor position and drop time. Output: a
   frame object each tick. A separate renderer applies it.
 - Integrate springs in fixed 1/240s sub-steps. Clamp stalls longer than 2s.
-  Details in `docs/MOTION.md` section 5.
+  Spring step: `k = (2 * PI / response)^2`, `c = 2 * damping * sqrt(k)`,
+  `a = k * (target - value) - c * velocity`, then update velocity, then value.
 - Designed on a 640 x 176 island. Drop card: x 10, y 42, 620 x 124, corner
   radius 20. Scale proportionally if your island differs.
 
@@ -248,7 +249,7 @@ The reference fakes progress on a timer. For a real upload:
   on close.
 - Shortcuts: Cmd/Ctrl + Left and Right cycle items, Cmd/Ctrl + 1 to 7 jump.
   Make them easy to disable if they clash with the app's own.
-- Respect `prefers-reduced-motion` per `docs/MOTION.md` section 7.
+- Respect `prefers-reduced-motion` per `docs/MOTION.md` section 6.
 - Never convey state by motion alone.
 
 ---
@@ -260,7 +261,7 @@ The reference fakes progress on a timer. For a real upload:
 - Start the frame loop only when something animates. Stop it when everything
   settles. [V]
 - Animate `transform` and `opacity` for everything except the notch's own
-  silhouette (see `docs/MOTION.md` section 4). [V]
+  silhouette (see `docs/MOTION.md` section 3). [V]
 
 ---
 
@@ -294,5 +295,5 @@ These are placeholders. Tune them by eye.
 - [ ] Several files, duplicates, oversize and wrong-type files are handled.
 - [ ] Failure path shows the note view and recovers.
 - [ ] Works with keyboard only, including the file picker fallback.
-- [ ] Reduced motion mode behaves per `docs/MOTION.md` section 7.
+- [ ] Reduced motion mode behaves per `docs/MOTION.md` section 6.
 - [ ] No layout shift in any mode, at desktop and mobile widths.

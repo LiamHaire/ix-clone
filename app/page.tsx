@@ -12,7 +12,7 @@ import {
   PromptInputSelectItem,
 } from "@/components/ai-elements/prompt-input";
 import { SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ArrowRight, ArrowBendDownRight, CaretDown, X as PhosphorX, Info, NotePencil, CaretLineRight, Chat as ChatIcon } from "@phosphor-icons/react";
+import { Plus, ArrowRight, ArrowBendDownRight, CaretDown, X as PhosphorX, Info, CaretLineRight, Chat as ChatIcon } from "@phosphor-icons/react";
 import { AnimatedPlaceholder } from "@/components/animated-placeholder";
 import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ProgressCard } from "@/components/chat/progress-card";
@@ -37,8 +37,6 @@ import { EmailSearchResults } from "@/components/chat/email-search-results";
 import { AdditionalPanel, type EmailDetailData } from "@/components/chat/additional-panel";
 import { SettingsPanel } from "@/components/settings/settings-panel";
 import { NavRail } from "@/components/nav-rail";
-import { NavNotch } from "@/components/nav-island/nav-island";
-import { NavNotch2 } from "@/components/notch2";
 import { NavNotch3 } from "@/components/notch3";
 import { SheetHeader } from "@/components/ui/sheet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -51,7 +49,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Item, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
 import { Button } from "@/components/ui/button";
 import { ArrowSquareOut } from "@phosphor-icons/react";
-import { CSS } from "@/lib/motion";
+import { CSS, CHAT_MOVE_MS, CHAT_FADE_MS, CHAT_OVERLAY_FADE_MS } from "@/lib/motion";
 import {
   shouldShowCards,
   getRecommendedCardCount,
@@ -100,9 +98,8 @@ type Message = { role: "user" | "assistant"; content: string; cards?: CardLayout
 // overlay is always in DOM; only its opacity + bottom change
 type AppState = "home" | "animating" | "chat";
 
-const MOVE_MS = 550;
-const CHAT_FADE_MS = 400;
-const OVERLAY_FADE_MS = 500;
+const MOVE_MS = CHAT_MOVE_MS;
+const OVERLAY_FADE_MS = CHAT_OVERLAY_FADE_MS;
 
 export default function Home() {
   const [model, setModel] = useState("gemini-flash");
@@ -122,7 +119,7 @@ export default function Home() {
   const [overlayShadow, setOverlayShadow] = useState(true);
 
   const [showAlert, setShowAlert] = useState(false);
-  const [navMode, setNavMode] = useState<'navrail' | 'notch' | 'notch2' | 'notch3'>('navrail');
+  const [navMode, setNavMode] = useState<'navrail' | 'notch3'>('navrail');
   const [isWorkspace, setIsWorkspace] = useState(false);
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
@@ -147,14 +144,50 @@ export default function Home() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const chatPanelRef = useRef<HTMLDivElement>(null);
 
+  const chatContentRef = useRef<HTMLDivElement>(null);
+  const chatPinnedRef = useRef(true);
+  const chatLastScrollTop = useRef(0);
+  const chatLastScrollHeight = useRef(0);
+
   useEffect(() => {
-    chatScrollRef.current?.scrollTo({ top: chatScrollRef.current.scrollHeight, behavior: "smooth" });
+    chatPinnedRef.current = true;
+    const scroller = chatScrollRef.current;
+    scroller?.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
+    // Late-settling content (cards measuring themselves, toolbar fade-in): re-check the bottom
+    const timers = [250, 600, 1000].map(ms => setTimeout(() => {
+      if (chatPinnedRef.current && scroller) {
+        const gap = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
+        if (gap > 2) scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
+      }
+    }, ms));
+    return () => timers.forEach(clearTimeout);
   }, [messages, isThinking]);
 
   useEffect(() => {
-    if (isWorkspace) chatScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-    else setChatCollapsed(false);
+    if (!isWorkspace) setChatCollapsed(false);
   }, [isWorkspace]);
+
+  // Keep following the newest message when content grows after the initial scroll
+  useEffect(() => {
+    const content = chatContentRef.current;
+    const scroller = chatScrollRef.current;
+    if (!content || !scroller) return;
+    const observer = new ResizeObserver(() => {
+      if (chatPinnedRef.current) scroller.scrollTop = scroller.scrollHeight;
+    });
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [appState]);
+
+  function handleChatScroll(e: React.UIEvent<HTMLDivElement>) {
+    const el = e.currentTarget;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const contentResized = el.scrollHeight !== chatLastScrollHeight.current;
+    if (!contentResized && el.scrollTop < chatLastScrollTop.current) chatPinnedRef.current = false;
+    else if (distance < 80) chatPinnedRef.current = true;
+    chatLastScrollTop.current = el.scrollTop;
+    chatLastScrollHeight.current = el.scrollHeight;
+  }
 
   useEffect(() => {
     const handler = () => resetToHome();
@@ -304,9 +337,7 @@ export default function Home() {
     if (!text || appState === "animating") return;
     setValue("");
 
-    if (text.toLowerCase() === "show notch") { setNavMode('notch'); return; }
-    if (text.toLowerCase() === "show alt design") { setNavMode('notch2'); return; }
-    if (text.toLowerCase() === "show notch 3") { setNavMode('notch3'); return; }
+    if (text.toLowerCase() === "notch") { setNavMode('notch3'); return; }
     if (text.toLowerCase() === "show navrail") { setNavMode('navrail'); return; }
     if (text.toLowerCase() === "hide chat" && workspaceMode === 'work') { setWorkChatHidden(true); return; }
     if (text.toLowerCase() === "show chat" && workspaceMode === 'work') { setWorkChatHidden(false); return; }
@@ -417,7 +448,7 @@ export default function Home() {
       requestAnimationFrame(() => {
         // Start input moving down
         if (overlayRef.current) {
-          overlayRef.current.style.transition = `bottom ${MOVE_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+          overlayRef.current.style.transition = `bottom ${MOVE_MS}ms ${CSS.easeOutExpo}`;
           overlayRef.current.style.bottom = "51px";
         }
         // Fade shadow out as input approaches its destination
@@ -449,7 +480,7 @@ export default function Home() {
 
   const inputInner = (
     <PromptInput
-      onSubmit={handleSubmit}
+      onSubmit={() => handleSubmit()}
       className="w-full [&>[data-slot=input-group]]:border-0 [&>[data-slot=input-group]]:shadow-none [&>[data-slot=input-group]]:rounded-none [&>[data-slot=input-group]]:focus-within:ring-0 [&>[data-slot=input-group]]:focus-within:border-0 [&>[data-slot=input-group]]:bg-transparent"
     >
       <PromptInputBody className="relative">
@@ -473,7 +504,7 @@ export default function Home() {
           </button>
         </PromptInputTools>
         <PromptInputTools className="gap-2">
-          <PromptInputSelect value={model} onValueChange={setModel}>
+          <PromptInputSelect value={model} onValueChange={(v) => setModel(v as string)}>
             <SelectTrigger className="h-9 rounded-full border border-border bg-secondary/50 text-muted-foreground text-[14.67px] font-medium px-3 gap-1.5 shadow-none focus:ring-0 hover:bg-accent hover:text-foreground transition-colors [&_svg]:size-3.5">
               <SelectValue>{MODEL_LABELS[model]}</SelectValue>
             </SelectTrigger>
@@ -483,7 +514,7 @@ export default function Home() {
               <PromptInputSelectItem value="claude-sonnet">Claude Sonnet</PromptInputSelectItem>
             </PromptInputSelectContent>
           </PromptInputSelect>
-          <button type="button" aria-label="Submit" onClick={handleSubmit}
+          <button type="button" aria-label="Submit" onClick={() => handleSubmit()}
             className="flex items-center justify-center size-9 rounded-full bg-action text-action-foreground hover:bg-action-hover transition-colors">
             <ArrowRight size={20} weight="bold" />
           </button>
@@ -505,30 +536,6 @@ export default function Home() {
   return (
     <div className="h-full overflow-hidden bg-background flex flex-1 min-w-0">
       {(navMode === 'navrail' || navMode === 'notch3') && <NavRail hideBadge={navMode === 'notch3'} />}
-      {navMode === 'notch' && (
-        <NavNotch
-          onSessionHistory={() => window.dispatchEvent(new CustomEvent('ix:open-session-history'))}
-          onWork={() => window.dispatchEvent(new CustomEvent('ix:open-work'))}
-          onSettings={() => window.dispatchEvent(new CustomEvent('ix:open-settings'))}
-          onMedicationReview={() => {
-            setAppState('chat');
-            setChatContentOpacity(1);
-            setChatTitle('Annual medication review');
-            setWorkspaceMode('patient-summary');
-            setIsWorkspace(true);
-            setIsAdditional(false);
-            setIsThinking(true);
-            setTimeout(() => {
-              setIsThinking(false);
-              setMessages([
-                { role: 'assistant', content: 'Opening the medication review form for Margaret Ellison.', showMedicationReviewForm: true },
-              ]);
-            }, 1200);
-          }}
-          onFileReview={() => handleSubmit('Help me perform a file review', 'inline')}
-        />
-      )}
-      {navMode === 'notch2' && <NavNotch2 />}
       {navMode === 'notch3' && <NavNotch3 />}
       <div className="relative flex flex-col flex-1 min-w-0 h-full overflow-hidden" style={{ minHeight: 0 }}>
       {/* Alert banner */}
@@ -597,7 +604,7 @@ export default function Home() {
               style={{
                 fontVariationSettings: "'wght' 600",
                 opacity: greetingOpacity,
-                transition: "opacity 0.35s ease",
+                transition: `opacity var(--dur-chat-reveal) ${CSS.easeStandard}`,
               }}
             >
               {greeting}, Liam
@@ -614,7 +621,7 @@ export default function Home() {
           style={{
             left: 0, right: 0, top: 0, bottom: 0,
             opacity: chatContentOpacity,
-            transition: `opacity ${CHAT_FADE_MS}ms ease`,
+            transition: `opacity ${CHAT_FADE_MS}ms ${CSS.easeStandard}`,
           }}
         >
           {/* ── Workspace panel ── */}
@@ -623,8 +630,8 @@ export default function Home() {
             style={{
               flex: isWorkspace ? (workChatHidden && workspaceMode === 'work' ? "1 1 0" : "2 1 0") : "0 0 0",
               minWidth: 0,
-              order: (navMode === 'notch' || navMode === 'notch2') ? 1 : 0,  // notch3 keeps navrail layout
-              transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
+              order: 0,
+              transition: `flex ${CSS.durPanelResize} ${CSS.easeOutExpo}`,
             }}
           >
             {isWorkspace && workspaceMode === 'patient-summary' && (
@@ -644,7 +651,7 @@ export default function Home() {
               />
             )}
             {isWorkspace && workspaceMode === 'medication-review' && (
-              <div className={`h-full flex flex-col bg-popover ${(navMode === 'notch' || navMode === 'notch2') ? 'border-l' : 'border-r'} border-border`}>
+              <div className={`h-full flex flex-col bg-popover border-r border-border`}>
                 <SheetHeader className="px-4 pt-4 pb-3 flex-row items-start justify-between gap-2 shrink-0 border-b border-border">
                   <div className="flex flex-col gap-0.5">
                     <p className="font-heading text-base font-medium text-foreground leading-none">Medication review</p>
@@ -710,7 +717,7 @@ export default function Home() {
               flex: (workChatHidden && workspaceMode === 'work') ? "0 0 0" : (isWorkspace && chatCollapsed) ? "0 0 56px" : isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: (isWorkspace && chatCollapsed) ? 56 : 0,
               order: 1,
-              transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
+              transition: `flex ${CSS.durPanelResize} ${CSS.easeOutExpo}`,
             }}
           >
             {/* ── Collapsed strip — shown instead of the chat body when collapsed ── */}
@@ -743,18 +750,6 @@ export default function Home() {
                 <p className="font-heading text-base font-medium text-foreground leading-none truncate">{sentenceCase(chatTitle)}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                {(navMode === 'notch' || navMode === 'notch2') && (
-                  <Tooltip>
-                    <TooltipTrigger
-                      aria-label="New session"
-                      onClick={() => window.dispatchEvent(new CustomEvent('ix:new-session'))}
-                      className="flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
-                    >
-                      <NotePencil size={18} weight="duotone" />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">New session</TooltipContent>
-                  </Tooltip>
-                )}
                 <IndexPopover index={MOCK_SESSIONS[0].index} />
                 {isWorkspace && (
                   <Tooltip>
@@ -772,8 +767,8 @@ export default function Home() {
             </SheetHeader>
 
             {/* Messages */}
-            <div ref={chatScrollRef} className="flex-1 overflow-y-auto flex justify-center px-4" style={{ scrollbarGutter: 'stable both-edges' }}>
-              <div className="w-full max-w-[720px] pt-6 pb-4 flex flex-col gap-8 px-px">
+            <div ref={chatScrollRef} onScroll={handleChatScroll} className="flex-1 overflow-y-auto flex justify-center px-4" style={{ scrollbarGutter: 'stable both-edges' }}>
+              <div ref={chatContentRef} className="w-full max-w-[720px] pt-6 pb-4 flex flex-col gap-8 px-px">
                 {messages.map((msg, i) =>
                   msg.role === "user" ? (
                     <div key={i} className="flex justify-end">
@@ -1045,7 +1040,7 @@ export default function Home() {
               flex: isAdditional ? "1 0 0" : "0 0 0",
               minWidth: 0,
               order: 0,
-              transition: "flex 500ms cubic-bezier(0.16, 1, 0.3, 1)",
+              transition: `flex ${CSS.durPanelResize} ${CSS.easeOutExpo}`,
             }}
           >
             {isAdditional && (
@@ -1089,7 +1084,7 @@ export default function Home() {
             right: 0,
             bottom: "calc(50vh - 12px)",
             opacity: overlayOpacity,
-            transition: `opacity ${OVERLAY_FADE_MS}ms ease`,
+            transition: `opacity ${OVERLAY_FADE_MS}ms ${CSS.easeStandard}`,
           }}
         >
           <div

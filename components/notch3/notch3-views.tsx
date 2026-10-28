@@ -489,8 +489,6 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
         <EmptyState icon={CalendarBlank} title="No upcoming events" subtitle="Enjoy the peace and quiet" cta="Open calendar" />
       );
 
-    case 'record':    return <Placeholder title="Scribe" />;
-    case 'knowledge': return <Placeholder title="Knowledge base" />;
     default:          return <Placeholder title="Notch 3" />;
   }
 }

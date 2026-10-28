@@ -17,6 +17,29 @@ export const DUR_FAST = 120;   // ms — hover, press, selected state
 export const DUR_BASE = 200;   // ms — fades, small reveals
 export const DUR_SLOW = 340;   // ms — matches SHRINK_MS
 
+export const DUR_HOVER = 150;  // ms — Tailwind default transition duration (hovers, colour changes)
+
+export const EASE_STANDARD    = 'cubic-bezier(0.25, 0.1, 0.25, 1)'; // CSS `ease`
+export const EASE_OUT_EXPO    = 'cubic-bezier(0.16, 1, 0.3, 1)';
+export const EASE_PLACEHOLDER_EXIT = 'cubic-bezier(0.4, 0, 1, 1)';
+
+// Layout panels
+export const PANEL_RESIZE_MS = 500;
+
+// Chat landing-to-conversation sequence
+export const CHAT_MOVE_MS          = 550;
+export const CHAT_FADE_MS          = 400;
+export const CHAT_OVERLAY_FADE_MS  = 500;
+export const CHAT_REVEAL_MS        = 350;
+
+// Component-specific
+export const TABS_INDICATOR_MS    = 250;
+export const PLACEHOLDER_HOLD_MS  = 8000;
+export const PLACEHOLDER_ROLL_MS  = 400;
+export const THINKING_DOT_MS      = 130;
+export const THINKING_TEXT_MS     = 250;
+export const NOTCH_SUCCESS_MS     = 250;
+
 // CSS var references (for inline styles that need to reference the tokens)
 export const CSS = {
   easeSpringGrow:  'var(--ease-spring-grow)',
@@ -29,4 +52,8 @@ export const CSS = {
   easeBackOut:     'var(--ease-back-out)',
   durFast:         'var(--dur-fast)',
   durBase:         'var(--dur-base)',
+  durHover:        'var(--dur-hover)',
+  easeStandard:    'var(--ease-standard)',
+  easeOutExpo:     'var(--ease-out-expo)',
+  durPanelResize:  'var(--dur-panel-resize)',
 } as const;

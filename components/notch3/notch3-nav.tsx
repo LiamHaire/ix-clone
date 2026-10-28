@@ -90,7 +90,7 @@ export function Notch3Header({ activeId, onSelect, isRecording = false }: Notch3
 
 function N3Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <TooltipPrimitive.Root delay={600} closeDelay={200}>
+    <TooltipPrimitive.Root>
       {children}
       <TooltipPrimitive.Portal>
         <TooltipPrimitive.Positioner side="bottom" sideOffset={6} className="z-[10000]">
@@ -116,6 +116,8 @@ function NavBtn3({ item, active, onSelect, recording = false }: {
   return (
     <N3Tooltip label={label}>
       <TooltipPrimitive.Trigger
+        delay={600}
+        closeDelay={200}
         aria-label={label}
         aria-pressed={active}
         onClick={() => onSelect(item.id)}

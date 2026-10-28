@@ -75,7 +75,7 @@ export function PatientSummaryPanel({ onClose, onTasksClick, expanded }: Patient
 
       {/* Scrollable content */}
       <div className="flex-1 min-h-0 overflow-y-auto px-5 [scrollbar-gutter:stable]">
-        <div className={`mx-auto pt-4 pb-0 ${expanded ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width 500ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
+        <div className={`mx-auto pt-4 pb-0 ${expanded ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width var(--dur-panel-resize) var(--ease-out-expo)' }}>
         {/* Banner — always visible */}
         <PatientBanner patient={patient} onTasksClick={onTasksClick} />
 

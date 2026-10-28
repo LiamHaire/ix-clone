@@ -176,7 +176,7 @@ export function AddressBlock({
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="addr-country" className="text-[13px] font-medium">Country</Label>
-          <Select value={form.country} onValueChange={v => set('country', v)}>
+          <Select value={form.country} onValueChange={v => set('country', v ?? '')}>
             <SelectTrigger id="addr-country" className="data-[size=default]:h-9 w-full text-[13px]">
               <SelectValue />
             </SelectTrigger>

@@ -39,13 +39,25 @@ export function TabbedList({
   const [panelMinHeight, setPanelMinHeight] = useState<number | undefined>(undefined);
 
   useLayoutEffect(() => {
-    const width = sentinelRef.current?.offsetWidth ?? 0;
-    if (!width || !measureContainer.current) return;
-    // Set width directly so clones render at the right size before measuring
-    measureContainer.current.style.width = `${width}px`;
-    let max = 0;
-    measureRefs.current.forEach(el => { if (el) max = Math.max(max, el.offsetHeight); });
-    if (max > 0) setPanelMinHeight(max);
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const measure = () => {
+      const width = sentinel.offsetWidth;
+      if (!width || !measureContainer.current) return;
+      // Set width directly so clones render at the right size before measuring
+      measureContainer.current.style.width = `${width}px`;
+      let max = 0;
+      measureRefs.current.forEach(el => { if (el) max = Math.max(max, el.offsetHeight); });
+      if (max > 0) setPanelMinHeight(prev => (prev === max ? prev : max));
+    };
+
+    measure();
+    // Re-measure when the available width changes (panel resizes, late layout)
+    const observer = new ResizeObserver(measure);
+    observer.observe(sentinel);
+    document.fonts?.ready.then(measure);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -83,7 +95,7 @@ export function TabbedList({
                 value={tab.id}
                 className={cn(
                   'relative z-10 flex-1 rounded-md px-3 py-1.5 text-sm font-medium',
-                  'transition-colors duration-150 outline-none',
+                  'transition-colors outline-none',
                   'text-muted-foreground hover:text-foreground',
                   'data-[active]:text-primary-foreground',
                   'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
@@ -100,7 +112,7 @@ export function TabbedList({
               style={{
                 left: 'var(--active-tab-left)',
                 width: 'var(--active-tab-width)',
-                transition: 'left 250ms cubic-bezier(0.16, 1, 0.3, 1), width 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+                transition: 'left var(--dur-tabs-indicator) var(--ease-out-expo), width var(--dur-tabs-indicator) var(--ease-out-expo)',
               }}
             />
           </Tabs.List>

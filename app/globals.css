@@ -5,6 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Tailwind's default transition duration (transition-colors etc.) follows the token */
+  --default-transition-duration: var(--dur-hover);
+
   /* ── Fonts ── */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -311,6 +314,31 @@
   --ease-back-out: cubic-bezier(0.34, 1.56, 0.64, 1);
   --dur-fast: 120ms;
   --dur-base: 200ms;
+  --dur-hover: 150ms;
+
+  /* Shared easing */
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1); /* CSS `ease` */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout panels (chat/workspace flex, page max-width) */
+  --dur-panel-resize: 500ms;
+
+  /* Chat landing-to-conversation sequence (see CHAT_* in lib/motion.ts) */
+  --dur-chat-reveal: 350ms;
+
+  /* Tabbed list */
+  --dur-tabs-indicator: 250ms;
+
+  /* Animated placeholder */
+  --dur-placeholder-roll: 400ms;
+  --ease-placeholder-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Thinking text */
+  --dur-thinking-dot: 130ms;
+  --dur-thinking-text: 250ms;
+
+  /* Notch drop zone success check */
+  --dur-notch-success: 250ms;
 }
 @supports not (transition-timing-function: linear(0, 1)) {
   :root { --ease-spring-grow: cubic-bezier(0.34, 1.3, 0.64, 1); }
@@ -321,27 +349,24 @@
     --dur-spring-grow: var(--dur-fast);
     --ease-shrink: cubic-bezier(0.45, 0, 0.2, 1);
     --dur-shrink: var(--dur-fast);
+    /* Layout moves, tab indicator, placeholder and thinking text become near-instant */
+    --dur-panel-resize: var(--dur-fast);
+    --dur-tabs-indicator: var(--dur-fast);
+    --dur-placeholder-roll: var(--dur-fast);
+    --dur-thinking-text: var(--dur-fast);
+    --dur-chat-reveal: var(--dur-fast);
   }
+  /* Looping and decorative motion stops entirely */
+  .thinking-shimmer-text { animation: none; background-position: 0 center; }
+  .group:hover .fab-ring-trigger { animation: none; }
 }
 
-/* ── Notch2 animations ── */
-@keyframes notch2-expand-content {
+/* ── Notch animations ── */
+@keyframes notch-expand-content {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-@keyframes notch2-collapse-content {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-4px); }
-}
-@keyframes notch2-progress-fill {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
-}
-@keyframes notch2-drop-pulse {
-  0%, 100% { box-shadow: inset 0 0 0 0 oklch(0.5273 0.1371 150.07 / 0); }
-  50%       { box-shadow: inset 0 0 0 3px oklch(0.5273 0.1371 150.07 / 0.25); }
-}
-@keyframes notch2-success-pop {
+@keyframes notch-success-pop {
   0%   { transform: scale(0.6); opacity: 0; }
   60%  { transform: scale(1.15); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
@@ -353,11 +378,6 @@
 }
 .dark .glow-radial {
   background: radial-gradient(ellipse 40% 45% at 50% 50%, oklch(55% 0.18 268 / 0.15) 0%, oklch(55% 0.18 268 / 0) 100%);
-}
-
-/* ── Notch item background (bg-background at 50% opacity) ── */
-.notch-item-bg {
-  background: color-mix(in oklch, var(--background) 50%, transparent);
 }
 
 /* ── Notch collapsed pill background ── */
@@ -379,39 +399,12 @@
     var(--background);
 }
 
-/* ── Notch notification animations ── */
-@keyframes notch-notify-shake {
-  0%   { opacity: 0; transform: rotate(-16deg); }
-  8%   { opacity: 1; transform: rotate(-16deg); }
-  20%  { transform: rotate(14deg); }
-  33%  { transform: rotate(-12deg); }
-  45%  { transform: rotate(10deg); }
-  57%  { transform: rotate(-7deg); }
-  68%  { transform: rotate(5deg); }
-  78%  { transform: rotate(-3deg); }
-  87%  { transform: rotate(2deg); }
-  94%  { transform: rotate(-1deg); }
-  100% { transform: rotate(0deg); opacity: 1; }
-}
-@keyframes notch-badge-pop {
-  0%   { transform: scale(0); opacity: 0; }
-  60%  { transform: scale(1.25); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-@keyframes notch-notify-label-in {
-  0%   { opacity: 0; transform: translateX(-4px); }
-  100% { opacity: 1; transform: translateX(0); }
-}
-.notch-notify-spring { } /* removed */
-.notch-notify-shake  { animation: notch-notify-shake 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-.notch-badge-pop     { animation: notch-badge-pop 300ms 200ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
+/* ── Reduced-motion icon fallback ── */
 @keyframes notch-icon-fade-in {
   0%   { opacity: 0; transform: scale(0.6); }
   50%  { transform: scale(1.15); }
   100% { opacity: 1; transform: scale(1); }
 }
-.notch-icon-fade-in { animation: notch-icon-fade-in 200ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
 /* ── Notch 3 bell animation ── */
 @keyframes n3-bell-pop {
@@ -495,39 +488,11 @@
   animation: fab-ring-pulse 900ms var(--ease-out-cubic) 1;
 }
 
-/* ── Notch animations ── */
-@keyframes notch-expand {
-  0%   { clip-path: inset(0 calc(50% - 40px) calc(100% - 32px) calc(50% - 40px) round 0 0 4px 4px); opacity: 0.6; }
-  60%  { opacity: 1; }
-  100% { clip-path: inset(0 0% 0% 0% round 0 0 8px 8px); opacity: 1; }
-}
-@keyframes notch-collapse {
-  0%   { clip-path: inset(0 0% 0% 0% round 0 0 8px 8px); opacity: 1; }
-  40%  { opacity: 0.6; }
-  100% { clip-path: inset(0 calc(50% - 40px) calc(100% - 32px) calc(50% - 40px) round 0 0 4px 4px); opacity: 0; }
-}
-@keyframes notch-content-in {
-  0%   { opacity: 0; transform: translateY(-6px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-@keyframes notch-content-out {
-  0%   { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-4px); }
-}
+/* ── Notch scrim ── */
 @keyframes notch-scrim-in {
   0%   { opacity: 0; }
   100% { opacity: 1; }
 }
-@keyframes notch-scrim-out {
-  0%   { opacity: 1; }
-  100% { opacity: 0; }
-}
-.notch-expand  { animation: notch-expand  320ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.notch-collapse { animation: notch-collapse 240ms cubic-bezier(0.4, 0, 1, 1) forwards; }
-.notch-content-in  { animation: notch-content-in  200ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-.notch-content-out { animation: notch-content-out 120ms cubic-bezier(0.4, 0, 1, 1) forwards; }
-.notch-scrim-in  { animation: notch-scrim-in  280ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.notch-scrim-out { animation: notch-scrim-out 240ms cubic-bezier(0.4, 0, 1, 1) forwards; }
 
 /* ── Thinking animation ── */
 @keyframes thinking-shimmer {

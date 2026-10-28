@@ -54,14 +54,14 @@ export function AnimatedPlaceholder({ show }: { show: boolean }) {
         lineHeight: "1.5",
         transition:
           phase === "exit"
-            ? "transform 400ms cubic-bezier(0.4,0,1,1), opacity 400ms ease"
+            ? "transform var(--dur-placeholder-roll) var(--ease-placeholder-exit), opacity var(--dur-placeholder-roll) var(--ease-standard)"
             : phase === "enter"
             ? "none"
             : "none",
         transform:
           phase === "exit" ? "translateY(-8px)" : "translateY(0px)",
         opacity: phase === "exit" ? 0 : phase === "enter" ? 0 : 1,
-        animation: phase === "enter" ? "ph-fade-in 400ms ease forwards" : "none",
+        animation: phase === "enter" ? "ph-fade-in var(--dur-placeholder-roll) var(--ease-standard) forwards" : "none",
       }}
     >
       {PHRASES[index]}

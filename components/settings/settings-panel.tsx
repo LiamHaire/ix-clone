@@ -31,7 +31,7 @@ export function SettingsPanel({ onClose, expanded }: SettingsPanelProps) {
       </SheetHeader>
 
       <div className="flex flex-1 min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]">
-        <div className={`flex min-h-full mx-auto w-full ${expanded ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width 500ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
+        <div className={`flex min-h-full mx-auto w-full ${expanded ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width var(--dur-panel-resize) var(--ease-out-expo)' }}>
           <SettingsNav activeView={activeView} onViewChange={setActiveView} />
           <div className="w-px bg-border my-4 shrink-0" />
           <div className="flex-1 min-w-0 pl-6 pr-4 py-4">

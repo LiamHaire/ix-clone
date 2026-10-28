@@ -33,7 +33,7 @@ function TwinkleGrid() {
       c.setAttribute('cx', String(cx));
       c.setAttribute('cy', String(cy));
       c.setAttribute('r', '2');
-      c.style.transition = 'fill 130ms ease';
+      c.style.transition = 'fill var(--dur-thinking-dot) var(--ease-standard)';
       svg.appendChild(c);
       return c;
     });
@@ -102,7 +102,7 @@ export function ThinkingText({ phrase }: { phrase?: string }) {
         style={{
           opacity: phase === 'exit' ? 0 : phase === 'enter' ? 0 : 1,
           transform: phase === 'exit' ? 'translateY(-4px)' : phase === 'enter' ? 'translateY(4px)' : 'translateY(0)',
-          transition: phase === 'visible' ? 'opacity 250ms ease, transform 250ms ease' : 'none',
+          transition: phase === 'visible' ? 'opacity var(--dur-thinking-text) var(--ease-standard), transform var(--dur-thinking-text) var(--ease-standard)' : 'none',
         }}
       >
         {phrase ?? PHRASES[index]}

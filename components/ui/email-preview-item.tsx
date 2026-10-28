@@ -6,7 +6,7 @@ import { PreviewItem, type PreviewItemProps } from '@/components/ui/preview-item
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface EmailPreviewItemProps
-  extends Omit<PreviewItemProps, 'icon' | 'chipSlot'> {
+  extends Omit<PreviewItemProps, 'icon' | 'chipSlot' | 'title'> {
   sender: string;
   subject: string;
   preview: string;

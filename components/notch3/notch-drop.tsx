@@ -128,7 +128,7 @@ export function SuccessView() {
         className="flex items-center justify-center size-10 rounded-full"
         style={{
           background: 'var(--accent)',
-          animation: 'notch2-success-pop var(--ease-back-out) 0.25s both',
+          animation: 'notch-success-pop var(--ease-back-out) var(--dur-notch-success) both',
         }}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">

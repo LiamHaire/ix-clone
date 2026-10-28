@@ -98,7 +98,7 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
       </SheetHeader>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        <div className={`flex flex-1 min-h-0 overflow-hidden mx-auto w-full ${expanded ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width 500ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
+        <div className={`flex flex-1 min-h-0 overflow-hidden mx-auto w-full ${expanded ? 'max-w-[1600px]' : 'max-w-[1200px]'}`} style={{ transition: 'max-width var(--dur-panel-resize) var(--ease-out-expo)' }}>
         <WorkNav activeView={activeView} onViewChange={(v) => { setActiveView(v); setSearch(""); }} />
 
         {/* Vertical divider with 16px inset top and bottom */}
