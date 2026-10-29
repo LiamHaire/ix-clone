@@ -93,7 +93,7 @@ const NOTIFICATIONS: Notification[] = [
 
 type Tab = "all" | "unread";
 
-export function NotificationsPopover({ hideBadge }: { hideBadge?: boolean } = {}) {
+export function NotificationsPopover() {
   const [tab, setTab] = useState<Tab>("all");
   const [notifications, setNotifications] = useState(NOTIFICATIONS);
 
@@ -125,7 +125,7 @@ export function NotificationsPopover({ hideBadge }: { hideBadge?: boolean } = {}
           }
         >
           <Bell size={20} weight="duotone" />
-          {unreadCount > 0 && !hideBadge && (
+          {unreadCount > 0 && (
             <span className="pointer-events-none absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold leading-none px-1">
               {unreadCount}
             </span>

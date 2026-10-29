@@ -77,7 +77,8 @@ Click the pill to expand a 680px panel with a toolbar header and a content area.
 | Calendar — **Calendar events** | Upcoming events |
 | Lightning — **Quick actions** | Six icon-only actions (below) |
 | Gear — **Settings** | Closes the notch and opens the settings panel (`ix:open-settings`) |
-| Avatar | Profile / Settings / Sign out dropdown |
+
+The notch has no avatar. In notch mode the nav rail hides its Notifications bell (the notch has its own), and keeps the avatar dropdown.
 
 #### Item rows
 
@@ -91,7 +92,7 @@ Tasks, chats, notifications and calendar events all use one component, `NotchIte
 | `approval`, `activity` | Icon tile with Approve/Deny or View/Dismiss buttons (built, not yet used in the notch) |
 | `patient` | Person icon, patient name and details, View button |
 
-Pass `bordered` for a visible border where the item appears in chat. The patient preview in the "next appointment" reply does this, the notch rows don't.
+Pass `bordered` for a visible border where the item appears in chat. The patient preview in the "next appointment" reply and the outstanding tasks list in the health workflow both do this, the notch rows don't. `statusTone` (`warning`, `destructive`, `primary`, `muted`) sets the status chip colour; the patient task list maps Overdue, Active, Due and Draft onto it.
 
 #### Quick actions
 
@@ -283,6 +284,7 @@ Key tokens:
 | `--accent` | Hover states, selected backgrounds |
 | `--border` | All borders |
 | `--muted-foreground` | Secondary text, icons |
-| `--destructive` | Errors, recording tally light |
+| `--destructive` | Errors, recording tally light. Dark mode uses a softer red with dark `--destructive-foreground` text on red fills |
+| `--chart-1` | Orange accent (notch "new" dot, task refs). Dark mode uses a softer orange |
 
 Motion tokens are in `lib/motion.ts` — always use these, never hardcode durations or easings.

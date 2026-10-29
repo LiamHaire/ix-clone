@@ -544,7 +544,7 @@ export default function Home() {
 
   return (
     <div className="h-full overflow-hidden bg-background flex flex-1 min-w-0">
-      {(navMode === 'navrail' || navMode === 'notch3') && <NavRail hideBadge={navMode === 'notch3'} />}
+      {(navMode === 'navrail' || navMode === 'notch3') && <NavRail hideNotifications={navMode === 'notch3'} />}
       {navMode === 'notch3' && <NavNotch3 />}
       <div className="relative flex flex-col flex-1 min-w-0 h-full overflow-hidden" style={{ minHeight: 0 }}>
       {/* Alert banner */}
