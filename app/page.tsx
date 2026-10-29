@@ -49,7 +49,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Item, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
 import { Button } from "@/components/ui/button";
 import { ArrowSquareOut } from "@phosphor-icons/react";
-import { CSS, CHAT_MOVE_MS, CHAT_FADE_MS, CHAT_OVERLAY_FADE_MS } from "@/lib/motion";
+import { CSS, CHAT_MOVE_MS, CHAT_FADE_MS, CHAT_OVERLAY_FADE_MS, PANEL_FLEX_OPEN, PANEL_FLEX_OPEN_ADDITIONAL, PANEL_FLEX_CLOSE, PANEL_FLEX_SWAP_OUT, PANEL_FLEX_SWAP_IN_LEFT, PANEL_FLEX_SWAP_IN_RIGHT } from "@/lib/motion";
 import {
   shouldShowCards,
   getRecommendedCardCount,
@@ -128,6 +128,15 @@ export default function Home() {
   const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work' | 'session-history' | 'settings'>('default');
   const [workChatHidden, setWorkChatHidden] = useState(false);
   const [chatCollapsed, setChatCollapsed] = useState(false);
+
+  // Workspace <-> additional swap: remember which panel just arrived so the divider can overshoot in its own direction
+  const layoutNow = isWorkspace ? 'workspace' : isAdditional ? 'additional' : 'none';
+  const [prevLayout, setPrevLayout] = useState(layoutNow);
+  const [swapTo, setSwapTo] = useState<'workspace' | 'additional' | null>(null);
+  if (layoutNow !== prevLayout) {
+    setPrevLayout(layoutNow);
+    setSwapTo(prevLayout !== 'none' && layoutNow !== 'none' ? layoutNow : null);
+  }
   function transitionToPanel(fn: () => void, responseMessage?: string, suggestions?: string[]) {
     setIsThinking(true);
     setTimeout(() => {
@@ -631,7 +640,7 @@ export default function Home() {
               flex: isWorkspace ? (workChatHidden && workspaceMode === 'work' ? "1 1 0" : "2 1 0") : "0 0 0",
               minWidth: 0,
               order: 0,
-              transition: `flex ${CSS.durPanelResize} ${CSS.easeOutExpo}`,
+              transition: isWorkspace ? (swapTo === 'workspace' ? PANEL_FLEX_SWAP_IN_RIGHT : PANEL_FLEX_OPEN) : (swapTo === 'additional' ? PANEL_FLEX_SWAP_OUT : PANEL_FLEX_CLOSE),
             }}
           >
             {isWorkspace && workspaceMode === 'patient-summary' && (
@@ -651,7 +660,7 @@ export default function Home() {
               />
             )}
             {isWorkspace && workspaceMode === 'medication-review' && (
-              <div className={`h-full flex flex-col bg-popover border-r border-border`}>
+              <div className={`h-full flex flex-col bg-background border-r border-border`}>
                 <SheetHeader className="px-4 pt-4 pb-3 flex-row items-start justify-between gap-2 shrink-0 border-b border-border">
                   <div className="flex flex-col gap-0.5">
                     <p className="font-heading text-base font-medium text-foreground leading-none">Medication review</p>
@@ -717,7 +726,7 @@ export default function Home() {
               flex: (workChatHidden && workspaceMode === 'work') ? "0 0 0" : (isWorkspace && chatCollapsed) ? "0 0 56px" : isWorkspace ? "1 0 0" : isAdditional ? "2 1 0" : "1 1 0",
               minWidth: (isWorkspace && chatCollapsed) ? 56 : 0,
               order: 1,
-              transition: `flex ${CSS.durPanelResize} ${CSS.easeOutExpo}`,
+              transition: swapTo ? PANEL_FLEX_OPEN : isWorkspace ? PANEL_FLEX_OPEN : isAdditional ? PANEL_FLEX_OPEN_ADDITIONAL : PANEL_FLEX_CLOSE,
             }}
           >
             {/* ── Collapsed strip — shown instead of the chat body when collapsed ── */}
@@ -1040,7 +1049,7 @@ export default function Home() {
               flex: isAdditional ? "1 0 0" : "0 0 0",
               minWidth: 0,
               order: 0,
-              transition: `flex ${CSS.durPanelResize} ${CSS.easeOutExpo}`,
+              transition: isAdditional ? (swapTo === 'additional' ? PANEL_FLEX_SWAP_IN_LEFT : PANEL_FLEX_OPEN_ADDITIONAL) : (swapTo === 'workspace' ? PANEL_FLEX_SWAP_OUT : PANEL_FLEX_CLOSE),
             }}
           >
             {isAdditional && (

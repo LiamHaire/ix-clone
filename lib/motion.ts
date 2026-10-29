@@ -4,6 +4,8 @@
 
 export const SPRING_GROW = { response: 0.5, damping: 0.72 };
 export const SPRING_GROW_DURATION_MS = 800;
+// EXPERIMENT: same response, lower damping (about 7.6% overshoot) for the additional panel
+export const SPRING_PANEL = { response: 0.5, damping: 0.634 };
 
 export const SHRINK_EASING = 'cubic-bezier(0.45, 0, 0.2, 1)';
 export const SHRINK_MS = 340;
@@ -45,6 +47,10 @@ export const NOTCH_CHECK_RING_MS  = 300;
 export const NOTCH_CHECK_BUBBLE_MS = 500;
 export const NOTCH_CHECK_DELAY_MS = 180;
 
+// EXPERIMENT: set to false to revert chat/workspace/additional panel moves to the
+// original smooth ease-out-expo slide.
+export const PANEL_SPRING_EXPERIMENT = true;
+
 // CSS var references (for inline styles that need to reference the tokens)
 export const CSS = {
   easeSpringGrow:  'var(--ease-spring-grow)',
@@ -62,3 +68,17 @@ export const CSS = {
   easeOutExpo:     'var(--ease-out-expo)',
   durPanelResize:  'var(--dur-panel-resize)',
 } as const;
+
+// Flex transitions for the chat / workspace / additional panel split.
+// Opening uses the notch spring grow; closing uses the shrink curve.
+const PANEL_FLEX_SLIDE = `flex ${CSS.durPanelResize} ${CSS.easeOutExpo}`;
+export const PANEL_FLEX_OPEN  = PANEL_SPRING_EXPERIMENT ? `flex ${CSS.durSpringGrow} ${CSS.easeSpringGrow}` : PANEL_FLEX_SLIDE;
+export const PANEL_FLEX_OPEN_ADDITIONAL = PANEL_SPRING_EXPERIMENT ? `flex ${CSS.durSpringGrow} var(--ease-spring-panel)` : PANEL_FLEX_SLIDE;
+// Workspace <-> additional swap: the divider overshoots in its own direction of travel.
+// Pair per swap: leaving panel = SWAP_OUT, arriving panel = SWAP_IN_LEFT (to additional) or
+// SWAP_IN_RIGHT (to workspace), chat = PANEL_FLEX_OPEN. Curves are derived in globals.css.
+const swap = (name: string) => PANEL_SPRING_EXPERIMENT ? `flex ${CSS.durSpringGrow} var(--ease-spring-swap-${name})` : PANEL_FLEX_SLIDE;
+export const PANEL_FLEX_SWAP_OUT      = swap('out');
+export const PANEL_FLEX_SWAP_IN_LEFT  = swap('in-left');
+export const PANEL_FLEX_SWAP_IN_RIGHT = swap('in-right');
+export const PANEL_FLEX_CLOSE =PANEL_SPRING_EXPERIMENT ? `flex ${CSS.durShrink} ${CSS.easeShrink}` : PANEL_FLEX_SLIDE;
