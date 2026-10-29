@@ -59,6 +59,8 @@ them.
 | `--dur-thinking-dot` | 130ms | Thinking indicator dot fill |
 | `--dur-thinking-text` | 250ms | Thinking text swap |
 | `--dur-notch-success` | 250ms | Notch drop-zone success check |
+| `--dur-notch-check-ring`, `--dur-notch-check-bubble`, `--dur-notch-check-delay`, `--dur-notch-check-hold` | 300ms, 500ms, 180ms, 1400ms | Reusable collapsed-notch "complete" animation: `<NotchComplete label="..." />` in `components/notch3/notch-complete.tsx` (close the notch after `NOTCH_COMPLETE_DURATION_MS`). Classes `.n3-success-ring`, `.n3-success-check`, `.n3-success-out`): ring pops in, check bubbles up with a spring overshoot, holds static, then the pill content fades out over `--dur-base`. The notch closes after hold plus `--dur-base`. Reduced motion swaps the pops for `notch-icon-fade-in` |
+| `--dur-notch-shimmer` | 1800ms | Notch uploading pill shimmer (`.n3-upload-shimmer`, infinite, mask sweep over icon and text; stops under reduced motion; only exists while uploading, so never runs while hidden) |
 
 In TypeScript, `lib/motion.ts` exports the same values (`SPRING_GROW`,
 `SPRING_GROW_DURATION_MS`, `SHRINK_MS`, the `EASE_*` and `DUR_*` constants,
@@ -140,6 +142,37 @@ Other layout-property animations, each tolerated for the reason given:
 Upload progress is simulated in `notch-hook.ts` on a 50ms interval over 2.4s,
 using ease-out, ease-in-out and ease-in cubic curves (fast start, plateau, final
 push). The interval is cleared on close, cancel and dismiss.
+
+Dropping a file collapses the notch to the uploading pill in `notch3-shell.tsx`
+(upload icon and "Uploading..." text, percentage, Stop button). It reuses the
+recording pill's width and height, so only the shared silhouette transition
+applies.
+
+| Part | What moves | Timing |
+|---|---|---|
+| Uploading icon and text | `mask-position` sweep, infinite (`.n3-upload-shimmer`) | `--dur-notch-shimmer`, linear. Runs only while uploading |
+| Percentage | none | text updates, no transition |
+
+### 4.2.1 Collapsed notch "complete" animation (`components/notch3/notch-complete.tsx`)
+
+Reusable. Render `<NotchComplete label="..." />` inside the collapsed pill when a
+background task finishes (upload, save, sync), then close the notch after
+`NOTCH_COMPLETE_DURATION_MS`. Colour is `text-success`. `label` is the
+accessible name.
+
+Phosphor's `CheckCircle` is one shape, so two copies of it are masked into a ring
+and a check, animated separately.
+
+| Step | What moves | Timing |
+|---|---|---|
+| 1. Ring | `.n3-success-ring`: scale 0.5 to 1, fade in | `--dur-notch-check-ring`, back out |
+| 2. Check | `.n3-success-check`: rises from below, overshoots to 1.25, settles | `--dur-notch-check-bubble`, back out, after `--dur-notch-check-delay` |
+| 3. Hold | static | `--dur-notch-check-hold` |
+| 4. Fade out | `.n3-success-out`: whole pill content `opacity` to 0 | `--dur-base`, standard |
+
+JS mirrors in `lib/motion.ts`: `NOTCH_CHECK_RING_MS`, `NOTCH_CHECK_BUBBLE_MS`,
+`NOTCH_CHECK_DELAY_MS`, `NOTCH_CHECK_HOLD_MS`. The hold and fade durations drive
+the close timer, so change them in both places in the same commit.
 
 ### 4.3 Notch icon entrances (`app/globals.css`)
 
@@ -245,7 +278,9 @@ Anything else added later should use a token.
   `--dur-thinking-text` and `--dur-chat-reveal` drop to `--dur-fast`, so the
   chat and workspace `flex` moves, the tab indicator, the placeholder and the
   thinking text become near-instant.
-- The thinking shimmer and the FAB ring stop.
+- The thinking shimmer, the uploading-pill shimmer and the FAB ring stop.
+- The notch "complete" ring and check are replaced by `notch-icon-fade-in`. The
+  hold and fade still run, so the check stays visible for the same time.
 
 Not covered: the JS-timed chat landing sequence (`CHAT_MOVE_MS`, `CHAT_FADE_MS`,
 `CHAT_OVERLAY_FADE_MS`) still runs at full length, because timers sequence it.

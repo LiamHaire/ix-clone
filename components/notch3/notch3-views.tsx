@@ -5,7 +5,8 @@ import { Bell, CheckCircle, CalendarBlank, ListChecks, ChatCircle, ArrowLeft, Pa
 import { IconPriorityHigh } from '@/components/ui/iqons/IconPriorityHigh';
 import { IconPriorityMedium } from '@/components/ui/iqons/IconPriorityMedium';
 import { IconPriorityLow } from '@/components/ui/iqons/IconPriorityLow';
-import type { NavId3 } from './notch3-nav';
+import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
+import { N3Tooltip, type NavId3 } from './notch3-nav';
 import { TASK_DATA, ASSIGNEE_NAMES, type Task } from '@/components/work/task-data';
 import { Button } from '@/components/ui/button';
 
@@ -29,10 +30,8 @@ export const TASK_ROW_GAP  = ROW_GAP;
 export const TASKS_EMPTY_H = EMPTY_H;
 export const CHAT_EMPTY_H  = EMPTY_H;
 
-const QUICK_ACTION_BTN_SIZE = 52;
-const QUICK_ACTION_LABEL_H  = 18;
-const QUICK_ACTION_GAP      = 12;
-export const QUICK_ACTIONS_H = QUICK_ACTION_BTN_SIZE + QUICK_ACTION_LABEL_H + QUICK_ACTION_GAP;
+const QUICK_ACTION_BTN_SIZE = 48;
+export const QUICK_ACTIONS_H = QUICK_ACTION_BTN_SIZE;
 
 export const VIEW_HEIGHTS_3: Record<NavId3, number> = {
   notifications: EMPTY_H,
@@ -368,38 +367,34 @@ const QUICK_ACTIONS: { id: QuickActionId; label: string; icon: React.ElementType
 
 function QuickActionsView({ onAction, isRecording }: { onAction?: (id: QuickActionId) => void; isRecording?: boolean }) {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-1">
-        {QUICK_ACTIONS.map(action => {
-          const Icon = action.icon;
-          const active = action.id === 'record' && isRecording;
-          return (
-            <button
-              key={action.id}
+    <div className="flex items-center justify-center gap-4">
+      {QUICK_ACTIONS.map(action => {
+        const Icon = action.icon;
+        const active = action.id === 'record' && isRecording;
+        const label = active ? 'Stop Scribe' : action.label;
+        return (
+          <N3Tooltip key={action.id} label={label}>
+            <TooltipPrimitive.Trigger
+              delay={300}
+              closeDelay={100}
+              aria-label={label}
               onClick={() => onAction?.(action.id)}
-              className="flex flex-col items-center gap-1.5 flex-1 group"
+              className={[
+                'relative flex items-center justify-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                active
+                  ? 'border-destructive text-destructive bg-destructive/10'
+                  : 'text-muted-foreground hover:border-foreground hover:text-foreground hover:bg-accent',
+              ].join(' ')}
+              style={{ width: QUICK_ACTION_BTN_SIZE, height: QUICK_ACTION_BTN_SIZE, borderColor: active ? undefined : 'var(--muted-foreground)' }}
             >
-              <span
-                className={[
-                  'flex items-center justify-center rounded-full border transition-colors',
-                  active
-                    ? 'border-destructive text-destructive bg-destructive/10'
-                    : 'text-muted-foreground group-hover:border-foreground group-hover:text-foreground group-hover:bg-accent',
-                ].join(' ')}
-                style={{ width: QUICK_ACTION_BTN_SIZE, height: QUICK_ACTION_BTN_SIZE, borderColor: active ? undefined : 'var(--notch-tile-border, var(--border))' }}
-              >
-                <Icon size={20} weight={active ? 'fill' : 'regular'} />
-                {active && (
-                  <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive animate-pulse" />
-                )}
-              </span>
-              <span className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors leading-tight text-center">
-                {active ? 'Stop Scribe' : action.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              <Icon size={24} weight={active ? 'fill' : 'regular'} />
+              {active && (
+                <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive animate-pulse" />
+              )}
+            </TooltipPrimitive.Trigger>
+          </N3Tooltip>
+        );
+      })}
     </div>
   );
 }

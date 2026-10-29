@@ -25,13 +25,12 @@ Open [http://localhost:3001](http://localhost:3001).
 
 ## Navigation modes
 
-Three navigation modes toggled via chat prompt:
+Two navigation modes toggled via chat prompt:
 
 | Prompt | Mode |
 |---|---|
 | `show navrail` | **Nav Rail** — fixed 56px left rail (default) |
-| `show notch` | **Notch** — original Dynamic Notch (full-width island) |
-| `show alt design` | **Notch 2** — compact pill notch centred at top |
+| `notch` | **Notch** — compact pill notch centred at top |
 
 ---
 
@@ -46,98 +45,70 @@ Fixed 56px rail on the left with:
 
 ---
 
-## Notch (original)
+## Notch
 
-Dynamic Notch-style panel anchored to the top centre. Collapses to a pill, expands to a full-width navigation panel with:
-- Global search
-- Recent sessions widget
-- Notifications widget
-- Due today tasks widget
-- Apps launcher
-- Avatar dropdown
-
-### Docked pill states
-
-| State | Visual |
-|---|---|
-| Idle | 24×4px rounded stroke pill |
-| New notification | Bell shakes + red badge |
-| Appointment reminder | Calendar icon shakes |
-| Both active | Both icons side by side, pill widens |
-| Report complete | FileText shake → CheckCircle → FileText + ✓ badge |
-
----
-
-## Notch 2 (alt design)
-
-Compact pill notch anchored to the top centre of the viewport. Activates via `show alt design`.
+Compact pill anchored to the top centre of the viewport, mounted through a portal (`components/notch3`). Activate it with the `notch` prompt. Behaviour is specified in `docs/NOTCH_SPEC.md`; all animation uses the tokens in `lib/motion.ts` (see `docs/MOTION.md`).
 
 ### Collapsed states
 
 | State | Visual |
 |---|---|
 | Idle | 180px pill with a small horizontal stroke |
-| Recording | Red border tally light, pulsing dot, `MM:SS` timer, stop button |
+| New notification / chat / calendar event | Bell, chat or calendar icon animates into the pill |
+| Recording | 320px pill, destructive border, "Recording in progress..." label, `MM:SS` timer, outline **Stop** button |
+| Uploading | Same width as recording. Shimmering upload icon + "Uploading...", percentage, outline **Stop** button |
+| Upload complete | Success `CheckCircle`: ring pops in, check bubbles up with a spring, holds, fades out, notch closes |
+
+The upload-complete animation is a reusable component, `NotchComplete` (`components/notch3/notch-complete.tsx`). Render it in the collapsed pill when any background task finishes and close the notch after `NOTCH_COMPLETE_DURATION_MS`.
 
 ### Expanded panel
 
-The notch expands to a 720px panel with a toolbar header and tabbed content views. Click any icon in the header to switch views.
+Click the pill to expand a 680px panel with a toolbar header and a content area.
 
-#### Header icons (left → right)
+#### Header icons (left to right)
 
 | Icon | Action |
 |---|---|
-| Bell — **Notifications** | Lists unread notifications + View all |
-| Clock — **Session history** | Recent sessions list + View all |
-| Checklist — **Work** | Due today / In progress task swimlanes + View all |
-| Grid — **Apps** | 4×4 app tile launcher |
-| Microphone — **Start Scribe** | Starts/stops mock recording (see below) |
-| Gear — **Settings** | Inline settings panel (see below) |
-| Plus — **Add to Knowledge Base** | Reveals drag-and-drop upload zone |
+| Checklist — **Today's Tasks** | Tasks due today |
+| Bell — **Notifications** | Unread notifications |
+| Chat — **Chat** | Recent chats and chat detail |
+| Calendar — **Calendar events** | Upcoming events |
+| Lightning — **Quick actions** | Six icon-only actions (below) |
+| Gear — **Settings** | Closes the notch and opens the settings panel (`ix:open-settings`) |
 | Avatar | Profile / Settings / Sign out dropdown |
 
-#### Notifications view
-- Lists unread notification items
-- "View all" button pinned to bottom — closes notch, no full view wired yet
+#### Quick actions
 
-#### Session history view
-- Lists 5 most recent sessions with title, subtitle, item count and date
-- "View all" → closes notch, fires `ix:open-session-history`
+Six 48px circular icon buttons with no text labels. The outline uses `--muted-foreground`. Each has a tooltip below it, with an upward arrow centred on the button, matching the nav rail tooltips.
 
-#### Work view
-- Two-column swimlane layout: **Due today** (left) · **In progress** (right)
-- Priority dot (red = high, amber = medium, grey = low) + title + ref + assignee avatar
-- "View all" → closes notch, fires `ix:open-work`
+| Icon | Action |
+|---|---|
+| Microphone | Start/stop Scribe (mock recording) |
+| Plus | Add to Knowledge Base (opens the drop zone) |
+| Timer | Start timer (coming soon) |
+| Pencil | New message (coming soon) |
+| Share | Share (coming soon) |
+| Search | Search (coming soon) |
 
-#### Apps view
-- 4×4 grid of app tiles: Calendar, Reporting, IQ Health, Admin, Scribe, Knowledge, Documents, Messages, Calls, Contacts, Tasks, Billing, Time, Files, Compliance, Workflows
+#### Recording (Scribe)
 
-#### Scribe / recording
-- Click the microphone icon to start a mock recording session
-- Notch collapses to pill — red border (tally light), pulsing dot, running `MM:SS` timer, stop button
-- Click stop button or microphone icon again to stop
-- Toast: **"Recording stopped"** fires on stop
+- Starting a recording collapses the notch to the recording pill.
+- Stop with the **Stop** button or the microphone quick action. A "Recording stopped" toast fires.
 
-#### Settings view
-- Clicking the Gear icon expands the notch to 960px wide
-- Two-column layout: settings nav tree (left 200px) + scrollable settings content (right)
-- Clicking any other icon returns to that view
-- Gear icon shows in active/selected state while settings is open
-- Max height: `100vh − 120px` with scrollable content — never runs off screen
+#### Upload / drop flow
 
-#### Upload / Knowledge Base
-- Plus button in the header reveals a drag-and-drop zone
-- Dashed border, upload icon (outline, 48px), "Drag and drop to add to Knowledge Base" label
-- Browse via file picker, simulated upload progress, success state
-- Cancel returns to the previous view
+- Dragging files over the page expands the notch to the drop zone. Text and link drags are ignored.
+- Dropping a file collapses the notch to the uploading pill, which shows simulated progress (2.4s) and a **Stop** button that cancels.
+- On success the check animation plays and the notch closes.
+- Validation failures expand the panel to show the error.
+- The drop zone also offers click-to-browse.
 
 ### Behaviour details
 
-- **Scrim** — light `rgba(0,0,0,0.25)` overlay behind expanded notch; clicking it closes
-- **Tooltip delay** — 600ms open, 200ms close on all header icon buttons
-- **Pointer events blocked during expand** — tooltips cannot fire while the spring-grow animation is playing
-- **Min height** — 240px when expanded
-- **Max height** — `calc(100vh - 120px)` to maintain 120px clearance at the bottom of the viewport
+- **Scrim** — light overlay behind the expanded notch; clicking it closes
+- **Tooltips** — header buttons open after 600ms, quick actions after 300ms
+- **Reduced motion** — spring and shrink collapse to a short fade, shimmer stops, check pops become a fade (see `docs/MOTION.md` section 6)
+- **Nothing runs while hidden** — no timers or animation frames
 
 ---
 
@@ -150,7 +121,7 @@ The notch expands to a 720px panel with a toolbar header and tabbed content view
 | **Workspace** | Various prompts | Chat (1/3) · Workspace panel (2/3) |
 | **Additional** | Various prompts | Chat (2/3) · Additional panel (1/3) |
 
-In notch modes the workspace panel opens on the left, chat on the right (reversed vs nav rail).
+In notch mode the workspace panel opens on the left, chat on the right (reversed vs nav rail).
 
 ---
 
@@ -174,8 +145,7 @@ In notch modes the workspace panel opens on the left, chat on the right (reverse
 | Prompt | Effect |
 |---|---|
 | `show navrail` | Nav Rail mode |
-| `show notch` | Original Notch mode |
-| `show alt design` | Notch 2 mode |
+| `notch` | Notch mode |
 | `dark` | Dark mode |
 | `light` | Light mode |
 
@@ -183,9 +153,9 @@ In notch modes the workspace panel opens on the left, chat on the right (reverse
 
 | Prompt | Effect |
 |---|---|
-| `new notification` | Bell shakes with badge on docked notch |
-| `show meeting` | Calendar icon shakes on docked notch |
-| `show report` | Report shake → check → done animation |
+| `new notification` | Bell animates into the docked notch |
+| `show meeting` | Calendar icon animates into the docked notch |
+| `new message` | Chat icon animates into the docked notch |
 
 ### Layout & data
 
@@ -212,7 +182,6 @@ In notch modes the workspace panel opens on the left, chat on the right (reverse
 ```ts
 window.dispatchEvent(new CustomEvent('ix:new-notification'));
 window.dispatchEvent(new CustomEvent('ix:appointment-reminder'));
-window.dispatchEvent(new CustomEvent('ix:report-complete'));
 window.dispatchEvent(new CustomEvent('ix:new-chat'));
 window.dispatchEvent(new CustomEvent('ix:open-work'));
 window.dispatchEvent(new CustomEvent('ix:open-session-history'));
@@ -234,18 +203,15 @@ components/
   nav-rail-notifications.tsx        — notifications popover for nav rail
   animated-placeholder.tsx          — rotating chat input placeholder
 
-  nav-island/
-    nav-island.tsx                  — original Notch + NavNotch2 (floating pill)
-    island-mock-events.ts           — mock events, tasks, notification data
-
-  notch2/
-    notch-shell.tsx                 — Notch 2 root component, state, portal
-    notch-nav.tsx                   — header toolbar with icon nav buttons
-    notch-views.tsx                 — view components (notifications, sessions, work, apps)
-    notch-settings.tsx              — inline settings two-column layout
-    notch-drop.tsx                  — drag-and-drop upload zone + upload states
-    notch-hook.ts                   — useNotchMachine hook (simulated upload)
-    notch-machine.ts                — pure state machine (open/close/drop/record)
+  notch3/
+    index.tsx                       — NavNotch3 entry point
+    notch3-shell.tsx                — root component: state, portal, collapsed pills, drag/drop listeners
+    notch3-nav.tsx                  — header toolbar, shared tooltip, avatar menu
+    notch3-views.tsx                — content views (tasks, notifications, chat, calendar, quick actions)
+    notch-drop.tsx                  — drop zone + upload/success/error views
+    notch-complete.tsx              — reusable collapsed "complete" check animation
+    notch-hook.ts                   — useNotchMachine hook (simulated upload progress)
+    notch-machine.ts                — pure state machine (open/close/drag/drop/progress)
 
   settings/
     settings-nav.tsx                — settings tree nav
@@ -268,6 +234,16 @@ lib/
   appointmentData.ts                — mock appointment generator
   adaptive-card-selector.ts         — picks card layouts based on prompt
 ```
+
+---
+
+## Docs
+
+| File | Contents |
+|---|---|
+| `docs/MOTION.md` | Motion tokens, animation inventory, reduced-motion behaviour |
+| `docs/NOTCH_SPEC.md` | Notch behaviour, state machine and drop flow |
+| `DESIGN.md` | Design tokens |
 
 ---
 

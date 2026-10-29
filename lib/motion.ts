@@ -39,6 +39,11 @@ export const PLACEHOLDER_ROLL_MS  = 400;
 export const THINKING_DOT_MS      = 130;
 export const THINKING_TEXT_MS     = 250;
 export const NOTCH_SUCCESS_MS     = 250;
+export const NOTCH_SHIMMER_MS     = 1800;
+export const NOTCH_CHECK_HOLD_MS  = 1400; // static hold before the success check fades out
+export const NOTCH_CHECK_RING_MS  = 300;
+export const NOTCH_CHECK_BUBBLE_MS = 500;
+export const NOTCH_CHECK_DELAY_MS = 180;
 
 // CSS var references (for inline styles that need to reference the tokens)
 export const CSS = {

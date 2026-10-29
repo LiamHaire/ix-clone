@@ -46,10 +46,13 @@ export const NAV_ITEMS_3: NavItem3[] = [
 interface Notch3HeaderProps {
   activeId: NavId3 | null;
   onSelect: (id: NavId3) => void;
+  onOpenSettings: () => void;
   isRecording?: boolean;
 }
 
-export function Notch3Header({ activeId, onSelect, isRecording = false }: Notch3HeaderProps) {
+const SETTINGS_ITEM = { id: 'settings', label: 'Settings', icon: Gear };
+
+export function Notch3Header({ activeId, onSelect, onOpenSettings, isRecording = false }: Notch3HeaderProps) {
   const left  = NAV_ITEMS_3.filter(i => i.position === 'left');
   const right = NAV_ITEMS_3.filter(i => i.position === 'right');
 
@@ -62,7 +65,7 @@ export function Notch3Header({ activeId, onSelect, isRecording = false }: Notch3
       {/* Left group */}
       <div className="flex items-center gap-0.5">
         {left.map(item => (
-          <NavBtn3 key={item.id} item={item} active={activeId === item.id} onSelect={onSelect} />
+          <NavBtn3 key={item.id} item={item} active={activeId === item.id} onPress={() => onSelect(item.id)} />
         ))}
       </div>
 
@@ -76,10 +79,11 @@ export function Notch3Header({ activeId, onSelect, isRecording = false }: Notch3
             key={item.id}
             item={item}
             active={activeId === item.id}
-            onSelect={onSelect}
+            onPress={() => onSelect(item.id)}
             recording={isRecording}
           />
         ))}
+        <NavBtn3 item={SETTINGS_ITEM} onPress={onOpenSettings} />
         <AvatarBtn3 />
       </div>
     </div>
@@ -88,7 +92,7 @@ export function Notch3Header({ activeId, onSelect, isRecording = false }: Notch3
 
 // ── Tooltip wrapper ───────────────────────────────────────────────────────────
 
-function N3Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
+export function N3Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <TooltipPrimitive.Root>
       {children}
@@ -96,6 +100,7 @@ function N3Tooltip({ label, children }: { label: string; children: React.ReactNo
         <TooltipPrimitive.Positioner side="bottom" sideOffset={6} className="z-[10000]">
           <TooltipPrimitive.Popup className="inline-flex items-center rounded-md bg-foreground px-3 py-1.5 text-xs text-background origin-(--transform-origin) data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[side=bottom]:slide-in-from-top-2">
             {label}
+            <TooltipPrimitive.Arrow className="z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground data-[side=bottom]:top-1" />
           </TooltipPrimitive.Popup>
         </TooltipPrimitive.Positioner>
       </TooltipPrimitive.Portal>
@@ -105,10 +110,10 @@ function N3Tooltip({ label, children }: { label: string; children: React.ReactNo
 
 // ── Nav button ────────────────────────────────────────────────────────────────
 
-function NavBtn3({ item, active, onSelect, recording = false }: {
-  item: NavItem3;
-  active: boolean;
-  onSelect: (id: NavId3) => void;
+function NavBtn3({ item, active, onPress, recording = false }: {
+  item: { id: string; label: string; icon: React.ElementType };
+  active?: boolean;
+  onPress: () => void;
   recording?: boolean;
 }) {
   const Icon = item.icon;
@@ -120,7 +125,7 @@ function NavBtn3({ item, active, onSelect, recording = false }: {
         closeDelay={200}
         aria-label={label}
         aria-pressed={active}
-        onClick={() => onSelect(item.id)}
+        onClick={onPress}
         className={cn(
           'relative flex items-center justify-center size-8 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           'text-muted-foreground hover:text-foreground',

@@ -40,7 +40,9 @@ export function useNotchMachine() {
 
         progressValueRef.current = Math.min(progress, 0.92); // hold at 92% until done
 
-        if (tick >= steps) {
+        if (tick < steps) {
+          dispatch({ type: 'PROGRESS', value: progressValueRef.current });
+        } else {
           clearInterval(progressRef.current!);
           progressRef.current = null;
           dispatch({ type: 'UPLOAD_COMPLETE' });

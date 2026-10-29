@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { StopCircle, Bell, CalendarBlank, ChatCircle } from '@phosphor-icons/react';
+import { Bell, CalendarBlank, ChatCircle, UploadSimple } from '@phosphor-icons/react';
+import { NotchComplete, NOTCH_COMPLETE_DURATION_MS } from './notch-complete';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { useNotchMachine } from './notch-hook';
 import { DropZone, UploadingView, SuccessView, ErrorView, validateFile } from './notch-drop';
 import { Notch3Header, type NavId3 } from './notch3-nav';
@@ -24,7 +26,7 @@ const PANEL_PADDING_PX  = 16;
 const DEFAULT_CONTENT_H = 320;
 const DROP_CONTENT_H    = 160;
 const ALERT_CARD_H      = 115; // ROW_H (67) + OUTER_GAP (16) + FOOTER_BTN_H (32)
-const SUCCESS_LINGER_MS = 1200;
+const SUCCESS_LINGER_MS = NOTCH_COMPLETE_DURATION_MS;
 
 type ActiveView3 = NavId3 | 'drop';
 
@@ -257,7 +259,11 @@ export function Notch3Shell() {
     : (VIEW_HEIGHTS_3[activeView as NavId3] ?? DEFAULT_CONTENT_H);
   const panelH = HEADER_H + DIVIDER_GAP_PX + 1 + CONTENT_GAP_PX + contentH + PANEL_PADDING_PX;
 
-  const width  = isExpanded ? PANEL_WIDTH : isRecording ? RECORDING_PILL_WIDTH : PILL_WIDTH;
+  const showUploadPill = !isExpanded && (dropPhase === 'uploading' || dropPhase === 'success');
+  const showRecordingPill = !isExpanded && isRecording && !showUploadPill;
+  const uploadPct = Math.round(state.uploadProgress * 100);
+
+  const width  = isExpanded ? PANEL_WIDTH : (isRecording || showUploadPill) ? RECORDING_PILL_WIDTH : PILL_WIDTH;
   const height = isExpanded ? panelH      : PILL_HEIGHT;
   const radius = isExpanded ? PANEL_RADIUS : PILL_RADIUS;
 
@@ -312,7 +318,7 @@ export function Notch3Shell() {
         }}
       >
         {/* ── Collapsed pill ── */}
-        {!isExpanded && !isRecording && (
+        {!isExpanded && !isRecording && !showUploadPill && (
           <button
             type="button"
             aria-label="Open panel"
@@ -361,23 +367,46 @@ export function Notch3Shell() {
           </button>
         )}
 
-        {/* ── Recording pill ── */}
-        {!isExpanded && isRecording && (
-          <div className="flex items-center justify-between w-full h-full px-4">
+        {/* ── Uploading pill ── */}
+        {showUploadPill && dropPhase === 'success' && (
+          <NotchComplete label="Upload complete" />
+        )}
+        {showUploadPill && dropPhase === 'uploading' && (
+          <div className="flex items-center justify-between w-full h-full px-4" role="status" aria-live="polite">
+            <span className="n3-upload-shimmer flex items-center gap-1 text-xs text-foreground whitespace-nowrap">
+              <UploadSimple size={16} weight="regular" aria-hidden="true" />
+              Uploading...
+            </span>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="size-2 rounded-full bg-destructive animate-pulse shrink-0" />
-              <span className="text-[13px] font-medium text-foreground">Recording in progress...</span>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[13px] font-medium tabular-nums text-muted-foreground">{mm}:{ss}</span>
-              <button
+              <span className="text-xs tabular-nums text-foreground">{uploadPct}%</span>
+              <Button
                 type="button"
+                variant="outline"
+                aria-label="Stop upload"
+                onClick={() => { send({ type: 'CANCEL_DROP' }); setDroppedFile(null); }}
+                className="h-5 rounded-[4px] px-2.5 text-xs font-medium"
+              >
+                Stop
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Recording pill ── */}
+        {showRecordingPill && (
+          <div className="flex items-center justify-between w-full h-full px-[15px]">
+            <span className="text-xs text-destructive whitespace-nowrap">Recording in progress...</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs tabular-nums text-foreground">{mm}:{ss}</span>
+              <Button
+                type="button"
+                variant="outline"
                 aria-label="Stop Scribe"
                 onClick={() => handleQuickAction('record')}
-                className="flex items-center justify-center size-6 rounded-full text-destructive hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-5 rounded-[4px] px-2.5 text-xs font-medium"
               >
-                <StopCircle size={18} weight="fill" />
-              </button>
+                Stop
+              </Button>
             </div>
           </div>
         )}
@@ -389,6 +418,10 @@ export function Notch3Shell() {
               <Notch3Header
                 activeId={headerActiveId}
                 onSelect={handleNavSelect}
+                onOpenSettings={() => {
+                  window.dispatchEvent(new CustomEvent('ix:open-settings'));
+                  send({ type: 'CLOSE' });
+                }}
                 isRecording={isRecording}
               />
             </div>

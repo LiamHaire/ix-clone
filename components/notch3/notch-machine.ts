@@ -10,6 +10,7 @@ export type NotchEvent =
   | { type: 'DRAG_LEAVE' }
   | { type: 'DROP' }
   | { type: 'SHOW_DROP' }
+  | { type: 'PROGRESS'; value: number }
   | { type: 'UPLOAD_COMPLETE' }
   | { type: 'UPLOAD_ERROR'; message: string }
   | { type: 'DISMISS_ERROR' }
@@ -55,6 +56,7 @@ export function transition(
       return { ...state, dropPhase: 'idle' };
 
     case 'DRAG_ENTER':
+      if (dropPhase === 'uploading') return state;
       return { ...state, notch: 'expanded', dropPhase: 'dragging' };
 
     case 'DRAG_LEAVE':
@@ -62,13 +64,19 @@ export function transition(
 
     case 'DROP':
       if (dropPhase !== 'dragging') return state;
-      return { ...state, dropPhase: 'uploading', uploadProgress: 0 };
+      // Collapse to the status pill; progress is shown there
+      return { ...state, notch: 'compact', dropPhase: 'uploading', uploadProgress: 0 };
+
+    case 'PROGRESS':
+      if (dropPhase !== 'uploading') return state;
+      return { ...state, uploadProgress: event.value };
 
     case 'UPLOAD_COMPLETE':
       return { ...state, dropPhase: 'success', uploadProgress: 1 };
 
     case 'UPLOAD_ERROR':
-      return { ...state, dropPhase: 'error', errorMessage: event.message };
+      // Errors need the full panel to show the message
+      return { ...state, notch: 'expanded', dropPhase: 'error', errorMessage: event.message };
 
     case 'DISMISS_ERROR':
       return { ...state, dropPhase: 'idle', errorMessage: null };
