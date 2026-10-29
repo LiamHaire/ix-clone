@@ -59,6 +59,8 @@ Compact pill anchored to the top centre of the viewport, mounted through a porta
 | Uploading | Same width as recording. Shimmering upload icon + "Uploading...", percentage, outline **Stop** button |
 | Upload complete | Success `CheckCircle`: ring pops in, check bubbles up with a spring, holds, fades out, notch closes |
 
+The idle pill's line uses the nav rail icon colour (`--sidebar-foreground`), and its outline is the same colour at 40% opacity.
+
 The upload-complete animation is a reusable component, `NotchComplete` (`components/notch3/notch-complete.tsx`). Render it in the collapsed pill when any background task finishes and close the notch after `NOTCH_COMPLETE_DURATION_MS`.
 
 ### Expanded panel
@@ -76,6 +78,20 @@ Click the pill to expand a 680px panel with a toolbar header and a content area.
 | Lightning — **Quick actions** | Six icon-only actions (below) |
 | Gear — **Settings** | Closes the notch and opens the settings panel (`ix:open-settings`) |
 | Avatar | Profile / Settings / Sign out dropdown |
+
+#### Item rows
+
+Tasks, chats, notifications and calendar events all use one component, `NotchItem` (`components/ui/notch-item.tsx`), built on the ShadCN `Item` and matching the Figma "Notch item" frame: 58px muted rows with an optional orange "new" dot, an icon tile or initials ring, title and description, and trailing time, status chip, priority icon or outline buttons.
+
+| `type` | Use |
+|---|---|
+| `task` | Orange ref, title, assignee, "Due" chip, priority icon |
+| `message` | Initials ring, name, preview, time |
+| `notification`, `event` | Icon tile, title, description (event also shows a time) |
+| `approval`, `activity` | Icon tile with Approve/Deny or View/Dismiss buttons (built, not yet used in the notch) |
+| `patient` | Person icon, patient name and details, View button |
+
+Pass `bordered` for a visible border where the item appears in chat. The patient preview in the "next appointment" reply does this, the notch rows don't.
 
 #### Quick actions
 
@@ -120,6 +136,8 @@ Six 48px circular icon buttons with no text labels. The outline uses `--muted-fo
 | **Chat** | After first message | Chat panel full width |
 | **Workspace** | Various prompts | Chat (1/3) · Workspace panel (2/3) |
 | **Additional** | Various prompts | Chat (2/3) · Additional panel (1/3) |
+
+Panels open and close with a spring (workspace and additional panels overshoot slightly, closing uses a plain curve), and swapping between workspace and additional moves the divider with an overshoot in its direction of travel. This is an experiment: set `PANEL_SPRING_EXPERIMENT = false` in `lib/motion.ts` to go back to the original slide (see `docs/MOTION.md` section 4.4). All workspace and additional panels use the same `--background` as the chat panel.
 
 In notch mode the workspace panel opens on the left, chat on the right (reversed vs nav rail).
 
@@ -227,6 +245,7 @@ components/
 
   chat/                             — all chat panel components
   ui/                               — ShadCN Base UI components
+    notch-item.tsx                  — shared item row (notch tasks/chats/alerts, chat patient preview)
 
 lib/
   motion.ts                         — animation tokens (durations, easings)

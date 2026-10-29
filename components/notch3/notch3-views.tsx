@@ -1,10 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Bell, CheckCircle, CalendarBlank, ListChecks, ChatCircle, ArrowLeft, PaperPlaneRight, Plus, Microphone, Timer, PencilSimpleLine, ShareNetwork, MagnifyingGlass } from '@phosphor-icons/react';
-import { IconPriorityHigh } from '@/components/ui/iqons/IconPriorityHigh';
-import { IconPriorityMedium } from '@/components/ui/iqons/IconPriorityMedium';
-import { IconPriorityLow } from '@/components/ui/iqons/IconPriorityLow';
+import { Bell, CheckCircle, CalendarBlank, ChatCircle, ArrowLeft, PaperPlaneRight, Plus, Microphone, Timer, PencilSimpleLine, ShareNetwork, MagnifyingGlass } from '@phosphor-icons/react';
+import { NotchItem } from '@/components/ui/notch-item';
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import { N3Tooltip, type NavId3 } from './notch3-nav';
 import { TASK_DATA, ASSIGNEE_NAMES, type Task } from '@/components/work/task-data';
@@ -12,13 +10,13 @@ import { Button } from '@/components/ui/button';
 
 // ── Height model ──────────────────────────────────────────────────────────────
 
-export const ROW_H           = 67;
+export const ROW_H           = 58; // NotchItem row height (Figma)
 export const ROW_GAP         =  8;
 const SECTION_LABEL_H        = 20;
 const OUTER_GAP              = 16;
 const FOOTER_BTN_H           = 40;
 const FOOTER_TOTAL           = OUTER_GAP + FOOTER_BTN_H; // 56
-const CHAT_ROW_H             = 44;
+const CHAT_ROW_H             = ROW_H;
 const MAX_VISIBLE_CHATS      =  5;
 const MAX_VISIBLE_TASKS      =  3;
 export const EMPTY_H         = 148;
@@ -68,59 +66,6 @@ export function chatContentHeight(_hasNewChat: boolean, activeChatId?: string | 
   if (count === 0) return EMPTY_H;
   // gap-1 applies between all children including the button div, so `count` gaps not `count - 1`
   return count * CHAT_ROW_H + count * CHAT_ROW_GAP + CHAT_BTN_MT + FOOTER_BTN_H;
-}
-
-// ── Unified item component ────────────────────────────────────────────────────
-
-interface NotchItemProps {
-  icon?: React.ElementType;
-  initials?: string;
-  title: string;
-  subtitle: string;
-  trailing?: string;
-  chip?: string;
-  badge?: number;
-  onClick?: () => void;
-}
-
-function PriorityIcon({ priority }: { priority?: string }) {
-  if (priority === 'high')   return <IconPriorityHigh   size={16} variant="duotone" className="text-destructive" />;
-  if (priority === 'medium') return <IconPriorityMedium size={16} variant="duotone" className="text-warning" />;
-  if (priority === 'low')    return <IconPriorityLow    size={16} variant="duotone" className="text-muted-foreground" />;
-  return null;
-}
-
-function NotchItem({ icon: Icon, initials, title, subtitle, trailing, chip, badge, onClick }: NotchItemProps) {
-  return (
-    <div
-      onClick={onClick}
-      className="flex items-center gap-3 rounded-lg border bg-background/60 px-3 py-3 cursor-pointer hover:bg-accent transition-colors" style={{ borderColor: 'var(--notch-tile-border, var(--border))' }}
-    >
-      {Icon && (
-        <div className="flex items-center justify-center size-9 rounded-lg shrink-0 bg-accent">
-          <Icon size={18} weight="duotone" className="text-foreground" />
-        </div>
-      )}
-      {initials && (
-        <span className="flex items-center justify-center size-7 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground shrink-0 border border-border">
-          {initials}
-        </span>
-      )}
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-foreground truncate">{title}</p>
-        <p className="text-[12px] text-muted-foreground truncate mt-0.5">{subtitle}</p>
-      </div>
-      <div className="flex flex-col items-end gap-1 shrink-0">
-        {trailing && <span className="text-xs text-muted-foreground whitespace-nowrap">{trailing}</span>}
-        {chip && <PriorityIcon priority={chip.toLowerCase()} />}
-        {badge ? (
-          <span className="flex items-center justify-center size-4 rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
-            {badge}
-          </span>
-        ) : null}
-      </div>
-    </div>
-  );
 }
 
 function NavButton({ label, onClick }: { label: string; onClick?: () => void }) {
@@ -325,33 +270,6 @@ function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
-function ChatRow({ msg, onClick }: { msg: ChatMessage; onClick?: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-2.5 w-full rounded-lg border px-3 py-2 bg-background/60 hover:bg-accent transition-colors text-left"
-      style={{ height: CHAT_ROW_H, borderColor: 'var(--notch-tile-border, var(--border))' }}
-    >
-      <span className="flex items-center justify-center size-7 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground shrink-0 border border-border">
-        {getInitials(msg.source)}
-      </span>
-      <span className="flex-1 min-w-0 text-[13px] text-foreground truncate">
-        <span className="font-semibold">{msg.source}</span>
-        <span className="text-muted-foreground"> · </span>
-        <span className="text-muted-foreground">{msg.preview}</span>
-      </span>
-      <span className="flex items-center gap-1.5 shrink-0">
-        <span className="text-xs text-muted-foreground whitespace-nowrap">· {msg.timestamp}</span>
-        {msg.unread ? (
-          <span className="flex items-center justify-center size-5 rounded-full bg-primary text-[12px] font-semibold text-primary-foreground">
-            {msg.unread}
-          </span>
-        ) : null}
-      </span>
-    </button>
-  );
-}
-
 // ── Quick actions ─────────────────────────────────────────────────────────────
 
 export type QuickActionId = 'record' | 'knowledge' | 'timer' | 'message' | 'share' | 'search';
@@ -423,7 +341,7 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
     case 'notifications':
       return hasNotification ? (
         <div className="flex flex-col gap-4">
-          <NotchItem icon={Bell} title="File review due" subtitle="Whitmore matter · 3 days overdue" trailing="2m ago" />
+          <NotchItem type="notification" isNew title="File review due" description="Whitmore matter · 3 days overdue" />
           <NavButton label="View all notifications" />
         </div>
       ) : (
@@ -443,7 +361,16 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
       return (
         <div className="flex flex-col gap-1">
           {displayChats.map(msg => (
-            <ChatRow key={msg.id} msg={msg} onClick={() => onChatOpen?.(msg.id)} />
+            <NotchItem
+              key={msg.id}
+              type="message"
+              isNew={Boolean(msg.unread)}
+              initials={getInitials(msg.source)}
+              title={msg.source}
+              description={msg.preview}
+              time={msg.timestamp}
+              onClick={() => onChatOpen?.(msg.id)}
+            />
           ))}
           <div className="mt-2"><NavButton label="Go to Message centre" /></div>
         </div>
@@ -461,10 +388,12 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
             {dueToday.map(task => (
               <NotchItem
                 key={task.id}
-                icon={ListChecks}
+                type="task"
+                taskRef={task.ref}
                 title={task.title}
-                subtitle={`${task.ref}${task.assignee ? ` · ${ASSIGNEE_NAMES[task.assignee] ?? task.assignee}` : ''}`}
-                chip={task.priority}
+                description={task.assignee ? (ASSIGNEE_NAMES[task.assignee] ?? task.assignee) : task.type}
+                status="Due"
+                priority={task.priority}
                 onClick={onNavigateWork}
               />
             ))}
@@ -477,7 +406,7 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
     case 'calendar':
       return hasCalendarEvent ? (
         <div className="flex flex-col gap-4">
-          <NotchItem icon={CalendarBlank} title="Team standup" subtitle="With Dr. Shaw & team · Remote" trailing="In 15 min" />
+          <NotchItem type="event" isNew title="Team standup" description="With Dr. Shaw & team · Remote" time="in 15 mins" />
           <NavButton label="Open calendar" />
         </div>
       ) : (

@@ -196,10 +196,27 @@ the exact steps.
 | Overlay input fade | `opacity` | `CHAT_OVERLAY_FADE_MS` (500ms), standard |
 | Chat content fade | `opacity` | `CHAT_FADE_MS` (400ms), standard |
 | Chat content reveal | `opacity` | `--dur-chat-reveal` (350ms), standard |
-| Chat and workspace panels | `flex` | `--dur-panel-resize`, ease out expo |
+| Chat, workspace and additional panels | `flex` | Spring experiment (below), or `--dur-panel-resize` with ease out expo when the flag is off |
 | Collapsed chat body | `opacity` | `--dur-base`, ease out |
 | Input shadow | `box-shadow` | `CHAT_MOVE_MS - 250` ms |
 | Work panel width and similar panels | `max-width` | `--dur-panel-resize`, ease out expo |
+
+**Panel spring experiment.** `PANEL_SPRING_EXPERIMENT` in `lib/motion.ts` (set to
+`false` to revert every panel to the ease-out-expo slide above). While on, panels
+follow "grow with a spring, shrink with a curve":
+
+| Move | Timing |
+|---|---|
+| Workspace opens | `--ease-spring-grow`, `--dur-spring-grow` (about 3.8% overshoot) |
+| Additional opens | `--ease-spring-panel`, `--dur-spring-grow` (about 7.6% overshoot, so it reads the same on a narrower panel) |
+| Any panel closes | `--ease-shrink`, `--dur-shrink`, no bounce |
+| Workspace and additional swap | Three curves derived from `--ease-spring-grow` so the three flex values always sum to the same total and the divider overshoots in its own direction of travel: `--ease-spring-swap-out` (leaving panel, clamped at 1), `--ease-spring-swap-in-left` (additional arriving) and `--ease-spring-swap-in-right` (workspace arriving) |
+
+Helpers: `PANEL_FLEX_OPEN`, `PANEL_FLEX_OPEN_ADDITIONAL`, `PANEL_FLEX_CLOSE`,
+`PANEL_FLEX_SWAP_OUT`, `PANEL_FLEX_SWAP_IN_LEFT`, `PANEL_FLEX_SWAP_IN_RIGHT`.
+`SPRING_PANEL` is the lower-damping spring behind `--ease-spring-panel`. Under
+reduced motion all four spring curves fall back to the shrink cubic-bezier with
+`--dur-fast`.
 
 The move sequence uses two nested `requestAnimationFrame` calls to start the
 transition after layout. They run once per move and stop.

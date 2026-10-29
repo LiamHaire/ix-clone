@@ -20,7 +20,7 @@ export function SessionHistoryPanel({ onClose, expanded }: SessionHistoryPanelPr
   const [preview, setPreview] = useState<IndexEntry | null>(null);
 
   return (
-    <div className="h-full flex flex-col bg-popover">
+    <div className="h-full flex flex-col bg-background">
 
       {/* Header */}
       <SheetHeader className="px-4 pt-4 pb-3 flex-row items-center justify-between gap-2 shrink-0 border-b border-border">

@@ -79,7 +79,7 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
   }, []);
 
   return (
-    <div className="h-full flex flex-col" style={{ background: 'var(--nav-rail-bg)' }}>
+    <div className="h-full flex flex-col bg-background">
       <SheetHeader className="px-4 pt-4 pb-3 flex-row items-center justify-between gap-2 shrink-0 border-b border-border">
         <div className="flex items-center gap-2">
           <ListChecks size={16} weight="duotone" className="text-muted-foreground shrink-0" />

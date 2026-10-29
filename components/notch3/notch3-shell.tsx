@@ -25,7 +25,7 @@ const CONTENT_GAP_PX    = 16;
 const PANEL_PADDING_PX  = 16;
 const DEFAULT_CONTENT_H = 320;
 const DROP_CONTENT_H    = 160;
-const ALERT_CARD_H      = 115; // ROW_H (67) + OUTER_GAP (16) + FOOTER_BTN_H (32)
+const ALERT_CARD_H      = 114; // ROW_H (58) + OUTER_GAP (16) + FOOTER_BTN_H (40)
 const SUCCESS_LINGER_MS = NOTCH_COMPLETE_DURATION_MS;
 
 type ActiveView3 = NavId3 | 'drop';
@@ -271,7 +271,11 @@ export function Notch3Shell() {
   const collapseEasing = `${CSS.easeShrink} ${CSS.durShrink}`;
   const sizeEasing     = isExpanded ? expandEasing : collapseEasing;
 
-  const borderColour = !isExpanded && isRecording ? 'var(--destructive)' : 'var(--border)';
+  const borderColour = isExpanded
+    ? 'var(--border)'
+    : isRecording
+    ? 'var(--destructive)'
+    : 'color-mix(in srgb, var(--sidebar-foreground) 40%, transparent)';
 
   const mm = String(Math.floor(recordingSeconds / 60)).padStart(2, '0');
   const ss = String(recordingSeconds % 60).padStart(2, '0');
@@ -362,7 +366,7 @@ export function Notch3Shell() {
                 )}
               </span>
             ) : (
-              <span className="block rounded-full bg-current opacity-40" style={{ width: 24, height: 4 }} />
+              <span className="block rounded-full bg-sidebar-foreground" style={{ width: 24, height: 4 }} />
             )}
           </button>
         )}
