@@ -34,6 +34,15 @@ export type NotchItemType =
 
 export type NotchItemPriority = "high" | "medium" | "low"
 
+export type NotchItemStatusTone = "warning" | "destructive" | "primary" | "muted"
+
+const STATUS_TONE: Record<NotchItemStatusTone, string> = {
+  warning: "bg-warning text-background",
+  destructive: "bg-destructive text-background",
+  primary: "bg-primary text-primary-foreground",
+  muted: "bg-muted text-muted-foreground",
+}
+
 export interface NotchItemAction {
   label: string
   onClick?: () => void
@@ -58,6 +67,8 @@ export interface NotchItemProps
   taskRef?: string
   /** Task: status chip, e.g. "Due". */
   status?: string
+  /** Task: status chip colour. Defaults to warning. */
+  statusTone?: NotchItemStatusTone
   /** Task: priority icon at the end of the row. */
   priority?: NotchItemPriority
 }
@@ -94,6 +105,7 @@ function NotchItem({
   actions,
   taskRef,
   status,
+  statusTone = "warning",
   priority,
   className,
   onClick,
@@ -193,7 +205,7 @@ function NotchItem({
       )}
 
       {status && (
-        <Badge className="h-6 bg-warning px-2 font-semibold text-background">
+        <Badge className={cn("h-6 px-2 font-semibold", STATUS_TONE[statusTone])}>
           {status}
         </Badge>
       )}
