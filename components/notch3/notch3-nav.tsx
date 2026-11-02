@@ -5,7 +5,8 @@ import {
   ListChecks,
   CalendarBlank,
   ChatCircle,
-  Lightning,
+  Microphone,
+  Plus,
   Gear,
 } from '@phosphor-icons/react';
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
@@ -14,7 +15,7 @@ import { CSS } from '@/lib/motion';
 
 // ── NAV_ITEMS config ──────────────────────────────────────────────────────────
 
-export type NavId3 = 'notifications' | 'chat' | 'tasks' | 'calendar' | 'quickactions';
+export type NavId3 = 'notifications' | 'chat' | 'tasks' | 'calendar';
 
 export interface NavItem3 {
   id: NavId3;
@@ -28,7 +29,6 @@ export const NAV_ITEMS_3: NavItem3[] = [
   { id: 'notifications', label: 'Notifications',   icon: Bell,          position: 'left'  },
   { id: 'chat',          label: 'Chat',            icon: ChatCircle,    position: 'left'  },
   { id: 'calendar',      label: 'Calendar events', icon: CalendarBlank, position: 'left'  },
-  { id: 'quickactions',  label: 'Quick actions',   icon: Lightning,     position: 'right' },
 ];
 
 // ── Header ────────────────────────────────────────────────────────────────────
@@ -37,14 +37,17 @@ interface Notch3HeaderProps {
   activeId: NavId3 | null;
   onSelect: (id: NavId3) => void;
   onOpenSettings: () => void;
+  onToggleScribe: () => void;
+  onAddToKnowledge: () => void;
   isRecording?: boolean;
 }
 
 const SETTINGS_ITEM = { id: 'settings', label: 'Settings', icon: Gear };
+const SCRIBE_ITEM = { id: 'scribe', label: 'Start Scribe', icon: Microphone };
+const KNOWLEDGE_ITEM = { id: 'knowledge', label: 'Add to Knowledge base', icon: Plus };
 
-export function Notch3Header({ activeId, onSelect, onOpenSettings, isRecording = false }: Notch3HeaderProps) {
-  const left  = NAV_ITEMS_3.filter(i => i.position === 'left');
-  const right = NAV_ITEMS_3.filter(i => i.position === 'right');
+export function Notch3Header({ activeId, onSelect, onOpenSettings, onToggleScribe, onAddToKnowledge, isRecording = false }: Notch3HeaderProps) {
+  const left = NAV_ITEMS_3.filter(i => i.position === 'left');
 
   return (
     <div
@@ -64,15 +67,12 @@ export function Notch3Header({ activeId, onSelect, onOpenSettings, isRecording =
 
       {/* Right group */}
       <div className="flex items-center gap-0.5">
-        {right.map(item => (
-          <NavBtn3
-            key={item.id}
-            item={item}
-            active={activeId === item.id}
-            onPress={() => onSelect(item.id)}
-            recording={isRecording}
-          />
-        ))}
+        <NavBtn3
+          item={isRecording ? { ...SCRIBE_ITEM, label: 'Stop Scribe' } : SCRIBE_ITEM}
+          onPress={onToggleScribe}
+          recording={isRecording}
+        />
+        <NavBtn3 item={KNOWLEDGE_ITEM} onPress={onAddToKnowledge} />
         <NavBtn3 item={SETTINGS_ITEM} onPress={onOpenSettings} />
       </div>
     </div>
@@ -106,7 +106,7 @@ function NavBtn3({ item, active, onPress, recording = false }: {
   recording?: boolean;
 }) {
   const Icon = item.icon;
-  const label = item.id === 'quickactions' && recording ? 'Quick actions (recording)' : item.label;
+  const label = item.label;
   return (
     <N3Tooltip label={label}>
       <TooltipPrimitive.Trigger

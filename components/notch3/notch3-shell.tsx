@@ -32,7 +32,7 @@ type ActiveView3 = NavId3 | 'drop';
 
 export function Notch3Shell() {
   const [mounted, setMounted]               = useState(false);
-  const [activeView, setActiveView]         = useState<ActiveView3>('quickactions');
+  const [activeView, setActiveView]         = useState<ActiveView3>('tasks');
   const [isRecording, setIsRecording]       = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [headerReady, setHeaderReady]       = useState(false);
@@ -68,7 +68,7 @@ export function Notch3Shell() {
   // Block tooltips during spring-grow; reset default view on close
   useEffect(() => {
     if (!isExpanded) {
-      setActiveView('quickactions');
+      setActiveView('tasks');
       setActiveChatId(null);
       setHeaderReady(false);
       if (headerReadyTimer.current) clearTimeout(headerReadyTimer.current);
@@ -241,7 +241,6 @@ export function Notch3Shell() {
       send({ type: 'SHOW_DROP' });
       return;
     }
-    toast.info(`${id.charAt(0).toUpperCase() + id.slice(1)} — coming soon`);
   }, [isRecording, send]);
 
   if (!mounted) return null;
@@ -331,7 +330,7 @@ export function Notch3Shell() {
               if (hasNotification) setActiveView('notifications');
               else if (hasNewChat) setActiveView('chat');
               else if (hasCalendarEvent) setActiveView('calendar');
-              else setActiveView('quickactions');
+              else setActiveView('tasks');
               send({ type: 'OPEN' });
             }}
             className="flex items-center justify-center w-full h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset text-foreground"
@@ -426,6 +425,8 @@ export function Notch3Shell() {
                   window.dispatchEvent(new CustomEvent('ix:open-settings'));
                   send({ type: 'CLOSE' });
                 }}
+                onToggleScribe={() => handleQuickAction('record')}
+                onAddToKnowledge={() => handleQuickAction('knowledge')}
                 isRecording={isRecording}
               />
             </div>
@@ -474,8 +475,6 @@ export function Notch3Shell() {
                   activeChatId={activeChatId}
                   onChatOpen={id => { setActiveChatId(id); setActiveView('chat'); }}
                   onChatClose={() => setActiveChatId(null)}
-                  onQuickAction={handleQuickAction}
-                  isRecording={isRecording}
                   onNavigateWork={() => {
                     window.dispatchEvent(new CustomEvent('ix:open-work'));
                     send({ type: 'CLOSE' });

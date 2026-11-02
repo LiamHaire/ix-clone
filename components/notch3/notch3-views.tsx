@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Bell, CheckCircle, CalendarBlank, ChatCircle, ArrowLeft, PaperPlaneRight, Plus, Microphone, Timer, PencilSimpleLine, ShareNetwork, MagnifyingGlass } from '@phosphor-icons/react';
+import { Bell, CheckCircle, CalendarBlank, ChatCircle, ArrowLeft, PaperPlaneRight, Plus } from '@phosphor-icons/react';
 import { NotchItem } from '@/components/ui/notch-item';
-import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
-import { N3Tooltip, type NavId3 } from './notch3-nav';
+import { type NavId3 } from './notch3-nav';
 import { TASK_DATA, ASSIGNEE_NAMES, type Task } from '@/components/work/task-data';
 import { Button } from '@/components/ui/button';
 
@@ -28,15 +27,11 @@ export const TASK_ROW_GAP  = ROW_GAP;
 export const TASKS_EMPTY_H = EMPTY_H;
 export const CHAT_EMPTY_H  = EMPTY_H;
 
-const QUICK_ACTION_BTN_SIZE = 48;
-export const QUICK_ACTIONS_H = QUICK_ACTION_BTN_SIZE;
-
 export const VIEW_HEIGHTS_3: Record<NavId3, number> = {
   notifications: EMPTY_H,
   chat:          EMPTY_H,
   tasks:         EMPTY_H,
   calendar:      EMPTY_H,
-  quickactions:  QUICK_ACTIONS_H,
 };
 
 // ── Height helpers ────────────────────────────────────────────────────────────
@@ -76,15 +71,15 @@ function NavButton({ label, onClick }: { label: string; onClick?: () => void }) 
   );
 }
 
-function EmptyState({ icon: Icon, title, subtitle, cta }: {
-  icon: React.ElementType; title: string; subtitle: string; cta: string;
+function EmptyState({ icon: Icon, title, subtitle, cta, onClick }: {
+  icon: React.ElementType; title: string; subtitle: string; cta: string; onClick?: () => void;
 }) {
   return (
     <div className="flex flex-col items-center justify-center h-full select-none">
       <Icon size={48} weight="regular" className="text-foreground mb-3" />
       <p className="text-[14px] font-medium text-foreground">{title}</p>
       <p className="text-[14px] text-muted-foreground mt-0.5">{subtitle}</p>
-      <div className="w-full mt-3"><NavButton label={cta} /></div>
+      <div className="w-full mt-3"><NavButton label={cta} onClick={onClick} /></div>
     </div>
   );
 }
@@ -270,52 +265,7 @@ function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
-// ── Quick actions ─────────────────────────────────────────────────────────────
-
-export type QuickActionId = 'record' | 'knowledge' | 'timer' | 'message' | 'share' | 'search';
-
-const QUICK_ACTIONS: { id: QuickActionId; label: string; icon: React.ElementType }[] = [
-  { id: 'record',    label: 'Start Scribe',  icon: Microphone      },
-  { id: 'knowledge', label: 'Add',            icon: Plus            },
-  { id: 'timer',     label: 'Start timer',   icon: Timer           },
-  { id: 'message',   label: 'New message',   icon: PencilSimpleLine },
-  { id: 'share',     label: 'Share',         icon: ShareNetwork    },
-  { id: 'search',    label: 'Search',        icon: MagnifyingGlass },
-];
-
-function QuickActionsView({ onAction, isRecording }: { onAction?: (id: QuickActionId) => void; isRecording?: boolean }) {
-  return (
-    <div className="flex items-center justify-center gap-4">
-      {QUICK_ACTIONS.map(action => {
-        const Icon = action.icon;
-        const active = action.id === 'record' && isRecording;
-        const label = active ? 'Stop Scribe' : action.label;
-        return (
-          <N3Tooltip key={action.id} label={label}>
-            <TooltipPrimitive.Trigger
-              delay={300}
-              closeDelay={100}
-              aria-label={label}
-              onClick={() => onAction?.(action.id)}
-              className={[
-                'relative flex items-center justify-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                active
-                  ? 'border-destructive text-destructive bg-destructive/10'
-                  : 'text-muted-foreground hover:border-foreground hover:text-foreground hover:bg-accent',
-              ].join(' ')}
-              style={{ width: QUICK_ACTION_BTN_SIZE, height: QUICK_ACTION_BTN_SIZE, borderColor: active ? undefined : 'var(--muted-foreground)' }}
-            >
-              <Icon size={24} weight={active ? 'fill' : 'regular'} />
-              {active && (
-                <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive animate-pulse" />
-              )}
-            </TooltipPrimitive.Trigger>
-          </N3Tooltip>
-        );
-      })}
-    </div>
-  );
-}
+export type QuickActionId = 'record' | 'knowledge';
 
 // ── View router ───────────────────────────────────────────────────────────────
 
@@ -327,16 +277,11 @@ interface Notch3ViewProps {
   activeChatId?: string | null;
   onChatOpen?: (id: string) => void;
   onChatClose?: () => void;
-  onQuickAction?: (id: QuickActionId) => void;
-  isRecording?: boolean;
   onNavigateWork?: () => void;
 }
 
-export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, activeChatId, onChatOpen, onChatClose, onQuickAction, isRecording, onNavigateWork }: Notch3ViewProps) {
+export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, activeChatId, onChatOpen, onChatClose, onNavigateWork }: Notch3ViewProps) {
   switch (id) {
-
-    case 'quickactions':
-      return <QuickActionsView onAction={onQuickAction} isRecording={isRecording} />;
 
     case 'notifications':
       return hasNotification ? (
@@ -380,7 +325,7 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
     case 'tasks': {
       const dueToday = tasksDueToday();
       if (dueToday.length === 0) {
-        return <EmptyState icon={CheckCircle} title="You're all caught up" subtitle="All today's tasks have been completed" cta="View all tasks" />;
+        return <EmptyState icon={CheckCircle} title="You're all caught up" subtitle="All today's tasks have been completed" cta="View all tasks" onClick={onNavigateWork} />;
       }
       return (
         <div className="flex flex-col gap-4">
