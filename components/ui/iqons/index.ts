@@ -24,3 +24,5 @@ export { IconWarning } from './IconWarning';
 export { MoreVertical } from './MoreVertical';
 export { Refresh } from './Refresh';
 export { UserCircle } from './UserCircle';
+export { Appointment } from './Appointment';
+export { Notifications } from './Notifications';

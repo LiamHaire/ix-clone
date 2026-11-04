@@ -47,6 +47,28 @@ export const NOTCH_CHECK_RING_MS  = 300;
 export const NOTCH_CHECK_BUBBLE_MS = 500;
 export const NOTCH_CHECK_DELAY_MS = 180;
 
+// Landing title bounce (components/title-bounce.tsx): letters drop in one by one, then the dot lands
+export const TITLE_STAGGER_MS = 22;
+export const TITLE_CHAR_MS    = 260;
+export const TITLE_HOLD_MS    = 30;   // pause between the last letter and the dot
+export const TITLE_DOT_MS     = 360;
+
+export const TITLE_LETTER_KEYFRAMES: Keyframe[] = [
+  { translate: '0 -0.55em', opacity: 0, offset: 0 },
+  { translate: '0 0.09em',  opacity: 1, offset: 0.6 },
+  { translate: '0 -0.025em', opacity: 1, offset: 0.82 },
+  { translate: '0 0',       opacity: 1, offset: 1 },
+];
+
+export const TITLE_DOT_KEYFRAMES: Keyframe[] = [
+  { translate: '0 -0.9em',  scale: '0.7 1.35',  opacity: 0, offset: 0,    easing: 'cubic-bezier(.5,0,.9,.6)' },
+  { translate: '0 -0.45em', scale: '0.8 1.25',  opacity: 1, offset: 0.2,  easing: 'cubic-bezier(.5,0,.9,.6)' },
+  { translate: '0 0',       scale: '1.5 0.6',   opacity: 1, offset: 0.5,  easing: 'cubic-bezier(.2,.7,.4,1)' },
+  { translate: '0 -0.2em',  scale: '0.9 1.12',  opacity: 1, offset: 0.72, easing: 'cubic-bezier(.6,0,.9,.5)' },
+  { translate: '0 0',       scale: '1.15 0.85', opacity: 1, offset: 0.88, easing: 'linear' },
+  { translate: '0 0',       scale: '1 1',       opacity: 1, offset: 1 },
+];
+
 // EXPERIMENT: set to false to revert chat/workspace/additional panel moves to the
 // original smooth ease-out-expo slide.
 export const PANEL_SPRING_EXPERIMENT = true;

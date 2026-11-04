@@ -20,9 +20,12 @@ function PriorityIcon({ priority }: { priority: Task["priority"] }) {
 
 // ── Task card ─────────────────────────────────────────────────────────────────
 
-function TaskCard({ task }: { task: Task }) {
+function TaskCard({ task, onTaskClick }: { task: Task; onTaskClick?: (task: Task) => void }) {
   return (
-    <div className="rounded-lg border border-border bg-popover p-3 flex flex-col gap-2.5 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+    <div
+      className="rounded-lg border border-border bg-popover p-3 flex flex-col gap-2.5 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => onTaskClick?.(task)}
+    >
       <p className="text-[14px] font-medium text-foreground leading-snug">{task.title}</p>
       {task.notes && (
         <p className="text-[14px] text-muted-foreground leading-relaxed line-clamp-3">{task.notes}</p>
@@ -56,7 +59,7 @@ function TaskCard({ task }: { task: Task }) {
 
 // ── Swimlane ──────────────────────────────────────────────────────────────────
 
-function Swimlane({ lane, search, priorities }: { lane: Lane; search: string; priorities: Set<string> }) {
+function Swimlane({ lane, search, priorities, onTaskClick }: { lane: Lane; search: string; priorities: Set<string>; onTaskClick?: (task: Task) => void }) {
   const tasks = lane.tasks.filter(t => {
     const matchSearch = !search || t.title.toLowerCase().includes(search.toLowerCase()) || t.ref.toLowerCase().includes(search.toLowerCase());
     const matchPriority = priorities.has(t.priority);
@@ -75,7 +78,7 @@ function Swimlane({ lane, search, priorities }: { lane: Lane; search: string; pr
         "bg-secondary/60 border border-border",
         isEmpty && "border-dashed"
       )}>
-        {tasks.map(task => <TaskCard key={task.id} task={task} />)}
+        {tasks.map(task => <TaskCard key={task.id} task={task} onTaskClick={onTaskClick} />)}
         <button className="flex items-center justify-center w-full py-1.5 mt-auto rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
           <Plus size={15} />
         </button>
@@ -93,12 +96,13 @@ interface TaskBoardProps {
   search: string;
   priorities: Set<string>;
   sortBy?: string;
+  onTaskClick?: (task: Task) => void;
 }
 
-export function TaskBoard({ search, priorities }: TaskBoardProps) {
+export function TaskBoard({ search, priorities, onTaskClick }: TaskBoardProps) {
   return (
     <div className="flex gap-3 h-full overflow-x-auto p-4">
-      {TASK_DATA.map(lane => <Swimlane key={lane.id} lane={lane} search={search} priorities={priorities} />)}
+      {TASK_DATA.map(lane => <Swimlane key={lane.id} lane={lane} search={search} priorities={priorities} onTaskClick={onTaskClick} />)}
     </div>
   );
 }
@@ -111,7 +115,7 @@ function formatDue(iso?: string) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export function TaskTable({ search, priorities, sortBy = 'Due date' }: TaskBoardProps) {
+export function TaskTable({ search, priorities, sortBy = 'Due date', onTaskClick }: TaskBoardProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -165,7 +169,7 @@ export function TaskTable({ search, priorities, sortBy = 'Due date' }: TaskBoard
                 </TableCell>
               </TableRow>
             ) : pageRows.map(task => (
-              <TableRow key={task.id} className="border-b border-border last:border-0 hover:bg-accent transition-colors cursor-pointer">
+              <TableRow key={task.id} className="border-b border-border last:border-0 hover:bg-accent transition-colors cursor-pointer" onClick={() => onTaskClick?.(task)}>
                 <TableCell className="py-3 px-4 min-w-0 max-w-0">
                   <div className="flex flex-col gap-0.5 w-full overflow-hidden">
                     <span className="text-sm font-medium text-foreground truncate">{task.title}</span>

@@ -233,6 +233,7 @@ content grows. Scrolling up unpins it. See open issues below.
 | Thinking shimmer (`.thinking-shimmer-text`) | `background-position` sweep | 2.8s linear, infinite |
 | Thinking text (`components/chat/thinking-text.tsx`) | rotating status line, fade and shift | `--dur-thinking-text`, `setInterval` cycle |
 | Thinking dots | `fill` | `--dur-thinking-dot` |
+| Landing title (`components/title-bounce.tsx`) | Letters drop in with a small rebound, staggered with ±8% jitter, then an orange full stop drops, squashes and settles. WAAPI on `translate`, `scale`, `opacity`. Runs once on mount | `TITLE_*` constants in `lib/motion.ts` (22ms stagger, 260ms per letter, 30ms hold, 360ms dot). Reduced motion shows the final state. The fade to chat uses the greeting layer as before, with no replay |
 | Chat FAB ring (`.fab-ring-trigger`) | `scale` 0.85 to 1.65, fade out, on hover | 900ms, ease out, once |
 
 The placeholder, shimmer and thinking text loop. Stop them when their component

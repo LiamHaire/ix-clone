@@ -10,6 +10,7 @@ import { useNotchMachine } from './notch-hook';
 import { DropZone, UploadingView, SuccessView, ErrorView, validateFile } from './notch-drop';
 import { Notch3Header, type NavId3 } from './notch3-nav';
 import { Notch3View, VIEW_HEIGHTS_3, tasksContentHeight, chatContentHeight, type QuickActionId } from './notch3-views';
+import { Notch2Header, Notch2Overview, Notch2Notifications, type Notch2Tab, NOTCH2_NOTIFICATIONS_W, NOTCH2_PANEL_MAX_W, NOTCH2_PANEL_PADDING, NOTCH2_PANEL_RADIUS, NOTCH2_HEADER_H, NOTCH2_HEADER_GAP, NOTCH2_CONTENT_GAP, NOTCH2_CONTENT_H } from './notch2-panel';
 import { CSS, SPRING_GROW_DURATION_MS } from '@/lib/motion';
 
 // ── Geometry ──────────────────────────────────────────────────────────────────
@@ -30,7 +31,8 @@ const SUCCESS_LINGER_MS = NOTCH_COMPLETE_DURATION_MS;
 
 type ActiveView3 = NavId3 | 'drop';
 
-export function Notch3Shell() {
+export function Notch3Shell({ variant = 'notch3' }: { variant?: 'notch3' | 'notch2' }) {
+  const isNotch2 = variant === 'notch2';
   const [mounted, setMounted]               = useState(false);
   const [activeView, setActiveView]         = useState<ActiveView3>('tasks');
   const [isRecording, setIsRecording]       = useState(false);
@@ -44,6 +46,7 @@ export function Notch3Shell() {
   const [chatKey, setChatKey]                   = useState(0);
   const [activeChatId, setActiveChatId]         = useState<string | null>(null);
   const [droppedFile, setDroppedFile]       = useState<File | null>(null);
+  const [notch2ContentH, setNotch2ContentH] = useState(NOTCH2_CONTENT_H);
 
   const containerRef     = useRef<HTMLDivElement>(null);
   const recordingTimer   = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -246,7 +249,9 @@ export function Notch3Shell() {
   if (!mounted) return null;
 
   // ── Sizing ────────────────────────────────────────────────────────────────
-  const contentH = activeView === 'drop'
+  const contentH = isNotch2
+    ? (activeView === 'drop' ? DROP_CONTENT_H : notch2ContentH)
+    : activeView === 'drop'
     ? DROP_CONTENT_H
     : (activeView === 'notifications' && hasNotification) ||
       (activeView === 'calendar'      && hasCalendarEvent)
@@ -256,15 +261,21 @@ export function Notch3Shell() {
     : activeView === 'chat'
     ? chatContentHeight(hasNewChat, activeChatId)
     : (VIEW_HEIGHTS_3[activeView as NavId3] ?? DEFAULT_CONTENT_H);
-  const panelH = HEADER_H + DIVIDER_GAP_PX + 1 + CONTENT_GAP_PX + contentH + PANEL_PADDING_PX;
+  const panelH = isNotch2
+    ? NOTCH2_PANEL_PADDING * 2 + NOTCH2_HEADER_H + NOTCH2_HEADER_GAP + 1 + NOTCH2_CONTENT_GAP + contentH
+    : HEADER_H + DIVIDER_GAP_PX + 1 + CONTENT_GAP_PX + contentH + PANEL_PADDING_PX;
 
   const showUploadPill = !isExpanded && (dropPhase === 'uploading' || dropPhase === 'success');
   const showRecordingPill = !isExpanded && isRecording && !showUploadPill;
   const uploadPct = Math.round(state.uploadProgress * 100);
 
-  const width  = isExpanded ? PANEL_WIDTH : (isRecording || showUploadPill) ? RECORDING_PILL_WIDTH : PILL_WIDTH;
+  const notch2Tab: Notch2Tab | null = activeView === 'drop' ? null : activeView === 'notifications' ? 'notifications' : 'today';
+  const expandedWidth = isNotch2
+    ? `min(${notch2Tab === 'notifications' ? NOTCH2_NOTIFICATIONS_W : NOTCH2_PANEL_MAX_W}px, calc(100vw - var(--nav-rail-width) - 32px))`
+    : PANEL_WIDTH;
+  const width  = isExpanded ? expandedWidth : (isRecording || showUploadPill) ? RECORDING_PILL_WIDTH : PILL_WIDTH;
   const height = isExpanded ? panelH      : PILL_HEIGHT;
-  const radius = isExpanded ? PANEL_RADIUS : PILL_RADIUS;
+  const radius = isExpanded ? (isNotch2 ? NOTCH2_PANEL_RADIUS : PANEL_RADIUS) : PILL_RADIUS;
 
   const expandEasing   = `${CSS.easeSpringGrow} ${CSS.durSpringGrow}`;
   const collapseEasing = `${CSS.easeShrink} ${CSS.durShrink}`;
@@ -288,7 +299,7 @@ export function Notch3Shell() {
       onClick={() => send({ type: 'CLOSE' })}
       style={{
         position: 'fixed', inset: 0, zIndex: 9998,
-        background: 'rgba(0,0,0,0.25)',
+        background: 'rgba(0,0,0,0.45)',
         animation: 'notch-scrim-in var(--dur-base) var(--ease-out-cubic) forwards',
       }}
     />,
@@ -415,7 +426,69 @@ export function Notch3Shell() {
         )}
 
         {/* ── Expanded panel ── */}
-        {isExpanded && (
+        {isExpanded && isNotch2 && (
+          <div className="flex flex-col" style={{ padding: NOTCH2_PANEL_PADDING, gap: NOTCH2_CONTENT_GAP }}>
+            <div style={{ pointerEvents: headerReady ? 'auto' : 'none' }}>
+              <Notch2Header
+                activeTab={notch2Tab}
+                onSelectTab={(tab) => {
+                  setActiveView(tab === 'notifications' ? 'notifications' : 'tasks');
+                  if (dropPhase !== 'idle') send({ type: 'CANCEL_DROP' });
+                }}
+                hasNotification={hasNotification}
+                isRecording={isRecording}
+                onToggleScribe={() => handleQuickAction('record')}
+                onAddToKnowledge={() => handleQuickAction('knowledge')}
+                onOpenSettings={() => {
+                  window.dispatchEvent(new CustomEvent('ix:open-settings'));
+                  send({ type: 'CLOSE' });
+                }}
+              />
+            </div>
+            <div
+              key={activeView}
+              style={{
+                height: contentH,
+                overflow: 'hidden',
+                animation: `notch-expand-content ${CSS.durBase} ${CSS.easeOutCubic} both`,
+              }}
+            >
+              {activeView === 'drop' ? (
+                <DropContent
+                  dropPhase={dropPhase}
+                  errorMessage={errorMessage}
+                  fileName={droppedFile?.name ?? ''}
+                  isDragging={dropPhase === 'dragging'}
+                  progress={progressRef.current}
+                  fileInputRef={fileInputRef}
+                  onBrowse={() => fileInputRef.current?.click()}
+                  onFileSelected={processFiles}
+                  onDismiss={() => { send({ type: 'DISMISS_ERROR' }); setActiveView('tasks'); }}
+                  onCancel={() => { send({ type: 'CANCEL_DROP' }); setActiveView('tasks'); }}
+                />
+              ) : activeView === 'notifications' ? (
+                <Notch2Notifications
+                  hasNotification={hasNotification}
+                  onClose={() => send({ type: 'CLOSE' })}
+                  onHeightChange={setNotch2ContentH}
+                />
+              ) : (
+                <Notch2Overview
+                  hasCalendarEvent={hasCalendarEvent}
+                  onNavigateWork={() => {
+                    window.dispatchEvent(new CustomEvent('ix:open-work'));
+                    send({ type: 'CLOSE' });
+                  }}
+                  onClose={() => send({ type: 'CLOSE' })}
+                  onHeightChange={setNotch2ContentH}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Expanded panel ── */}
+        {isExpanded && !isNotch2 && (
           <div className="flex flex-col" style={{ padding: `0 0 ${PANEL_PADDING_PX}px 0` }}>
             <div style={{ pointerEvents: headerReady ? 'auto' : 'none' }}>
               <Notch3Header

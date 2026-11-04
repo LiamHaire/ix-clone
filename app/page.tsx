@@ -14,6 +14,7 @@ import {
 import { SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, ArrowRight, ArrowBendDownRight, CaretDown, X as PhosphorX, Info, CaretLineRight, Chat as ChatIcon } from "@phosphor-icons/react";
 import { AnimatedPlaceholder } from "@/components/animated-placeholder";
+import { TitleBounce } from "@/components/title-bounce";
 import { AdaptiveCardRenderer } from "@/components/chat/adaptive-card-renderer";
 import { ProgressCard } from "@/components/chat/progress-card";
 import { PatientAppointmentItem } from "@/components/chat/patient-appointment-item";
@@ -37,14 +38,14 @@ import { EmailSearchResults } from "@/components/chat/email-search-results";
 import { AdditionalPanel, type EmailDetailData } from "@/components/chat/additional-panel";
 import { SettingsPanel } from "@/components/settings/settings-panel";
 import { NavRail } from "@/components/nav-rail";
-import { NavNotch3 } from "@/components/notch3";
+import { NavNotch3, NavNotch2 } from "@/components/notch3";
 import { SheetHeader } from "@/components/ui/sheet";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Warning } from "@phosphor-icons/react";
 import { IndexPopover } from "@/components/chat/index-popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FieldLabel, Field, FieldContent, FieldTitle } from "@/components/ui/field";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Item, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
 import { Button } from "@/components/ui/button";
@@ -119,7 +120,7 @@ export default function Home() {
   const [overlayShadow, setOverlayShadow] = useState(true);
 
   const [showAlert, setShowAlert] = useState(false);
-  const [navMode, setNavMode] = useState<'navrail' | 'notch3'>('navrail');
+  const [navMode, setNavMode] = useState<'navrail' | 'notch3' | 'notch2'>('navrail');
   const [isWorkspace, setIsWorkspace] = useState(false);
   const [closedWorkspaceTitle, setClosedWorkspaceTitle] = useState<string | null>(null);
   const [isAdditional, setIsAdditional] = useState(false);
@@ -347,6 +348,7 @@ export default function Home() {
     setValue("");
 
     if (text.toLowerCase() === "notch") { setNavMode('notch3'); return; }
+    if (text.toLowerCase() === "notch 2") { setNavMode('notch2'); return; }
     if (text.toLowerCase() === "show navrail") { setNavMode('navrail'); return; }
     if (text.toLowerCase() === "hide chat" && workspaceMode === 'work') { setWorkChatHidden(true); return; }
     if (text.toLowerCase() === "show chat" && workspaceMode === 'work') { setWorkChatHidden(false); return; }
@@ -544,8 +546,9 @@ export default function Home() {
 
   return (
     <div className="h-full overflow-hidden bg-background flex flex-1 min-w-0">
-      {(navMode === 'navrail' || navMode === 'notch3') && <NavRail hideNotifications={navMode === 'notch3'} />}
+      <NavRail hideNotifications={navMode !== 'navrail'} />
       {navMode === 'notch3' && <NavNotch3 />}
+      {navMode === 'notch2' && <NavNotch2 variant="notch2" />}
       <div className="relative flex flex-col flex-1 min-w-0 h-full overflow-hidden" style={{ minHeight: 0 }}>
       {/* Alert banner */}
       {showAlert && (
@@ -583,12 +586,11 @@ export default function Home() {
           style={{ height: "100%" }}
         >
           <div className="flex flex-col items-center w-full max-w-[720px] px-0">
-            <h1
+            <TitleBounce
+              text={`${greeting}, Liam`}
               className="font-sans text-[30px] font-semibold text-foreground mb-6 tracking-tight"
               style={{ fontVariationSettings: "'wght' 600" }}
-            >
-              {greeting}, Liam
-            </h1>
+            />
             <div className="relative isolate w-full">
               <div aria-hidden="true" className="absolute pointer-events-none select-none glow-radial"
                 style={{ width: "1600px", maxWidth: "none", height: "700px", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: -1 }} />
@@ -608,16 +610,16 @@ export default function Home() {
             className="absolute flex flex-col items-center justify-end pb-[calc(50vh-12px)]"
             style={{ left: 0, right: 0, top: 0, bottom: 0 }}
           >
-            <h1
+            <TitleBounce
+              text={`${greeting}, Liam`}
+              animate={false}
               className="font-sans text-[30px] font-semibold text-foreground mb-6 tracking-tight"
               style={{
                 fontVariationSettings: "'wght' 600",
                 opacity: greetingOpacity,
                 transition: `opacity var(--dur-chat-reveal) ${CSS.easeStandard}`,
               }}
-            >
-              {greeting}, Liam
-            </h1>
+            />
             <div style={{ width: "100%", maxWidth: 720, minHeight: 128 }} aria-hidden />
           </div>
         </>
@@ -702,6 +704,12 @@ export default function Home() {
               <WorkPanel
                 onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); setWorkChatHidden(false); }}
                 expanded={workChatHidden || chatCollapsed}
+                onTaskClick={(task) => {
+                  if (task.title.toLowerCase().includes('file compliance')) {
+                    setWorkChatHidden(false);
+                    handleSubmit("Help me perform a file review", "workspace");
+                  }
+                }}
               />
             )}
             {isWorkspace && workspaceMode === 'session-history' && (
@@ -819,10 +827,6 @@ export default function Home() {
                               </div>
                             ))}
                           </CardContent>
-                          <CardFooter className="justify-end gap-2">
-                            <Button variant="outline" size="sm" className="rounded-[10px] h-8 px-4 text-[13px]">Export</Button>
-                            <Button variant="outline" size="sm" className="rounded-[10px] h-8 px-4 text-[13px]">More details</Button>
-                          </CardFooter>
                         </Card>
                       )}
                       {msg.showEmailReadyItem && (

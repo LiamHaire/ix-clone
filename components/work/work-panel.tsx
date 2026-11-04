@@ -8,15 +8,16 @@ import { TaskBoard, TaskTable } from "./task-board";
 import { SheetHeader } from "@/components/ui/sheet";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 import { Button } from "@/components/ui/button";
-import { TASK_DATA } from "./task-data";
+import { TASK_DATA, type Task } from "./task-data";
 import { cn } from "@/lib/utils";
 
 interface WorkPanelProps {
   onClose: () => void;
   expanded?: boolean;
+  onTaskClick?: (task: Task) => void;
 }
 
-export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
+export function WorkPanel({ onClose, expanded, onTaskClick }: WorkPanelProps) {
   const [activeView, setActiveView] = useState<string>("my-tasks");
   const [layoutMode, setLayoutMode] = useState<'columns' | 'table'>('table');
   const [search, setSearch] = useState("");
@@ -273,8 +274,8 @@ export function WorkPanel({ onClose, expanded }: WorkPanelProps) {
 
           {/* Content */}
           <div className="flex-1 min-h-0 overflow-hidden mr-4 mb-4">
-            {showTaskView && layoutMode === 'columns' && <TaskBoard search={search} priorities={priorities} />}
-            {showTaskView && layoutMode === 'table'   && <TaskTable search={search} priorities={priorities} sortBy={sortBy} />}
+            {showTaskView && layoutMode === 'columns' && <TaskBoard search={search} priorities={priorities} onTaskClick={onTaskClick} />}
+            {showTaskView && layoutMode === 'table'   && <TaskTable search={search} priorities={priorities} sortBy={sortBy} onTaskClick={onTaskClick} />}
             {!showTaskView && (
               <div className="flex items-center justify-center h-full">
                 <p className="text-sm text-muted-foreground">Select a view from the left</p>

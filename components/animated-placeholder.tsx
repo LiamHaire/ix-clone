@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 
 const PHRASES = [
-  "How can I help you?",
-  "What would you like to do today?",
-  "Type / for skills",
+  "How can I help you...",
+  "What would you like to do today...",
+  "Type / for skills...",
 ];
 
 type Phase = "visible" | "exit" | "enter";

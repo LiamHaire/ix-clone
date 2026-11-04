@@ -131,6 +131,7 @@
   --ring:                    oklch(0.357 0.0285 71.02);
   --surface-raised:          oklch(0.99 0.0045 78.31);
   --surface-raised-foreground: oklch(0.2095 0.0163 71.06);
+  --tile-glow-alpha: 0.05;
   --chart-1:                 oklch(0.6461 0.1943 41.12);
   --chart-2:                 oklch(0.6002 0.1038 184.7);
   --chart-3:                 oklch(0.3982 0.0664 227.39);
@@ -207,6 +208,7 @@
   --ring:                    oklch(0.9219 0 0);
   --surface-raised:          oklch(0.255 0.015 258);
   --surface-raised-foreground: oklch(0.98 0.003 250);
+  --tile-glow-alpha: 0.1;
   --chart-1:                 oklch(0.72 0.13 52);
   --chart-2:                 oklch(0.72 0.12 225);
   --chart-3:                 oklch(0.62 0.15 150);
@@ -433,15 +435,11 @@
 /* ── Notch bloom gradient ── */
 .notch-bloom {
   --notch-tile-border: oklch(72% 0.18 45 / 0.10);
-  background:
-    radial-gradient(ellipse 40% 110% at 75% 105%, oklch(72% 0.18 45 / 0.04) 17%, oklch(72% 0.18 45 / 0) 100%),
-    var(--background);
+  background: var(--background);
 }
 .dark .notch-bloom {
   --notch-tile-border: oklch(55% 0.18 268 / 0.25);
-  background:
-    radial-gradient(ellipse 40% 110% at 75% 105%, oklch(55% 0.18 268 / 0.08) 17%, oklch(55% 0.18 268 / 0) 100%),
-    var(--background);
+  background: var(--background);
 }
 
 /* ── Reduced-motion icon fallback ── */
@@ -646,3 +644,17 @@
     background: oklch(75% .016 78);
   }
 }
+
+/* ── Landing title bounce (components/title-bounce.tsx) ── */
+.tb-line { display: flex; align-items: baseline; white-space: pre; line-height: 1; }
+.tb-ch   { display: inline-block; white-space: pre; opacity: 0; }
+.tb-dot  {
+  display: inline-block;
+  width: 0.12em; height: 0.12em;
+  margin-left: 0.09em;
+  border-radius: 999px;
+  background: oklch(0.55 0.205 45);
+  transform-origin: 50% 100%;
+  opacity: 0;
+}
+.tb-static .tb-ch, .tb-static .tb-dot { opacity: 1; }
