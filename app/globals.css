@@ -132,6 +132,7 @@
   --surface-raised:          oklch(0.99 0.0045 78.31);
   --surface-raised-foreground: oklch(0.2095 0.0163 71.06);
   --tile-glow-alpha: 0.05;
+  --tile-bg: linear-gradient(to bottom, var(--muted), oklch(0.997 0.002 78.31));
   --chart-1:                 oklch(0.6461 0.1943 41.12);
   --chart-2:                 oklch(0.6002 0.1038 184.7);
   --chart-3:                 oklch(0.3982 0.0664 227.39);
@@ -209,6 +210,9 @@
   --surface-raised:          oklch(0.255 0.015 258);
   --surface-raised-foreground: oklch(0.98 0.003 250);
   --tile-glow-alpha: 0.1;
+  --tile-bg:
+    linear-gradient(-1.74deg, oklch(from var(--accent) 0.6 0.15 h / var(--tile-glow-alpha)) 2.09%, transparent 70%),
+    linear-gradient(color-mix(in srgb, var(--muted) 50%, transparent), color-mix(in srgb, var(--muted) 50%, transparent));
   --chart-1:                 oklch(0.72 0.13 52);
   --chart-2:                 oklch(0.72 0.12 225);
   --chart-3:                 oklch(0.62 0.15 150);

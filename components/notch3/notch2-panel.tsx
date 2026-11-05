@@ -1,21 +1,23 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Bell, CalendarBlank, Envelope, ListChecks, Microphone, MagnifyingGlass, Plus, Timer } from '@phosphor-icons/react';
+import { Bell, Microphone, MagnifyingGlass, Plus, Timer } from '@phosphor-icons/react';
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import { cn } from '@/lib/utils';
 import { CSS } from '@/lib/motion';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { NotchItem } from '@/components/ui/notch-item';
+import { Notch2Item, Notch2ItemIcon, Notch2ItemList, Notch2TileHeader } from '@/components/ui/notch2-item';
 import { Appointment } from '@/components/ui/iqons/Appointment';
 import { Notifications } from '@/components/ui/iqons/Notifications';
+import { Checklist } from '@/components/ui/iqons/Checklist';
+import { Mail } from '@/components/ui/iqons/Mail';
 import { Settings } from '@/components/ui/iqons/Settings';
 import { ASSIGNEE_NAMES } from '@/components/work/task-data';
 import { N3Tooltip } from './notch3-nav';
-import { tasksDueToday } from './notch3-views';
+import { tasksDueToday, EmptyState } from './notch3-views';
 
-export const NOTCH2_PANEL_MAX_W = 1128;
+export const NOTCH2_PANEL_MAX_W = 1248;
 export const NOTCH2_NOTIFICATIONS_W = 640;
 export const NOTCH2_PANEL_PADDING = 16;
 export const NOTCH2_HEADER_H = 32;
@@ -27,13 +29,14 @@ export const NOTCH2_PANEL_H =
   NOTCH2_PANEL_PADDING * 2 + NOTCH2_HEADER_H + NOTCH2_HEADER_GAP + 1 + NOTCH2_CONTENT_GAP + NOTCH2_CONTENT_H;
 
 const MAX_VISIBLE_TASKS = 2;
-const MAX_VISIBLE_EMAILS = 3;
+const MAX_VISIBLE_EMAILS = 5;
 
 const MOCK_EMAILS = [
   { id: 'e1', initials: 'SW', sender: 'Sarah Whitmore', subject: 'Re: Completion date for Oakwood Avenue', time: '5 min' },
   { id: 'e2', initials: 'DP', sender: 'Dr Helen Murray', subject: 'Urgent: results for Margaret Ellison', time: '22 min' },
   { id: 'e3', initials: 'AP', sender: 'Arthur Pendleton', subject: 'Draft settlement letter for review', time: '1 hr' },
   { id: 'e4', initials: 'FM', sender: 'Finance Team', subject: 'October invoices awaiting approval', time: '2 hr' },
+  { id: 'e5', initials: 'JC', sender: 'James Carter', subject: 'Updated contract terms for Brookfield Road', time: '3 hr' },
 ];
 const UNREAD_EMAIL_COUNT = 9;
 
@@ -80,7 +83,7 @@ export function Notch2Header({ activeTab, onSelectTab, hasNotification = false, 
           <HeaderBtn label="Add to Knowledge base" onPress={onAddToKnowledge} icon={<Plus size={20} />} />
           <HeaderBtn label="Timer" icon={<Timer size={20} />} />
           <HeaderBtn label="Search" icon={<MagnifyingGlass size={20} />} />
-          <Separator orientation="vertical" className="mx-1 h-5" />
+          <Separator orientation="vertical" className="mx-1 h-8 self-center" />
           <HeaderBtn label="Settings" onPress={onOpenSettings} icon={<Settings size={20} />} />
           <HeaderBtn
             label="Liam Haire"
@@ -158,16 +161,21 @@ export function Notch2Notifications({ hasNotification, onClose, onHeightChange }
   return (
     <div ref={rootRef} className="flex items-stretch">
       <OverviewCard
-        icon={Bell}
+        icon={Notifications}
         title="Notifications"
         meta={hasNotification ? '1 unread' : 'Up to date'}
-        cta="Go to Notifications"
+        cta={hasNotification ? 'Go to Notifications' : undefined}
         onCta={onClose}
       >
         {hasNotification ? (
-          <NotchItem type="notification" isNew bordered title="New notification title" description="Just now" />
+          <Notch2Item
+            isNew
+            icon={<Notch2ItemIcon><Notifications size={24} /></Notch2ItemIcon>}
+            title="New notification title"
+            time="Just now"
+          />
         ) : (
-          <EmptyNote>No new notifications</EmptyNote>
+          <EmptyState icon={Bell} title="No new notifications" subtitle="You're up-to-date" cta="View all notifications" onClick={onClose} />
         )}
       </OverviewCard>
     </div>
@@ -189,61 +197,66 @@ export function Notch2Overview({ hasCalendarEvent, onNavigateWork, onClose, onHe
   return (
     <div ref={rootRef} className="flex items-stretch gap-2">
       <OverviewCard
-        icon={ListChecks}
+        icon={Checklist}
         title="Today's Tasks"
         meta={dueToday.length > 0 ? `${dueToday.length} to do` : 'All done'}
         cta="Go to Work"
         onCta={onNavigateWork}
       >
         {visibleTasks.length > 0 ? (
-          visibleTasks.map(task => (
-            <NotchItem
-              key={task.id}
-              type="task"
-              bordered
-              taskRef={task.ref}
-              title={task.title}
-              description={task.assignee ? (ASSIGNEE_NAMES[task.assignee] ?? task.assignee) : task.type}
-              status="Due"
-              priority={task.priority}
-              onClick={onNavigateWork}
-            />
-          ))
+          <Notch2ItemList>
+            {visibleTasks.map(task => (
+              <Notch2Item
+                key={task.id}
+                icon={<Notch2ItemIcon />}
+                title={`${task.ref} - ${task.title}`}
+                body={task.assignee ? (ASSIGNEE_NAMES[task.assignee] ?? task.assignee) : task.type}
+                badge="Due"
+                priority={task.priority}
+                time="Today"
+                onClick={onNavigateWork}
+              />
+            ))}
+          </Notch2ItemList>
         ) : (
           <EmptyNote>You&apos;re all caught up</EmptyNote>
         )}
       </OverviewCard>
 
       <OverviewCard
-        icon={Envelope}
+        icon={Mail}
         title="Inbox"
         meta={UNREAD_EMAIL_COUNT >= 9 ? '9+ unread' : `${UNREAD_EMAIL_COUNT} unread`}
         cta="Go to Inbox"
         onCta={onClose}
       >
-        {MOCK_EMAILS.slice(0, MAX_VISIBLE_EMAILS).map(email => (
-          <NotchItem
-            key={email.id}
-            type="message"
-            bordered
-            initials={email.initials}
-            title={email.sender}
-            description={email.subject}
-            time={email.time}
-            onClick={onClose}
-          />
-        ))}
+        <Notch2ItemList>
+          {MOCK_EMAILS.slice(0, MAX_VISIBLE_EMAILS).map((email, i) => (
+            <Notch2Item
+              key={email.id}
+              isNew={i === 0}
+              initials={email.initials}
+              avatarIndex={i}
+              title={email.sender}
+              subtitle={email.subject}
+              time={email.time}
+              onClick={onClose}
+            />
+          ))}
+        </Notch2ItemList>
       </OverviewCard>
 
       <OverviewCard
-        icon={CalendarBlank}
+        icon={Appointment}
         title="Next appointments"
         meta="Today"
         cta="Go to Calendar"
         onCta={onClose}
       >
-        <AppointmentRow name="SMITH, Ronald (Mr)" when="in 15 minutes" highlight={hasCalendarEvent} />
-        <AppointmentRow name="GOODRIDGE, Helen (Mrs)" when="in 30 minutes" />
+        <Notch2ItemList>
+          <AppointmentRow name="SMITH, Ronald (Mr)" when="in 15 minutes" highlight={hasCalendarEvent} />
+          <AppointmentRow name="GOODRIDGE, Helen (Mrs)" when="in 30 minutes" />
+        </Notch2ItemList>
       </OverviewCard>
     </div>
   );
@@ -253,42 +266,35 @@ function OverviewCard({ icon: Icon, title, meta, cta, onCta, children }: {
   icon: React.ElementType;
   title: string;
   meta: string;
-  cta: string;
+  cta?: string;
   onCta: () => void;
   children: React.ReactNode;
 }) {
   return (
     <section
       className="flex min-w-0 flex-1 flex-col gap-4 rounded-lg border border-border p-4"
-      style={{
-        backgroundImage:
-          'linear-gradient(-1.74deg, oklch(from var(--accent) 0.6 0.15 h / var(--tile-glow-alpha)) 2.09%, transparent 70%), linear-gradient(color-mix(in srgb, var(--muted) 50%, transparent), color-mix(in srgb, var(--muted) 50%, transparent))',
-      }}
+      style={{ backgroundImage: 'var(--tile-bg)' }}
     >
-      <header className="flex h-5 items-center gap-2">
-        <Icon size={16} weight="regular" className="shrink-0 text-foreground" />
-        <h3 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{title}</h3>
-        <span className="shrink-0 text-xs text-muted-foreground">{meta}</span>
-      </header>
+      <Notch2TileHeader icon={Icon} title={title} meta={meta} />
       <div className="flex flex-1 flex-col gap-2 pt-2">{children}</div>
-      <Button variant="outline" size="sm" className="h-10 w-full shrink-0 bg-background dark:bg-background text-xs" onClick={onCta}>
-        {cta}
-      </Button>
+      {cta && (
+        <Button variant="outline" size="sm" className="h-10 w-full shrink-0 bg-background dark:bg-background text-xs" onClick={onCta}>
+          {cta}
+        </Button>
+      )}
     </section>
   );
 }
 
 function AppointmentRow({ name, when, highlight = false }: { name: string; when: string; highlight?: boolean }) {
   return (
-    <div className="flex items-center gap-2">
-      <span aria-hidden className={cn('h-10 w-1 shrink-0 rounded-[2px] bg-chart-1', highlight && 'animate-pulse')} />
-      <NotchItem
-        type="event"
-        title={name}
-        description={when}
-        className="flex-1 bg-transparent px-0 py-2"
-      />
-    </div>
+    <Notch2Item
+      isNew={highlight}
+      icon={<Notch2ItemIcon><Appointment size={24} className={cn(highlight && 'animate-pulse text-chart-1')} /></Notch2ItemIcon>}
+      title={name}
+      subtitle="Appointment"
+      time={when}
+    />
   );
 }
 

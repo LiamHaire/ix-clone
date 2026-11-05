@@ -4,7 +4,6 @@ import {
   Bell,
   ListChecks,
   CalendarBlank,
-  ChatCircle,
   Microphone,
   Plus,
   Gear,
@@ -12,6 +11,7 @@ import {
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import { cn } from '@/lib/utils';
 import { CSS } from '@/lib/motion';
+import { Mail } from '@/components/ui/iqons/Mail';
 
 // ── NAV_ITEMS config ──────────────────────────────────────────────────────────
 
@@ -21,13 +21,14 @@ export interface NavItem3 {
   id: NavId3;
   label: string;
   icon: React.ElementType;
+  iqon?: boolean;
   position: 'left' | 'right';
 }
 
 export const NAV_ITEMS_3: NavItem3[] = [
   { id: 'tasks',         label: "Today's Tasks",   icon: ListChecks,    position: 'left'  },
   { id: 'notifications', label: 'Notifications',   icon: Bell,          position: 'left'  },
-  { id: 'chat',          label: 'Chat',            icon: ChatCircle,    position: 'left'  },
+  { id: 'chat',          label: 'Mail',            icon: Mail, iqon: true, position: 'left'  },
   { id: 'calendar',      label: 'Calendar events', icon: CalendarBlank, position: 'left'  },
 ];
 
@@ -100,7 +101,7 @@ export function N3Tooltip({ label, children }: { label: string; children: React.
 // ── Nav button ────────────────────────────────────────────────────────────────
 
 function NavBtn3({ item, active, onPress, recording = false }: {
-  item: { id: string; label: string; icon: React.ElementType };
+  item: { id: string; label: string; icon: React.ElementType; iqon?: boolean };
   active?: boolean;
   onPress: () => void;
   recording?: boolean;
@@ -126,7 +127,11 @@ function NavBtn3({ item, active, onPress, recording = false }: {
           color: active ? 'var(--foreground)' : undefined,
         }}
       >
-        <Icon size={18} weight={recording ? 'fill' : active ? 'duotone' : 'regular'} />
+        {item.iqon ? (
+          <Icon size={18} variant={active ? 'duotone' : 'outline'} />
+        ) : (
+          <Icon size={18} weight={recording ? 'fill' : active ? 'duotone' : 'regular'} />
+        )}
         {recording && (
           <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive animate-pulse" />
         )}

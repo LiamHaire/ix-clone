@@ -2,14 +2,15 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Bell, CalendarBlank, ChatCircle, UploadSimple } from '@phosphor-icons/react';
+import { Bell, CalendarBlank, UploadSimple } from '@phosphor-icons/react';
+import { Mail } from '@/components/ui/iqons/Mail';
 import { NotchComplete, NOTCH_COMPLETE_DURATION_MS } from './notch-complete';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useNotchMachine } from './notch-hook';
 import { DropZone, UploadingView, SuccessView, ErrorView, validateFile } from './notch-drop';
 import { Notch3Header, type NavId3 } from './notch3-nav';
-import { Notch3View, VIEW_HEIGHTS_3, tasksContentHeight, chatContentHeight, type QuickActionId } from './notch3-views';
+import { Notch3View, VIEW_HEIGHTS_3, tasksContentHeight, mailContentHeight, type QuickActionId } from './notch3-views';
 import { Notch2Header, Notch2Overview, Notch2Notifications, type Notch2Tab, NOTCH2_NOTIFICATIONS_W, NOTCH2_PANEL_MAX_W, NOTCH2_PANEL_PADDING, NOTCH2_PANEL_RADIUS, NOTCH2_HEADER_H, NOTCH2_HEADER_GAP, NOTCH2_CONTENT_GAP, NOTCH2_CONTENT_H } from './notch2-panel';
 import { CSS, SPRING_GROW_DURATION_MS } from '@/lib/motion';
 
@@ -26,7 +27,7 @@ const CONTENT_GAP_PX    = 16;
 const PANEL_PADDING_PX  = 16;
 const DEFAULT_CONTENT_H = 320;
 const DROP_CONTENT_H    = 160;
-const ALERT_CARD_H      = 114; // ROW_H (58) + OUTER_GAP (16) + FOOTER_BTN_H (40)
+const ALERT_CARD_H      = 150; // TILE_HEADER_H (20) + OUTER_GAP (16) + ROW_H (58) + OUTER_GAP (16) + FOOTER_BTN_H (40)
 const SUCCESS_LINGER_MS = NOTCH_COMPLETE_DURATION_MS;
 
 type ActiveView3 = NavId3 | 'drop';
@@ -44,7 +45,6 @@ export function Notch3Shell({ variant = 'notch3' }: { variant?: 'notch3' | 'notc
   const [calendarKey, setCalendarKey]           = useState(0);
   const [hasNewChat, setHasNewChat]             = useState(false);
   const [chatKey, setChatKey]                   = useState(0);
-  const [activeChatId, setActiveChatId]         = useState<string | null>(null);
   const [droppedFile, setDroppedFile]       = useState<File | null>(null);
   const [notch2ContentH, setNotch2ContentH] = useState(NOTCH2_CONTENT_H);
 
@@ -72,7 +72,6 @@ export function Notch3Shell({ variant = 'notch3' }: { variant?: 'notch3' | 'notc
   useEffect(() => {
     if (!isExpanded) {
       setActiveView('tasks');
-      setActiveChatId(null);
       setHeaderReady(false);
       if (headerReadyTimer.current) clearTimeout(headerReadyTimer.current);
     } else {
@@ -259,7 +258,7 @@ export function Notch3Shell({ variant = 'notch3' }: { variant?: 'notch3' | 'notc
     : activeView === 'tasks'
     ? tasksContentHeight()
     : activeView === 'chat'
-    ? chatContentHeight(hasNewChat, activeChatId)
+    ? mailContentHeight()
     : (VIEW_HEIGHTS_3[activeView as NavId3] ?? DEFAULT_CONTENT_H);
   const panelH = isNotch2
     ? NOTCH2_PANEL_PADDING * 2 + NOTCH2_HEADER_H + NOTCH2_HEADER_GAP + 1 + NOTCH2_CONTENT_GAP + contentH
@@ -317,6 +316,7 @@ export function Notch3Shell({ variant = 'notch3' }: { variant?: 'notch3' | 'notc
           width, height, borderRadius: radius,
           overflow: 'hidden',
           pointerEvents: 'auto',
+          backgroundImage: isExpanded && !isNotch2 ? 'var(--tile-bg)' : undefined,
           borderTop: 'none',
           borderRight:  `1px solid ${borderColour}`,
           borderBottom: `1px solid ${borderColour}`,
@@ -365,8 +365,8 @@ export function Notch3Shell({ variant = 'notch3' }: { variant?: 'notch3' | 'notc
                   </span>
                 )}
                 {hasNewChat && (
-                  <span key={chatKey} className="n3-chat-stamp inline-flex text-foreground" aria-label="New chat">
-                    <ChatCircle size={20} weight="regular" />
+                  <span key={chatKey} className="n3-chat-stamp inline-flex text-foreground" aria-label="New mail">
+                    <Mail size={20} />
                   </span>
                 )}
                 {hasCalendarEvent && (
@@ -545,9 +545,6 @@ export function Notch3Shell({ variant = 'notch3' }: { variant?: 'notch3' | 'notc
                   hasNotification={hasNotification}
                   hasNewChat={hasNewChat}
                   hasCalendarEvent={hasCalendarEvent}
-                  activeChatId={activeChatId}
-                  onChatOpen={id => { setActiveChatId(id); setActiveView('chat'); }}
-                  onChatClose={() => setActiveChatId(null)}
                   onNavigateWork={() => {
                     window.dispatchEvent(new CustomEvent('ix:open-work'));
                     send({ type: 'CLOSE' });

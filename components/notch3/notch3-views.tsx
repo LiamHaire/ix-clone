@@ -1,8 +1,11 @@
-'use client';
+﻿'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Bell, CheckCircle, CalendarBlank, ChatCircle, ArrowLeft, PaperPlaneRight, Plus } from '@phosphor-icons/react';
-import { NotchItem } from '@/components/ui/notch-item';
+import { Bell, CheckCircle, CalendarBlank, Envelope } from '@phosphor-icons/react';
+import { Notch2Item, Notch2ItemIcon, Notch2ItemList, Notch2TileHeader } from '@/components/ui/notch2-item';
+import { Notifications } from '@/components/ui/iqons/Notifications';
+import { Appointment } from '@/components/ui/iqons/Appointment';
+import { Checklist } from '@/components/ui/iqons/Checklist';
+import { Mail } from '@/components/ui/iqons/Mail';
 import { type NavId3 } from './notch3-nav';
 import { TASK_DATA, ASSIGNEE_NAMES, type Task } from '@/components/work/task-data';
 import { Button } from '@/components/ui/button';
@@ -10,22 +13,20 @@ import { Button } from '@/components/ui/button';
 // ── Height model ──────────────────────────────────────────────────────────────
 
 export const ROW_H           = 58; // NotchItem row height (Figma)
-export const ROW_GAP         =  8;
-const SECTION_LABEL_H        = 20;
+export const ROW_GAP         =  1; // divider between rows
 const OUTER_GAP              = 16;
 const FOOTER_BTN_H           = 40;
+const TILE_HEADER_H          = 20;
 const FOOTER_TOTAL           = OUTER_GAP + FOOTER_BTN_H; // 56
-const CHAT_ROW_H             = ROW_H;
-const MAX_VISIBLE_CHATS      =  5;
+const LIST_TOTAL             = TILE_HEADER_H + OUTER_GAP + FOOTER_TOTAL; // header + gap + footer
+const MAX_VISIBLE_MAIL       =  5;
 const MAX_VISIBLE_TASKS      =  3;
 export const EMPTY_H         = 148;
-export const CHAT_DETAIL_H   = 400;
 
 // Back-compat aliases
 export const TASK_ROW_H    = ROW_H;
 export const TASK_ROW_GAP  = ROW_GAP;
 export const TASKS_EMPTY_H = EMPTY_H;
-export const CHAT_EMPTY_H  = EMPTY_H;
 
 export const VIEW_HEIGHTS_3: Record<NavId3, number> = {
   notifications: EMPTY_H,
@@ -45,22 +46,13 @@ export function tasksContentHeight(): number {
   const count = tasksDueToday().length;
   if (count === 0) return EMPTY_H;
   const visible = Math.min(count, MAX_VISIBLE_TASKS);
-  return visible * ROW_H + (visible - 1) * ROW_GAP + FOOTER_TOTAL;
+  return visible * ROW_H + (visible - 1) * ROW_GAP + LIST_TOTAL;
 }
 
-function sectionH(n: number) {
-  return SECTION_LABEL_H + n * CHAT_ROW_H;
-}
-
-const CHAT_ROW_GAP = 4;  // gap-1
-const CHAT_BTN_MT  = 8;  // mt-2 before footer button
-
-export function chatContentHeight(_hasNewChat: boolean, activeChatId?: string | null): number {
-  if (activeChatId) return CHAT_DETAIL_H;
-  const count = Math.min(RECENT_CHATS.length, MAX_VISIBLE_CHATS);
+export function mailContentHeight(): number {
+  const count = Math.min(RECENT_MAIL.length, MAX_VISIBLE_MAIL);
   if (count === 0) return EMPTY_H;
-  // gap-1 applies between all children including the button div, so `count` gaps not `count - 1`
-  return count * CHAT_ROW_H + count * CHAT_ROW_GAP + CHAT_BTN_MT + FOOTER_BTN_H;
+  return count * ROW_H + (count - 1) * ROW_GAP + LIST_TOTAL;
 }
 
 function NavButton({ label, onClick }: { label: string; onClick?: () => void }) {
@@ -71,7 +63,7 @@ function NavButton({ label, onClick }: { label: string; onClick?: () => void }) 
   );
 }
 
-function EmptyState({ icon: Icon, title, subtitle, cta, onClick }: {
+export function EmptyState({ icon: Icon, title, subtitle, cta, onClick }: {
   icon: React.ElementType; title: string; subtitle: string; cta: string; onClick?: () => void;
 }) {
   return (
@@ -84,171 +76,17 @@ function EmptyState({ icon: Icon, title, subtitle, cta, onClick }: {
   );
 }
 
-// ── Chat data ─────────────────────────────────────────────────────────────────
+// ── Mail data ─────────────────────────────────────────────────────────────────
 
-interface ChatMessage { id: string; source: string; preview: string; timestamp: string; unread?: number; }
+interface MailItem { id: string; sender: string; subject: string; time: string; unread?: boolean; }
 
-export const RECENT_CHATS: ChatMessage[] = [
-  { id: 'n1', source: 'Dr. Sarah Okafor', preview: 'Please review the latest test results before the appointment tomorrow…', timestamp: '11h' },
-  { id: 'r1', source: 'Margaret Ellison', preview: 'Thank you for updating my repeat prescription, I appreciate the quick turnaround…', timestamp: '18h' },
-  { id: 'r2', source: 'A. Pendleton', preview: 'Can you confirm the Whitmore matter file review has been completed and sent…', timestamp: '19h' },
-  { id: 'r3', source: 'James Whitmore', preview: 'Happy to sign off on both items, let me know when the file is ready to send…', timestamp: '1d' },
-  { id: 'r4', source: 'Dr. Claire Moss', preview: 'The patient notes have been updated with the revised medication plan…', timestamp: '2d' },
+export const RECENT_MAIL: MailItem[] = [
+  { id: 'm1', sender: 'Sarah Whitmore', subject: 'Re: Completion date for Oakwood Avenue', time: '5 min' },
+  { id: 'm2', sender: 'Dr Helen Murray', subject: 'Urgent: results for Margaret Ellison', time: '22 min' },
+  { id: 'm3', sender: 'Arthur Pendleton', subject: 'Draft settlement letter for review', time: '1 hr' },
+  { id: 'm4', sender: 'Finance Team', subject: 'October invoices awaiting approval', time: '2 hr' },
+  { id: 'm5', sender: 'James Carter', subject: 'Updated contract terms for Brookfield Road', time: '3 hr' },
 ];
-
-// ── Thread mock data ──────────────────────────────────────────────────────────
-
-interface ThreadMsg { id: string; from: 'me' | 'them'; text: string; time: string; date: string; }
-
-const MOCK_THREADS: Record<string, ThreadMsg[]> = {
-  n1: [
-    { id: '1', from: 'them', text: "Hi, checking in about Mr Whitmore's results. Have you had a chance to review them?", time: '09:14', date: '2026-10-22' },
-    { id: '2', from: 'me',   text: 'Yes, reviewed this morning. Blood pressure slightly elevated but within range.', time: '09:31', date: '2026-10-22' },
-    { id: '3', from: 'them', text: "Good. I'll adjust the medication plan before tomorrow's appointment.", time: '09:35', date: '2026-10-22' },
-    { id: '4', from: 'them', text: 'Please review the latest test results before the appointment tomorrow.', time: '08:42', date: '2026-10-23' },
-  ],
-  r1: [
-    { id: '1', from: 'them', text: 'Hello, I wanted to check on my repeat prescription for Metformin. It was due last week.', time: '14:20', date: '2026-10-22' },
-    { id: '2', from: 'me',   text: "Hi Margaret, I can see your prescription here. I'll get it processed and sent to your pharmacy today.", time: '14:45', date: '2026-10-22' },
-    { id: '3', from: 'them', text: 'Thank you for updating my repeat prescription, I appreciate the quick turnaround.', time: '15:02', date: '2026-10-22' },
-  ],
-  r2: [
-    { id: '1', from: 'me',   text: "Arthur, the Whitmore file review is complete. I've flagged two items for your attention.", time: '10:15', date: '2026-10-22' },
-    { id: '2', from: 'them', text: 'Thanks. Which items specifically?', time: '10:22', date: '2026-10-22' },
-    { id: '3', from: 'me',   text: 'The conflict check checklist and the 14-day deadline diarisation. Both need sign-off.', time: '10:28', date: '2026-10-22' },
-    { id: '4', from: 'them', text: 'Can you confirm the Whitmore matter file review has been completed and sent to the client?', time: '11:30', date: '2026-10-22' },
-  ],
-};
-
-function formatDateLabel(iso: string): string {
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  if (iso === today) return 'Today';
-  if (iso === yesterday) return 'Yesterday';
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-// ── Chat detail view ──────────────────────────────────────────────────────────
-
-const BACK_ROW_H   = 32;
-const GAP_SM       =  8;
-const GAP_MD       = 16;
-const INPUT_ROW_H  = 36;
-const THREAD_H     = CHAT_DETAIL_H - BACK_ROW_H - GAP_SM - GAP_MD - INPUT_ROW_H; // 308
-
-function ChatDetail({ chatId, onBack }: { chatId: string; onBack: () => void }) {
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<ThreadMsg[]>(MOCK_THREADS[chatId] ?? []);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  };
-
-  useEffect(() => { scrollToBottom(); }, []);
-  useEffect(() => { scrollToBottom(); }, [messages]);
-
-  const sendMessage = () => {
-    const text = input.trim();
-    if (!text) return;
-    const now = new Date();
-    const time = now.toTimeString().slice(0, 5);
-    const date = now.toISOString().slice(0, 10);
-    setMessages(prev => [...prev, { id: String(Date.now()), from: 'me', text, time, date }]);
-    setInput('');
-  };
-
-  // Group messages by date
-  const groups: { date: string; msgs: ThreadMsg[] }[] = [];
-  for (const msg of messages) {
-    const last = groups[groups.length - 1];
-    if (last && last.date === msg.date) last.msgs.push(msg);
-    else groups.push({ date: msg.date, msgs: [msg] });
-  }
-
-  return (
-    <div className="flex flex-col" style={{ height: CHAT_DETAIL_H }}>
-      {/* Back */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground transition-colors self-start shrink-0"
-        style={{ height: BACK_ROW_H }}
-      >
-        <ArrowLeft size={14} weight="bold" />
-        <span>Back</span>
-      </button>
-
-      {/* Thread */}
-      <div
-        ref={scrollRef}
-        className="flex flex-col gap-3 overflow-y-auto"
-        style={{ height: THREAD_H, marginTop: GAP_SM }}
-      >
-        {groups.map(group => (
-          <div key={group.date} className="flex flex-col">
-            {/* Date stamp */}
-            <div className="flex justify-center mb-5">
-              <span className="text-[11px] text-muted-foreground bg-muted/60 px-3 py-0.5 rounded-full">
-                {formatDateLabel(group.date)}
-              </span>
-            </div>
-            {/* Messages */}
-            <div className="flex flex-col gap-2">
-            {group.msgs.map(msg => (
-              <div key={msg.id} className={`flex flex-col gap-0.5 ${msg.from === 'me' ? 'items-end' : 'items-start'}`}>
-                <div
-                  className={`max-w-[75%] px-3 py-2 text-[13px] leading-snug border text-foreground ${
-                    msg.from === 'me'
-                      ? 'rounded-2xl rounded-br-sm'
-                      : 'rounded-2xl rounded-bl-sm'
-                  }`}
-                  style={{
-                    borderColor: 'var(--notch-tile-border, var(--border))',
-                    background: msg.from === 'me'
-                      ? 'linear-gradient(color-mix(in srgb, var(--accent) 50%, transparent), color-mix(in srgb, var(--accent) 50%, transparent)), color-mix(in srgb, var(--background) 60%, transparent)'
-                      : 'color-mix(in srgb, var(--background) 60%, transparent)',
-                  }}
-                >
-                  {msg.text}
-                </div>
-                <span className="text-[10px] text-muted-foreground px-1">{msg.time}</span>
-              </div>
-            ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Send input row */}
-      <div className="flex items-center gap-2" style={{ height: INPUT_ROW_H, marginTop: GAP_MD }}>
-        <button
-          className="flex items-center justify-center rounded-lg border border-border bg-background/60 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
-          style={{ height: INPUT_ROW_H, width: INPUT_ROW_H }}
-        >
-          <Plus size={15} weight="regular" />
-        </button>
-        <div className="flex-1 flex items-center rounded-lg border border-border bg-background/60 px-3 h-full">
-          <input
-            type="text"
-            placeholder="Message…"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
-            className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground outline-none"
-          />
-        </div>
-        <button
-          onClick={sendMessage}
-          disabled={!input.trim()}
-          className="flex items-center justify-center rounded-lg border border-border bg-background/60 text-primary disabled:text-muted-foreground hover:bg-accent transition-colors shrink-0"
-          style={{ height: INPUT_ROW_H, width: INPUT_ROW_H }}
-        >
-          <PaperPlaneRight size={15} weight="fill" />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ── Placeholder ───────────────────────────────────────────────────────────────
 
@@ -274,19 +112,22 @@ interface Notch3ViewProps {
   hasNotification?: boolean;
   hasNewChat?: boolean;
   hasCalendarEvent?: boolean;
-  activeChatId?: string | null;
-  onChatOpen?: (id: string) => void;
-  onChatClose?: () => void;
   onNavigateWork?: () => void;
 }
 
-export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, activeChatId, onChatOpen, onChatClose, onNavigateWork }: Notch3ViewProps) {
+export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, onNavigateWork }: Notch3ViewProps) {
   switch (id) {
 
     case 'notifications':
       return hasNotification ? (
         <div className="flex flex-col gap-4">
-          <NotchItem type="notification" isNew title="File review due" description="Whitmore matter · 3 days overdue" />
+          <Notch2TileHeader icon={Notifications} title="Notifications" meta="1 unread" />
+          <Notch2Item
+            isNew
+            icon={<Notch2ItemIcon><Notifications size={24} /></Notch2ItemIcon>}
+            title="File review due"
+            subtitle="Whitmore matter · 3 days overdue"
+          />
           <NavButton label="View all notifications" />
         </div>
       ) : (
@@ -294,30 +135,29 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
       );
 
     case 'chat': {
-      if (activeChatId) {
-        return <ChatDetail chatId={activeChatId} onBack={() => onChatClose?.()} />;
+      if (RECENT_MAIL.length === 0) {
+        return <EmptyState icon={Envelope} title="No recent mail" subtitle="Nothing in the last 24 hours" cta="Go to Inbox" />;
       }
-      if (RECENT_CHATS.length === 0) {
-        return <EmptyState icon={ChatCircle} title="No recent messages" subtitle="Nothing in the last 24 hours" cta="Go to Message centre" />;
-      }
-      const displayChats = RECENT_CHATS.slice(0, MAX_VISIBLE_CHATS).map((chat, i) =>
-        i === 0 && hasNewChat ? { ...chat, unread: 1, timestamp: 'just now' } : chat
+      const displayMail = RECENT_MAIL.slice(0, MAX_VISIBLE_MAIL).map((mail, i) =>
+        i === 0 && hasNewChat ? { ...mail, unread: true, time: 'just now' } : mail
       );
       return (
-        <div className="flex flex-col gap-1">
-          {displayChats.map(msg => (
-            <NotchItem
-              key={msg.id}
-              type="message"
-              isNew={Boolean(msg.unread)}
-              initials={getInitials(msg.source)}
-              title={msg.source}
-              description={msg.preview}
-              time={msg.timestamp}
-              onClick={() => onChatOpen?.(msg.id)}
-            />
-          ))}
-          <div className="mt-2"><NavButton label="Go to Message centre" /></div>
+        <div className="flex flex-col gap-4">
+          <Notch2TileHeader icon={Mail} title="Inbox" meta="9+ unread" />
+          <Notch2ItemList>
+            {displayMail.map((mail, i) => (
+              <Notch2Item
+                key={mail.id}
+                isNew={Boolean(mail.unread)}
+                initials={getInitials(mail.sender)}
+                avatarIndex={i}
+                title={mail.sender}
+                subtitle={mail.subject}
+                time={mail.time}
+              />
+            ))}
+          </Notch2ItemList>
+          <NavButton label="Go to Inbox" />
         </div>
       );
     }
@@ -329,19 +169,22 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
       }
       return (
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2 overflow-y-auto" style={{ maxHeight: MAX_VISIBLE_TASKS * ROW_H + (MAX_VISIBLE_TASKS - 1) * ROW_GAP }}>
-            {dueToday.map(task => (
-              <NotchItem
-                key={task.id}
-                type="task"
-                taskRef={task.ref}
-                title={task.title}
-                description={task.assignee ? (ASSIGNEE_NAMES[task.assignee] ?? task.assignee) : task.type}
-                status="Due"
-                priority={task.priority}
-                onClick={onNavigateWork}
-              />
-            ))}
+          <Notch2TileHeader icon={Checklist} title="Today's Tasks" meta={`${dueToday.length} to do`} />
+          <div className="overflow-y-auto" style={{ maxHeight: MAX_VISIBLE_TASKS * ROW_H + (MAX_VISIBLE_TASKS - 1) * ROW_GAP }}>
+            <Notch2ItemList>
+              {dueToday.map(task => (
+                <Notch2Item
+                  key={task.id}
+                  icon={<Notch2ItemIcon />}
+                  title={`${task.ref} - ${task.title}`}
+                  body={task.assignee ? (ASSIGNEE_NAMES[task.assignee] ?? task.assignee) : task.type}
+                  badge="Due"
+                  priority={task.priority}
+                  time="Today"
+                  onClick={onNavigateWork}
+                />
+              ))}
+            </Notch2ItemList>
           </div>
           <NavButton label="View all tasks" onClick={onNavigateWork} />
         </div>
@@ -351,7 +194,14 @@ export function Notch3View({ id, hasNotification, hasNewChat, hasCalendarEvent, 
     case 'calendar':
       return hasCalendarEvent ? (
         <div className="flex flex-col gap-4">
-          <NotchItem type="event" isNew title="Team standup" description="With Dr. Shaw & team · Remote" time="in 15 mins" />
+          <Notch2TileHeader icon={Appointment} title="Next appointments" meta="Today" />
+          <Notch2Item
+            isNew
+            icon={<Notch2ItemIcon><Appointment size={24} /></Notch2ItemIcon>}
+            title="Team standup"
+            subtitle="With Dr. Shaw & team · Remote"
+            time="in 15 mins"
+          />
           <NavButton label="Open calendar" />
         </div>
       ) : (
