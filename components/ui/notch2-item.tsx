@@ -138,15 +138,16 @@ function Notch2Item({
   )
 }
 
-function Notch2TileHeader({ icon: Icon, title, meta }: {
+function Notch2TileHeader({ icon: Icon, title, meta, accentColor }: {
   icon: React.ElementType
   title: string
   meta: string
+  accentColor?: string
 }) {
   return (
     <header className="flex h-5 items-center gap-2">
-      <Icon size={16} className="shrink-0 text-foreground" />
-      <h3 className="min-w-0 flex-1 truncate text-sm font-medium text-muted-foreground">{title}</h3>
+      <Icon size={16} className={cn("shrink-0", !accentColor && "text-foreground")} style={accentColor ? { color: accentColor } : undefined} />
+      <h3 className="min-w-0 flex-1 truncate text-sm font-medium" style={accentColor ? { color: accentColor } : undefined}>{title}</h3>
       <span className="shrink-0 text-xs text-muted-foreground">{meta}</span>
     </header>
   )

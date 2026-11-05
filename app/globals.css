@@ -181,6 +181,23 @@
   --nav-rail-width:          56px;
   --nav-rail-bg:             oklch(0.994 0.004 78.31);
   --nav-rail-border:         oklch(0.9203 0.0132 82.4);
+
+  /* ── Notch 2 preview tile accents ── */
+  --tile-mail-fill:          #C11F70;
+  --tile-mail-text:          #FFD9EA;
+  --tile-mail-value:         color-mix(in srgb, var(--tile-mail-fill) 12%, white);
+  --tile-mail-dark:          color-mix(in srgb, var(--tile-mail-fill) 70%, black);
+  --tile-mail-bg:            linear-gradient(to top, color-mix(in srgb, var(--tile-mail-fill) 7%, var(--muted)), oklch(0.997 0.002 78.31));
+  --tile-tasks-fill:         #0F5E63;
+  --tile-tasks-text:         #CDEBEC;
+  --tile-tasks-value:        color-mix(in srgb, var(--tile-tasks-fill) 12%, white);
+  --tile-tasks-dark:         color-mix(in srgb, var(--tile-tasks-fill) 70%, black);
+  --tile-tasks-bg:           linear-gradient(to top, color-mix(in srgb, var(--tile-tasks-fill) 7%, var(--muted)), oklch(0.997 0.002 78.31));
+  --tile-calendar-fill:      #6B3FA0;
+  --tile-calendar-text:      #E4D9F4;
+  --tile-calendar-value:     color-mix(in srgb, var(--tile-calendar-fill) 12%, white);
+  --tile-calendar-dark:      color-mix(in srgb, var(--tile-calendar-fill) 70%, black);
+  --tile-calendar-bg:        linear-gradient(to top, color-mix(in srgb, var(--tile-calendar-fill) 7%, var(--muted)), oklch(0.997 0.002 78.31));
 }
 
 .dark {
@@ -258,6 +275,14 @@
   /* ── Nav rail ── */
   --nav-rail-bg:             oklch(0.185 0.012 258);
   --nav-rail-border:         oklch(1 0 0 / 0.06);
+
+  /* ── Notch 2 preview tile accents ── */
+  --tile-mail-dark:          color-mix(in srgb, var(--tile-mail-fill) 55%, white);
+  --tile-mail-bg:            linear-gradient(to top, color-mix(in srgb, var(--tile-mail-fill) 12%, var(--muted)), var(--muted));
+  --tile-tasks-dark:         color-mix(in srgb, var(--tile-tasks-fill) 55%, white);
+  --tile-tasks-bg:           linear-gradient(to top, color-mix(in srgb, var(--tile-tasks-fill) 12%, var(--muted)), var(--muted));
+  --tile-calendar-dark:      color-mix(in srgb, var(--tile-calendar-fill) 55%, white);
+  --tile-calendar-bg:        linear-gradient(to top, color-mix(in srgb, var(--tile-calendar-fill) 12%, var(--muted)), var(--muted));
 }
 
 /* ── Accent colour overrides ── */
