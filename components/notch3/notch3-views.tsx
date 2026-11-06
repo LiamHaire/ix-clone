@@ -57,7 +57,7 @@ export function mailContentHeight(): number {
 
 function NavButton({ label, onClick }: { label: string; onClick?: () => void }) {
   return (
-    <Button variant="outline" size="sm" className="h-10 text-[13px] w-full bg-muted/40" onClick={onClick}>
+    <Button variant="outline" size="sm" className="h-10 text-[13px] w-full bg-background dark:bg-card" onClick={onClick}>
       {label}
     </Button>
   );

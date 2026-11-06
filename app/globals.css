@@ -186,18 +186,18 @@
   --tile-mail-fill:          #C11F70;
   --tile-mail-text:          #FFD9EA;
   --tile-mail-value:         color-mix(in srgb, var(--tile-mail-fill) 12%, white);
-  --tile-mail-dark:          color-mix(in srgb, var(--tile-mail-fill) 70%, black);
-  --tile-mail-bg:            linear-gradient(to top, color-mix(in srgb, var(--tile-mail-fill) 7%, var(--muted)), oklch(0.997 0.002 78.31));
+  --tile-mail-dark:          color-mix(in srgb, var(--tile-mail-fill) 50%, black);
+  --tile-mail-bg:            linear-gradient(to top, color-mix(in srgb, var(--tile-mail-fill) 3%, var(--muted)), oklch(0.997 0.002 78.31));
   --tile-tasks-fill:         #0F5E63;
   --tile-tasks-text:         #CDEBEC;
   --tile-tasks-value:        color-mix(in srgb, var(--tile-tasks-fill) 12%, white);
-  --tile-tasks-dark:         color-mix(in srgb, var(--tile-tasks-fill) 70%, black);
-  --tile-tasks-bg:           linear-gradient(to top, color-mix(in srgb, var(--tile-tasks-fill) 7%, var(--muted)), oklch(0.997 0.002 78.31));
+  --tile-tasks-dark:         color-mix(in srgb, var(--tile-tasks-fill) 50%, black);
+  --tile-tasks-bg:           linear-gradient(to top, color-mix(in srgb, var(--tile-tasks-fill) 3%, var(--muted)), oklch(0.997 0.002 78.31));
   --tile-calendar-fill:      #6B3FA0;
   --tile-calendar-text:      #E4D9F4;
   --tile-calendar-value:     color-mix(in srgb, var(--tile-calendar-fill) 12%, white);
-  --tile-calendar-dark:      color-mix(in srgb, var(--tile-calendar-fill) 70%, black);
-  --tile-calendar-bg:        linear-gradient(to top, color-mix(in srgb, var(--tile-calendar-fill) 7%, var(--muted)), oklch(0.997 0.002 78.31));
+  --tile-calendar-dark:      color-mix(in srgb, var(--tile-calendar-fill) 50%, black);
+  --tile-calendar-bg:        linear-gradient(to top, color-mix(in srgb, var(--tile-calendar-fill) 3%, var(--muted)), oklch(0.997 0.002 78.31));
 }
 
 .dark {
@@ -277,12 +277,12 @@
   --nav-rail-border:         oklch(1 0 0 / 0.06);
 
   /* ── Notch 2 preview tile accents ── */
-  --tile-mail-dark:          color-mix(in srgb, var(--tile-mail-fill) 55%, white);
-  --tile-mail-bg:            linear-gradient(to top, color-mix(in srgb, var(--tile-mail-fill) 12%, var(--muted)), var(--muted));
-  --tile-tasks-dark:         color-mix(in srgb, var(--tile-tasks-fill) 55%, white);
-  --tile-tasks-bg:           linear-gradient(to top, color-mix(in srgb, var(--tile-tasks-fill) 12%, var(--muted)), var(--muted));
-  --tile-calendar-dark:      color-mix(in srgb, var(--tile-calendar-fill) 55%, white);
-  --tile-calendar-bg:        linear-gradient(to top, color-mix(in srgb, var(--tile-calendar-fill) 12%, var(--muted)), var(--muted));
+  --tile-mail-dark:          color-mix(in srgb, var(--tile-mail-fill) 35%, white);
+  --tile-mail-bg:            linear-gradient(to top, color-mix(in srgb, var(--tile-mail-fill) 6%, var(--muted)), var(--muted));
+  --tile-tasks-dark:         color-mix(in srgb, var(--tile-tasks-fill) 35%, white);
+  --tile-tasks-bg:           linear-gradient(to top, color-mix(in srgb, var(--tile-tasks-fill) 6%, var(--muted)), var(--muted));
+  --tile-calendar-dark:      color-mix(in srgb, var(--tile-calendar-fill) 35%, white);
+  --tile-calendar-bg:        linear-gradient(to top, color-mix(in srgb, var(--tile-calendar-fill) 6%, var(--muted)), var(--muted));
 }
 
 /* ── Accent colour overrides ── */
@@ -464,10 +464,12 @@
 /* ── Notch bloom gradient ── */
 .notch-bloom {
   --notch-tile-border: oklch(72% 0.18 45 / 0.10);
+  --notch-expanded-stroke: var(--border);
   background: var(--background);
 }
 .dark .notch-bloom {
   --notch-tile-border: oklch(55% 0.18 268 / 0.25);
+  --notch-expanded-stroke: color-mix(in srgb, var(--sidebar-foreground) 40%, transparent);
   background: var(--background);
 }
 

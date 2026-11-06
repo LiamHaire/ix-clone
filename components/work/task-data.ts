@@ -24,6 +24,8 @@ export interface Lane {
   tasks: Task[];
 }
 
+const TODAY = new Date().toISOString().slice(0, 10);
+
 export const TASK_DATA: Lane[] = [
   {
     id: "due",
@@ -75,6 +77,29 @@ export const TASK_DATA: Lane[] = [
         dueDate: "2026-10-21",
         type: "Clinical",
         dateReceived: "2026-10-15",
+      },
+      {
+        id: "t26",
+        title: "Review medication changes for Margaret Ellison",
+        notes: "GP flagged two dosage changes since the last review. Confirm the updated prescription before this afternoon's appointment.",
+        tags: ["Clinical"],
+        ref: "WRK-1212",
+        priority: "high",
+        assignee: "LH",
+        dueDate: TODAY,
+        type: "Clinical",
+        dateReceived: TODAY,
+      },
+      {
+        id: "t27",
+        title: "Send settlement draft to Hendricks fee earner",
+        notes: "Draft v4 has been approved internally. Send to the fee earner with a covering note before close of business.",
+        ref: "WRK-1213",
+        priority: "medium",
+        assignee: "LH",
+        dueDate: TODAY,
+        type: "General",
+        dateReceived: TODAY,
       },
     ],
   },

@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { CSS } from '@/lib/motion';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Notch2Item, Notch2ItemIcon, Notch2ItemList, Notch2TileHeader } from '@/components/ui/notch2-item';
+import { Notch2Item, Notch2ItemIcon, Notch2ItemList, Notch2TileHeader, avatarTone } from '@/components/ui/notch2-item';
 import { Appointment } from '@/components/ui/iqons/Appointment';
 import { Notifications } from '@/components/ui/iqons/Notifications';
 import { Checklist } from '@/components/ui/iqons/Checklist';
@@ -36,11 +36,11 @@ const MAX_VISIBLE_TASKS = 2;
 const MAX_VISIBLE_EMAILS = 5;
 
 const MOCK_EMAILS = [
-  { id: 'e1', initials: 'SW', sender: 'Sarah Whitmore', subject: 'Re: Completion date for Oakwood Avenue', time: '5 min' },
-  { id: 'e2', initials: 'DP', sender: 'Dr Helen Murray', subject: 'Urgent: results for Margaret Ellison', time: '22 min' },
-  { id: 'e3', initials: 'AP', sender: 'Arthur Pendleton', subject: 'Draft settlement letter for review', time: '1 hr' },
-  { id: 'e4', initials: 'FM', sender: 'Finance Team', subject: 'October invoices awaiting approval', time: '2 hr' },
-  { id: 'e5', initials: 'JC', sender: 'James Carter', subject: 'Updated contract terms for Brookfield Road', time: '3 hr' },
+  { id: 'e1', source: 'Outlook', initials: 'SW', sender: 'Sarah Whitmore', subject: 'Re: Completion date for Oakwood Avenue', time: '5 min' },
+  { id: 'e2', source: 'Gmail', initials: 'DP', sender: 'Dr Helen Murray', subject: 'Urgent: results for Margaret Ellison', time: '22 min' },
+  { id: 'e3', source: 'Outlook', initials: 'AP', sender: 'Arthur Pendleton', subject: 'Draft settlement letter for review', time: '1 hr' },
+  { id: 'e4', source: 'Outlook', initials: 'FM', sender: 'Finance Team', subject: 'October invoices awaiting approval', time: '2 hr' },
+  { id: 'e5', source: 'Gmail', initials: 'JC', sender: 'James Carter', subject: 'Updated contract terms for Brookfield Road', time: '3 hr' },
 ];
 const UNREAD_EMAIL_COUNT = 9;
 
@@ -93,7 +93,7 @@ export function Notch2Header({ activeTab, onSelectTab, hasNotification = false, 
             label="Liam Haire"
             round
             icon={<span className="text-[11px] font-semibold leading-none">LH</span>}
-            className="border border-border text-foreground"
+            className={cn('text-primary-foreground', avatarTone('LH'))}
           />
         </div>
       </div>
@@ -175,7 +175,8 @@ export function Notch2Notifications({ hasNotification, onClose, onHeightChange }
           <Notch2Item
             isNew
             icon={<Notch2ItemIcon><Notifications size={24} /></Notch2ItemIcon>}
-            title="New notification title"
+            title="File review due"
+            subtitle="Whitmore matter · 3 days overdue"
             time="Just now"
           />
         ) : (
@@ -305,6 +306,8 @@ function Notch2PreviewDetail({ preview, hasCalendarEvent, onBack, onNavigateWork
               avatarIndex={i}
               title={email.sender}
               subtitle={email.subject}
+              badge={email.source}
+              badgeVariant="outline"
               time={email.time}
               onClick={onClose}
             />
@@ -370,7 +373,7 @@ function Notch2PreviewDetail({ preview, hasCalendarEvent, onBack, onNavigateWork
         <Notch2TileHeader icon={content.icon} title={content.title} meta={content.meta} accentColor={`var(--tile-${preview}-dark)`} />
       </div>
       <div className="flex flex-1 flex-col gap-2 pt-2">{content.body}</div>
-      <Button variant="outline" size="sm" className="h-10 w-full shrink-0 bg-background dark:bg-background text-xs" onClick={content.onCta}>
+      <Button variant="outline" size="sm" className="h-10 w-full shrink-0 bg-background dark:bg-card text-xs" onClick={content.onCta}>
         {content.cta}
       </Button>
     </section>
@@ -393,7 +396,7 @@ function OverviewCard({ icon: Icon, title, meta, cta, onCta, children }: {
       <Notch2TileHeader icon={Icon} title={title} meta={meta} />
       <div className="flex flex-1 flex-col gap-2 pt-2">{children}</div>
       {cta && (
-        <Button variant="outline" size="sm" className="h-10 w-full shrink-0 bg-background dark:bg-background text-xs" onClick={onCta}>
+        <Button variant="outline" size="sm" className="h-10 w-full shrink-0 bg-background dark:bg-card text-xs" onClick={onCta}>
           {cta}
         </Button>
       )}

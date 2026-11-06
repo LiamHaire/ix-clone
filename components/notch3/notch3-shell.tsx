@@ -284,7 +284,7 @@ export function Notch3Shell({ variant = 'notch3' }: { variant?: 'notch3' | 'notc
   const sizeEasing     = isExpanded ? expandEasing : collapseEasing;
 
   const borderColour = isExpanded
-    ? 'var(--border)'
+    ? isNotch2 ? 'var(--notch-expanded-stroke)' : 'var(--border)'
     : isRecording
     ? 'var(--destructive)'
     : 'color-mix(in srgb, var(--sidebar-foreground) 40%, transparent)';

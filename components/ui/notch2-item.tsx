@@ -22,7 +22,7 @@ const AVATAR_TONES = [
   "bg-[color-mix(in_oklch,var(--file-code),black_35%)] dark:bg-file-code/15 dark:text-file-code", // sodalite
 ]
 
-function avatarTone(initials: string, index?: number) {
+export function avatarTone(initials: string, index?: number) {
   const i = index ?? [...initials].reduce((a, c) => a + c.charCodeAt(0), 0)
   return AVATAR_TONES[i % AVATAR_TONES.length]
 }
@@ -43,6 +43,7 @@ export interface Notch2ItemProps
   /** Trailing text in the title row, e.g. "Today". */
   time?: string
   badge?: string
+  badgeVariant?: React.ComponentProps<typeof Badge>["variant"]
   priority?: Notch2ItemPriority
   /** Shows an unread dot before the title. */
   isNew?: boolean
@@ -73,6 +74,7 @@ function Notch2Item({
   body,
   time,
   badge,
+  badgeVariant,
   priority,
   isNew = false,
   className,
@@ -122,7 +124,7 @@ function Notch2Item({
         <div className="flex h-5 items-center gap-2">
           <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{title}</p>
           {priority && <PriorityIcon priority={priority} />}
-          {badge && <Badge>{badge}</Badge>}
+          {badge && <Badge variant={badgeVariant}>{badge}</Badge>}
           {time && <span className="shrink-0 pt-px text-xs whitespace-nowrap text-muted-foreground">{time}</span>}
           {isNew && (
             <>
