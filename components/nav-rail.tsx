@@ -5,7 +5,6 @@ import {
   NotePencil,
   ClockCounterClockwise,
   SquaresFour,
-  Info,
   Gear,
   SignOut,
   User,
@@ -29,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { NotificationsPopover } from "@/components/nav-rail-notifications";
+import { InfoPopover } from "@/components/nav-rail-info";
 
 const APPS = [
   { label: "Calendar",       icon: CalendarBlank },
@@ -144,7 +144,7 @@ export function NavRail({ onNewChat, hideNotifications }: { onNewChat?: () => vo
       {/* Bottom nav */}
       <nav className="flex flex-col items-center gap-2 px-3 mt-auto pb-2">
         {!hideNotifications && <NotificationsPopover />}
-        <NavItem icon={<Info size={20} weight="duotone" />} label="Info" />
+        <InfoPopover />
         <NavItem icon={<Gear size={20} weight="duotone" />} label="Settings" onClick={() => window.dispatchEvent(new CustomEvent("ix:open-settings"))} />
 
         {/* Avatar */}

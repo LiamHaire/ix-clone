@@ -37,6 +37,7 @@ import { TaskInbox } from "@/components/chat/task-inbox";
 import { EmailSearchResults } from "@/components/chat/email-search-results";
 import { AdditionalPanel, type EmailDetailData } from "@/components/chat/additional-panel";
 import { SettingsPanel } from "@/components/settings/settings-panel";
+import { ReleaseNotesPanel } from "@/components/release-notes/release-notes-panel";
 import { NavRail } from "@/components/nav-rail";
 import { NavNotch3, NavNotch2 } from "@/components/notch3";
 import { SheetHeader } from "@/components/ui/sheet";
@@ -126,7 +127,7 @@ export default function Home() {
   const [isAdditional, setIsAdditional] = useState(false);
   const [additionalMode, setAdditionalMode] = useState<'default' | 'draft-email' | 'email-detail'>('default');
   const [selectedEmail, setSelectedEmail] = useState<EmailDetailData | null>(null);
-  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work' | 'session-history' | 'settings'>('default');
+  const [workspaceMode, setWorkspaceMode] = useState<'default' | 'patient-summary' | 'medication-review' | 'work' | 'session-history' | 'settings' | 'release-notes'>('default');
   const [workChatHidden, setWorkChatHidden] = useState(false);
   const [chatCollapsed, setChatCollapsed] = useState(false);
 
@@ -313,6 +314,27 @@ export default function Home() {
     };
     window.addEventListener("ix:open-settings", handler);
     return () => window.removeEventListener("ix:open-settings", handler);
+  }, [appState]);
+
+  useEffect(() => {
+    const handler = () => {
+      setWorkspaceMode('release-notes');
+      setIsWorkspace(true);
+      setIsAdditional(false);
+      setChatCollapsed(true);
+
+      setChatTitle("Release notes");
+      setMessages([{
+        role: 'assistant' as const,
+        content: "Here's what's new in IQ. Ask me if you'd like a summary of the latest release.",
+        suggestions: ["Summarise the latest release", "What's changed for my role?"],
+      }]);
+      setIsThinking(false);
+      setAppState("chat");
+      setChatContentOpacity(1);
+    };
+    window.addEventListener("ix:open-release-notes", handler);
+    return () => window.removeEventListener("ix:open-release-notes", handler);
   }, [appState]);
 
   function resetToHome() {
@@ -720,6 +742,12 @@ export default function Home() {
             )}
             {isWorkspace && workspaceMode === 'settings' && (
               <SettingsPanel
+                onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
+                expanded={chatCollapsed}
+              />
+            )}
+            {isWorkspace && workspaceMode === 'release-notes' && (
+              <ReleaseNotesPanel
                 onClose={() => { setIsWorkspace(false); setWorkspaceMode('default'); }}
                 expanded={chatCollapsed}
               />

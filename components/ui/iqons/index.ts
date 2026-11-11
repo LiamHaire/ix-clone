@@ -26,3 +26,5 @@ export { Refresh } from './Refresh';
 export { UserCircle } from './UserCircle';
 export { Appointment } from './Appointment';
 export { Notifications } from './Notifications';
+export { Deploy } from './Deploy';
+export { Help } from './Help';
